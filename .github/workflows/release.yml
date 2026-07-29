@@ -39,8 +39,9 @@ jobs:
       - name: Rename artifact to BOCCHI.zip
         shell: pwsh
         run: |
-          $zip = Get-ChildItem -Path . -Recurse -Filter latest.zip | Select-Object -First 1
-          Copy-Item $zip.FullName -Destination "BOCCHI.zip"
+          # Explicit path, not a recursive search: this repo checks out a submodule,
+          # and a stray latest.zip anywhere else would silently ship instead.
+          Copy-Item "./BOCCHI/bin/Release/BOCCHI/latest.zip" -Destination "BOCCHI.zip"
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
