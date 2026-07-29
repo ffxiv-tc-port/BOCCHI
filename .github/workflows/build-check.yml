@@ -14,6 +14,10 @@ jobs:
       proceed: ${{ steps.check.outputs.proceed }}
     steps:
       - uses: actions/checkout@v4
+      # Fleet-wide gate: the build job only runs when VersionPrefix differs from the
+      # 7.15.0 baseline. Older repos are still on 7.15.0, so their build-check is a
+      # no-op ("green" means skipped, not compiled). This repo is on 7.20.0 on
+      # purpose, so the gate passes and the build really does compile.
       - name: Check if VersionPrefix changed from baseline
         id: check
         shell: bash
