@@ -1,0 +1,35 @@
+{
+  "modules": {
+    "teleporter": {
+      "config": {
+        "title": "傳送設定",
+        "should_mount": {
+          "label": "傳送後自動上坐騎",
+          "tooltip": "傳送後要使用的坐騎。"
+        },
+        "path_to_destination": {
+          "label": "傳送後自動前往活動地點",
+          "tooltip": "透過 OCH 面板傳送後，使用 vnavmesh 前往下一個活動地點。"
+        },
+        "return_after_fate": {
+          "label": "F.A.T.E. 結束後返回基地",
+          "tooltip": "F.A.T.E. 結束後使用 Occult Return 返回基地營。"
+        },
+        "return_after_critical_encounter": {
+          "label": "緊急遭遇戰結束後返回基地",
+          "tooltip": "緊急遭遇戰結束後使用 Occult Return 返回基地營。"
+        },
+        "approach_aetheryte": {
+          "label": "返回後走近乙太之光",
+          "tooltip": "返回基地營後走向乙太之光。\n* 只有在 F.A.T.E. 或緊急遭遇戰結束後透過插件返回時才有效。"
+        }
+      },
+      "tooltip": {
+        "pathfind_to": "尋路前往 {name}",
+        "must_be_near_aetheryte": "必須靠近乙太之光才能傳送",
+        "already_at_aetheryte": "你已經在這座乙太之光了",
+        "teleport_to": "傳送到 {name}"
+      }
+    }
+  }
+}

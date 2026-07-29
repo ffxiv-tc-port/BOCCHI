@@ -1,0 +1,21 @@
+{
+  "generic": {
+    "label": {
+      "enabled": "啟用",
+      "start": "開始",
+      "stop": "停止",
+      "not_in_zone": "目前不在 Occult Crescent 區域內。"
+    },
+    "tooltip": {
+      "illegal_mode_compatible": "此選項與非法模式相容，非法模式執行時會一併使用。"
+    },
+    "commands": {
+      "language_set": "語言已設定為：{code}",
+      "language_usage": "用法：/bocchi language <語言代碼>",
+      "not_near_shard": "你不在城內乙太之晶附近。",
+      "lifestream_busy": "Lifestream 忙碌中",
+      "no_shard_found": "找不到城內乙太之晶",
+      "already_at_shard": "你已經在最近的城內乙太之晶了"
+    }
+  }
+}

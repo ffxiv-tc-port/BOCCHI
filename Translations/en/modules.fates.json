@@ -40,6 +40,10 @@
         "title": "Fates",
         "none": "No active fates.",
         "estimated": "Est."
+      },
+      "messages": {
+        "spawned": "{name} has Spawned",
+        "despawned": "{name} has Despawned"
       }
     }
   }

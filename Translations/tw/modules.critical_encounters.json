@@ -1,0 +1,78 @@
+{
+  "modules": {
+    "critical_encounters": {
+      "config": {
+        "title": "緊急遭遇戰設定",
+        "track_forked_tower": {
+          "label": "追蹤 Forked Tower",
+          "tooltip": "記錄 Forked Tower 上次結束的時間"
+        },
+        "log_spawn": {
+          "label": "出現／消失時輸出聊天訊息",
+          "tooltip": "緊急遭遇戰出現或消失時輸出一則 echo 訊息"
+        },
+        "alert_all": {
+          "label": "所有緊急遭遇戰都提醒",
+          "tooltip": "任何緊急遭遇戰出現時播放提示音"
+        },
+        "alert_azurite": {
+          "label": "提醒掉落 Azurite Demiatma 的緊急遭遇戰",
+          "tooltip": "當掉落 Azurite Demiatma 的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_verdigris": {
+          "label": "提醒掉落 Verdigris Demiatma 的緊急遭遇戰",
+          "tooltip": "當掉落 Verdigris Demiatma 的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_malachite": {
+          "label": "提醒掉落 Malachite Demiatma 的緊急遭遇戰",
+          "tooltip": "當掉落 Malachite Demiatma 的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_realgar": {
+          "label": "提醒掉落 Realgar Demiatma 的緊急遭遇戰",
+          "tooltip": "當掉落 Realgar Demiatma 的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_caput_mortuum": {
+          "label": "提醒掉落 Caput Mortuum Demiatma 的緊急遭遇戰",
+          "tooltip": "當掉落 Caput Mortuum Demiatma 的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_orpiment": {
+          "label": "提醒掉落 Orpiment Demiatma 的緊急遭遇戰",
+          "tooltip": "當掉落 Orpiment Demiatma 的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_oracle": {
+          "label": "提醒掉落 Oracle Soul Shard 的緊急遭遇戰",
+          "tooltip": "當掉落 Oracle Soul Shard 的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_berserker": {
+          "label": "提醒掉落 Berserker Soul Shard 的緊急遭遇戰",
+          "tooltip": "當掉落 Berserker Soul Shard 的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_ranger": {
+          "label": "提醒掉落 Ranger Soul Shard 的緊急遭遇戰",
+          "tooltip": "當掉落 Ranger Soul Shard 的緊急遭遇戰出現時播放提示音"
+        }
+      },
+      "panel": {
+        "title": "緊急遭遇戰",
+        "none": "目前沒有進行中的緊急遭遇戰。",
+        "register": "準備中",
+        "warmup": "即將開始",
+        "estimated": "預計",
+        "tower": {
+          "wip": "此功能仍在開發中。",
+          "spawn_estimate": "Forked Tower 預計出現時間",
+          "register": "Forked Tower 報名剩餘時間",
+          "critical_encounters_completed": "已完成的緊急遭遇戰",
+          "fates_completed": "已完成的 F.A.T.E.",
+          "players_on_platform": "平台上的玩家數",
+          "players_near_platform": "平台附近的玩家數",
+          "includes_you": "此數字包含你自己"
+        }
+      },
+      "messages": {
+        "spawned": "{name} 已出現",
+        "despawned": "{name} 已消失"
+      }
+    }
+  }
+}

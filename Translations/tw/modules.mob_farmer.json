@@ -1,0 +1,69 @@
+{
+  "modules": {
+    "mob_farmer": {
+      "config": {
+        "title": "刷怪設定",
+        "mobs": {
+          "label": "魔物",
+          "tooltip": "要刷的魔物"
+        },
+        "consider_special_mobs": {
+          "label": "將特殊魔物納入考量",
+          "tooltip": "把附近的特殊魔物納入拉怪對象與計數。這類魔物只在特定時間與天氣下出現。"
+        },
+        "max_mob_level": {
+          "label": "魔物等級上限",
+          "tooltip": "要拉的魔物等級上限；搭配特殊魔物或等級參差的魔物時很有用"
+        },
+        "max_euclidean_distance": {
+          "label": "歐氏距離上限",
+          "tooltip": "超過這個歐氏距離的魔物就忽略；可避免在考量特殊魔物時被一路拉過整張地圖。"
+        },
+        "min_euclidean_distance_to_return_home": {
+          "label": "返回起點的最短距離",
+          "tooltip": "戰鬥結束後，若你離起點超過這個距離就會走回去。"
+        },
+        "return_to_start_in_waiting_phase": {
+          "label": "戰鬥結束後返回起點",
+          "tooltip": "起點是你按下「開始」時所站的位置。"
+        },
+        "render_debug_lines": {
+          "label": "繪製除錯連線",
+          "tooltip": "對非交戰狀態的有效魔物畫紅線，對交戰狀態的有效魔物畫綠線"
+        },
+        "render_debug_lines_while_not_running": {
+          "label": "未執行時也繪製除錯連線",
+          "tooltip": "即使刷怪功能沒有在執行也繪製連線"
+        },
+        "apply_battle_bell": {
+          "label": "使用 Battle Bell",
+          "tooltip": "拉怪前先使用 Battle Bell"
+        },
+        "maximum_battle_bell_wait_time": {
+          "label": "等待 Battle Bell 的最長時間",
+          "tooltip": "等待 Battle Bell 冷卻完畢的最長時間"
+        },
+        "minimum_mobs_to_start_loop": {
+          "label": "開始所需的最少魔物數",
+          "tooltip": "附近要有幾隻有效魔物才會開始循環"
+        },
+        "minimum_mobs_to_start_fight": {
+          "label": "開打所需的最少魔物數",
+          "tooltip": "要聚集幾隻魔物之後才停下來開打。\n 注意：若你附近已經沒有非交戰狀態的魔物，仍會直接開打。"
+        }
+      },
+      "panel": {
+        "title": "刷怪",
+        "phase": {
+          "label": "階段"
+        },
+        "not_engaged": {
+          "label": "非交戰狀態"
+        },
+        "engaged": {
+          "label": "交戰狀態"
+        }
+      }
+    }
+  }
+}

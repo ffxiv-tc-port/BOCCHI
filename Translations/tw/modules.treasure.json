@@ -1,0 +1,42 @@
+{
+  "modules": {
+    "treasure": {
+      "config": {
+        "title": "寶箱設定",
+        "draw_line_to_bronze_chests": {
+          "label": "繪製指向青銅寶箱的連線",
+          "tooltip": "非戰鬥中時，從你的角色位置繪製一條線指向附近的青銅寶箱。"
+        },
+        "draw_line_to_silver_chests": {
+          "label": "繪製指向白銀寶箱的連線",
+          "tooltip": "非戰鬥中時，從你的角色位置繪製一條線指向附近的白銀寶箱。"
+        },
+        "show_hunt_button": {
+          "label": "顯示尋寶按鈕"
+        },
+        "cast_treasure_sight_upon_return": {
+          "label": "返回後施放 Treasuresight",
+          "tooltip": "在 F.A.T.E./緊急遭遇戰後返回基地營時施放 Treasuresight，以更新現存寶箱數量"
+        },
+        "show_percentage_active_treasure_count": {
+          "label": "以百分比顯示現存寶箱",
+          "tooltip": "在總數旁邊以百分比顯示現存寶箱"
+        }
+      },
+      "panel": {
+        "title": "寶箱",
+        "none": "附近沒有寶箱。",
+        "hunt": {
+          "title": "尋寶搜尋器",
+          "distance_node": "與下一個寶箱的距離"
+        },
+        "active_bronze": {
+          "label": "現存青銅寶箱"
+        },
+        "active_silver": {
+          "label": "現存白銀寶箱"
+        }
+      }
+    }
+  }
+}

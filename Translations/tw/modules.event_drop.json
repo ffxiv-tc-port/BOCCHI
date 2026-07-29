@@ -1,0 +1,21 @@
+{
+  "modules": {
+    "event_drop": {
+      "config": {
+        "title": "活動掉落設定",
+        "show_demiatma_drops": {
+          "label": "顯示 Demiatma 掉落",
+          "tooltip": "在進行中的 F.A.T.E./緊急遭遇戰清單裡顯示 Demiatma 掉落。"
+        },
+        "show_note_drops": {
+          "label": "顯示 Note 掉落",
+          "tooltip": "在進行中的 F.A.T.E./緊急遭遇戰清單裡顯示 Note 掉落。"
+        },
+        "show_soul_shard_drops": {
+          "label": "顯示 Soul Shard 掉落",
+          "tooltip": "在進行中的緊急遭遇戰清單裡顯示 Soul Shard 掉落。"
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,7 @@
 using BOCCHI.Data;
 using Dalamud.Bindings.ImGui;
 using Ocelot.Ui;
+using Ocelot;
 
 namespace BOCCHI.Modules.ForkedTower;
 
@@ -13,13 +14,13 @@ public class Panel
             return;
         }
 
-        OcelotUi.Title("Forked Tower:");
+        OcelotUi.Title($"{I18N.T("modules.forked_tower.panel.title")}:");
         OcelotUi.Indent(() =>
         {
-            var state = OcelotUi.LabelledValue("Tower ID", module.TowerRun.Hash);
+            var state = OcelotUi.LabelledValue(I18N.T("modules.forked_tower.panel.tower_id.label"), module.TowerRun.Hash);
             if (state == UiState.Hovered)
             {
-                ImGui.SetTooltip("This is unique to you.");
+                ImGui.SetTooltip(I18N.T("modules.forked_tower.panel.tower_id.tooltip"));
             }
         });
     }

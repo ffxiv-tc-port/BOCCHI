@@ -8,6 +8,14 @@
     },
     "tooltip": {
       "illegal_mode_compatible": "This option is compatible with Illegal Mode, It will use it while it runs."
+    },
+    "commands": {
+      "language_set": "Language set to: {code}",
+      "language_usage": "Usage: /bocchi language <code>",
+      "not_near_shard": "You are not near a aethernet shards.",
+      "lifestream_busy": "Lifestream is busy",
+      "no_shard_found": "No aethernet shard found",
+      "already_at_shard": "You are already at the closest shard"
     }
   }
 }

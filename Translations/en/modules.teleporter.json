@@ -23,6 +23,12 @@
           "label": "Approach aetheryte after returning",
           "tooltip": "Walk to the aetheryte after returning to base camp.\n* Only works when returning via the plugin after a FATE or Critical Encounter."
         }
+      },
+      "tooltip": {
+        "pathfind_to": "Pathfind to {name}",
+        "must_be_near_aetheryte": "You must be near an aetheryte to teleport",
+        "already_at_aetheryte": "You're already at this aetheryte",
+        "teleport_to": "Teleport to {name}"
       }
     }
   }

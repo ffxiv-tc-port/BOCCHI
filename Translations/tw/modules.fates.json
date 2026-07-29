@@ -1,0 +1,50 @@
+{
+  "modules": {
+    "fates": {
+      "config": {
+        "title": "F.A.T.E. 設定",
+        "log_spawn": {
+          "label": "出現／消失時輸出聊天訊息",
+          "tooltip": "F.A.T.E. 出現或消失時輸出一則 echo 訊息"
+        },
+        "alert_all": {
+          "label": "所有 F.A.T.E. 都提醒",
+          "tooltip": "任何 F.A.T.E. 出現時播放提示音"
+        },
+        "alert_azurite": {
+          "label": "提醒掉落 Azurite Demiatma 的 F.A.T.E.",
+          "tooltip": "當掉落 Azurite Demiatma 的 F.A.T.E. 出現時播放提示音"
+        },
+        "alert_verdigris": {
+          "label": "提醒掉落 Verdigris Demiatma 的 F.A.T.E.",
+          "tooltip": "當掉落 Verdigris Demiatma 的 F.A.T.E. 出現時播放提示音"
+        },
+        "alert_malachite": {
+          "label": "提醒掉落 Malachite Demiatma 的 F.A.T.E.",
+          "tooltip": "當掉落 Malachite Demiatma 的 F.A.T.E. 出現時播放提示音"
+        },
+        "alert_realgar": {
+          "label": "提醒掉落 Realgar Demiatma 的 F.A.T.E.",
+          "tooltip": "當掉落 Realgar Demiatma 的 F.A.T.E. 出現時播放提示音"
+        },
+        "alert_caput_mortuum": {
+          "label": "提醒掉落 Caput Mortuum Demiatma 的 F.A.T.E.",
+          "tooltip": "當掉落 Caput Mortuum Demiatma 的 F.A.T.E. 出現時播放提示音"
+        },
+        "alert_orpiment": {
+          "label": "提醒掉落 Orpiment Demiatma 的 F.A.T.E.",
+          "tooltip": "當掉落 Orpiment Demiatma 的 F.A.T.E. 出現時播放提示音"
+        }
+      },
+      "panel": {
+        "title": "F.A.T.E.",
+        "none": "目前沒有進行中的 F.A.T.E.。",
+        "estimated": "預計"
+      },
+      "messages": {
+        "spawned": "{name} 已出現",
+        "despawned": "{name} 已消失"
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "modules": {
+    "forked_tower": {
+      "config": {
+        "title": "Forked Tower 設定",
+        "draw_potential_trap_positions": {
+          "label": "繪製可能的陷阱位置",
+          "tooltip": "啟用後會繪製範圍內可能出現陷阱的位置。"
+        },
+        "draw_simple_mode": {
+          "label": "簡易繪製模式",
+          "tooltip": "只以外框方式繪製陷阱"
+        },
+        "draw_outline_for_complex_mode": {
+          "label": "複雜繪製模式下也畫外框",
+          "tooltip": "使用複雜繪製器時一併畫出外框，這樣就能穿牆看到它們"
+        },
+        "trap_draw_range": {
+          "label": "陷阱繪製範圍",
+          "tooltip": "以玩家為中心、標示已知可能陷阱位置的半徑（單位：米）。"
+        },
+        "trap_draw_color": {
+          "label": "陷阱繪製顏色",
+          "tooltip": "用來顯示一般陷阱標記的顏色。"
+        },
+        "big_trap_draw_color": {
+          "label": "大型陷阱繪製顏色",
+          "tooltip": "用來顯示大型或更危險陷阱標記的顏色。"
+        },
+        "draw_small_trap_range": {
+          "label": "繪製小型陷阱的爆炸範圍",
+          "tooltip": "只會對已發現的陷阱繪製。範圍數值仍在確認中。"
+        },
+        "draw_big_trap_range": {
+          "label": "繪製大型陷阱的爆炸範圍",
+          "tooltip": "只會對已發現的陷阱繪製。範圍數值仍在確認中。"
+        },
+        "stop_rendering_complete_groups": {
+          "label": "停止繪製已探明的陷阱組",
+          "tooltip": "對已完全探明的陷阱組停止繪製其陷阱位置。此功能仍在開發中。"
+        }
+      },
+      "panel": {
+        "title": null,
+        "tower_id": {
+          "label": null,
+          "tooltip": "這組編號是你專屬的。"
+        }
+      }
+    }
+  }
+}

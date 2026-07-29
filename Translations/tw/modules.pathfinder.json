@@ -1,0 +1,26 @@
+{
+  "modules": {
+    "pathfinder": {
+      "config": {
+        "title": "尋路設定",
+        "text": "這些設定會影響尋寶與 Carrot 搜尋功能。\n注意：成本是與路徑總距離（單位：米）互相比較的。",
+        "return_cost": {
+          "label": "返回成本",
+          "tooltip": "施放「返回」並走近乙太之光所計入的成本。"
+        },
+        "teleport_cost": {
+          "label": "傳送成本",
+          "tooltip": "從一座乙太之光傳送到另一座所計入的成本。"
+        },
+        "detection_range": {
+          "label": "物件偵測範圍",
+          "tooltip": "要靠近採集點到多近，才能斷定它不存在。\n這會隨伺服器送出 GameObject 實體的時機而變動。\n數值越小越可靠，但搜尋會花更久。"
+        },
+        "max_level": {
+          "label": "區域等級上限",
+          "tooltip": "你願意在等級多高的魔物附近搜尋物件。"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "modules": {
+    "buff": {
+      "config": {
+        "title": "強化效果設定",
+        "apply_romeos_ballad": {
+          "label": "使用 Romeo's Ballad",
+          "tooltip": "使用 Phantom Bard 的強化效果 Romeo's Ballad"
+        },
+        "apply_enduring_fortitude": {
+          "label": "使用 Enduring Fortitude",
+          "tooltip": "使用 Phantom Knight 的強化效果 Enduring Fortitude"
+        },
+        "apply_fleetfooted": {
+          "label": "使用 Fleetfooted",
+          "tooltip": "使用 Phantom Monk 的強化效果 Fleetfooted"
+        },
+        "reapply_threshold": {
+          "label": "重新施放門檻",
+          "tooltip": "自動執行時，剩餘時間最短的強化效果低於幾分鐘就全部重新施放。"
+        }
+      },
+      "panel": {
+        "title": "強化效果",
+        "button": {
+          "tooltip": "依序切換到每個已啟用的 Phantom Job 並使用其強化技能，然後切回原本的 Phantom Job。"
+        }
+      }
+    }
+  }
+}

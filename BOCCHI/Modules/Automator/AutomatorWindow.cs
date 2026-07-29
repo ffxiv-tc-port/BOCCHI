@@ -42,7 +42,7 @@ public class AutomatorWindow(Plugin _plugin, Config _config) : OcelotWindow(_plu
         var automator = Plugin.Modules.GetModule<AutomatorModule>();
         if (!automator.IsEnabled)
         {
-            ImGui.TextUnformatted("Illegal Mode is not enabled.");
+            ImGui.TextUnformatted(I18N.T("modules.automator.panel.not_enabled"));
             return;
         }
 
