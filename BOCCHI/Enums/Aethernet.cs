@@ -72,7 +72,8 @@ public static class AethernetExtensions
 {
     public static string ToFriendlyString(this Aethernet aethernet)
     {
-        return Svc.Data.GetExcelSheet<PlaceName>().FirstOrDefault(p => p.RowId == (uint)aethernet).Name.ToString();
+        // O(1) 查表；查不到時回傳空字串，而不是讓 default(PlaceName).Name 丟 NullReferenceException
+        return Svc.Data.GetExcelSheet<PlaceName>().GetRowOrDefault((uint)aethernet)?.Name.ToString() ?? string.Empty;
     }
 
     public static AethernetData GetData(this Aethernet aethernet)

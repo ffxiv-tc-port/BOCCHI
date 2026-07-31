@@ -43,11 +43,12 @@
             <Link>Data\%(RecursiveDir)%(Filename)%(Extension)</Link>
         </None>
     </ItemGroup>
-    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <!-- 上游原本只有 Debug 用子模組原始碼、Release 改抓 NuGet 的 FFXIVOcelot，
+         結果出貨的 Ocelot.dll 永遠是上游發佈的套件，子模組裡的任何修正都不會生效
+         （2026-07-31 用雜湊比對確認：輸出的 Ocelot.dll 與 NuGet 套件位元組完全相同）。
+         兩種組態統一改用子模組原始碼，我們的修正才會真的進到出貨檔。 -->
+    <ItemGroup>
         <ProjectReference Include="../Ocelot/Ocelot/Ocelot.csproj"/>
-    </ItemGroup>
-    <ItemGroup Condition="'$(Configuration)' == 'Release'">
-        <PackageReference Include="FFXIVOcelot" Version="1.1.1"/>
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="TextCopy" Version="6.2.1"/>

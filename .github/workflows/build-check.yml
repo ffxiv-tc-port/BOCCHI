@@ -38,6 +38,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+          # Ocelot 子模組指向私有的 org 鏡像，沒有這顆 token 會在 checkout 階段
+          # 以 404（不是 403）失敗，錯誤訊息看起來像網址打錯。
+          token: ${{ secrets.PRIVATE_SUBMODULE_TOKEN || github.token }}
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:

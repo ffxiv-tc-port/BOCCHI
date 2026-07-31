@@ -39,10 +39,14 @@ public class FatesPanel : Panel
         }
 
         Dictionary<uint, uint> locations = [];
+        var fateSheet = Svc.Data.GetExcelSheet<Fate>();
         foreach (var fate in EventData.Fates.Values)
         {
-            var fateRow = Svc.Data.GetExcelSheet<Fate>().FirstOrDefault(f => f.RowId == fate.Id);
-            locations[fate.Id] = fateRow.Location;
+            // O(1) 查表，且查不到時跳過而不是對 default(Fate) 取 Location 丟 NullReferenceException
+            if (fateSheet.TryGetRow(fate.Id, out var fateRow))
+            {
+                locations[fate.Id] = fateRow.Location;
+            }
         }
 
 

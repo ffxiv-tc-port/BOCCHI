@@ -48,7 +48,8 @@ public class Treasure(IGameObject obj)
 
     private XIVTreasure? GetData()
     {
-        return Svc.Data.GetExcelSheet<XIVTreasure>().ToList().FirstOrDefault(t => t.RowId == obj.DataId);
+        // 原本 ToList() 會把整張 Treasure 表複製出來再線性掃描；GetRowOrDefault 是 O(1) 且不配置記憶體
+        return Svc.Data.GetExcelSheet<XIVTreasure>().GetRowOrDefault(obj.DataId);
     }
 
     public bool IsValid()

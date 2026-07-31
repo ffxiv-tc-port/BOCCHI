@@ -23,7 +23,8 @@ public class StatusPanel : Panel
         {
             foreach (var s in Svc.ClientState.LocalPlayer!.StatusList)
             {
-                ImGui.TextUnformatted($"{data.Where(r => r.RowId == s.StatusId).First().Name} ({s.StatusId})");
+                var name = data.GetRowOrDefault(s.StatusId)?.Name.ToString() ?? "?";
+                ImGui.TextUnformatted($"{name} ({s.StatusId})");
             }
         });
     }
