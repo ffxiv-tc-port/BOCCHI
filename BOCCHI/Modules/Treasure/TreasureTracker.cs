@@ -34,9 +34,14 @@ public class TreasureTracker : IDisposable
 
     public void Tick(Plugin plugin)
     {
+        // 用 GameObjectId 當鍵,不要用 DataId:
+        // (1) 同型寶箱共用 DataId,ToDictionary 遇到重複鍵會丟 ArgumentException,
+        //     而這裡每幀都跑 → 整個 Treasure 模組會靜默失效。
+        // (2) 用 DataId 當鍵時,已消失寶箱的陳舊項目會被「同型的另一個寶箱」保住,
+        //     接著 CheckOpened() 就去解參考已釋放的位址。
         var treasures = Svc.Objects
             .Where(o => o is { ObjectKind: ObjectKind.Treasure })
-            .ToDictionary(o => o.DataId, o => o);
+            .ToDictionary(o => o.GameObjectId, o => o);
 
         var knownIds = Treasures.Select(t => t.Id).ToHashSet();
 
