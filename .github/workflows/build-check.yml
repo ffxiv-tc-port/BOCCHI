@@ -2,37 +2,15 @@ name: Build Check
 
 on:
   push:
+    branches:
+      - 'tc-7.20'
     tags-ignore:
       - 'v*'
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
-  gate:
-    runs-on: ubuntu-latest
-    outputs:
-      proceed: ${{ steps.check.outputs.proceed }}
-    steps:
-      - uses: actions/checkout@v4
-      # Fleet-wide gate: the build job only runs when VersionPrefix differs from the
-      # 7.15.0 baseline. Older repos are still on 7.15.0, so their build-check is a
-      # no-op ("green" means skipped, not compiled). This repo is on 7.20.0 on
-      # purpose, so the gate passes and the build really does compile.
-      - name: Check if VersionPrefix changed from baseline
-        id: check
-        shell: bash
-        run: |
-          PREFIX=$(grep -oP '(?<=<VersionPrefix>)[^<]+' BOCCHI/BOCCHI.csproj)
-          echo "Current VersionPrefix: $PREFIX (baseline: 7.15.0)"
-          if [ "$PREFIX" = "7.15.0" ]; then
-            echo "proceed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "proceed=true" >> "$GITHUB_OUTPUT"
-          fi
-
   build:
-    needs: gate
-    if: needs.gate.outputs.proceed == 'true'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
