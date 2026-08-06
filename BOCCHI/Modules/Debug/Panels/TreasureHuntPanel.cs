@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using BOCCHI.Data;
 using BOCCHI.Enums;
-using BOCCHI.Modules.Data;
 using BOCCHI.Pathfinding;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.LayoutEngine;

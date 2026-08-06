@@ -4,7 +4,6 @@ using BOCCHI.Modules.Buff;
 using BOCCHI.Modules.Carrots;
 using BOCCHI.Modules.CriticalEncounters;
 using BOCCHI.Modules.Currency;
-using BOCCHI.Modules.Data;
 using BOCCHI.Modules.EventDrop;
 using BOCCHI.Modules.Exp;
 using BOCCHI.Modules.Fates;
@@ -62,9 +61,6 @@ public class Config : IOcelotConfig
     public MobFarmerConfig MobFarmerConfig { get; set; } = new();
 
     public AutomatorConfig AutomatorConfig { get; set; } = new();
-
-    public DataConfig DataConfig { get; set; } = new();
-
 
     public void Save()
     {

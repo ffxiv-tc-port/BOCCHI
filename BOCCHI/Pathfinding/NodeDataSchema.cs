@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using BOCCHI.Enums;
-using BOCCHI.Modules.Data;
 
 namespace BOCCHI.Pathfinding;
 

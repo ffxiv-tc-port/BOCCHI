@@ -2,7 +2,6 @@
 using System.Linq;
 using BOCCHI.Data.Traps;
 using BOCCHI.Enums;
-using BOCCHI.Modules.Data;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface.Colors;
 using ECommons.DalamudServices;

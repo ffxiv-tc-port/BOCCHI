@@ -10,7 +10,6 @@ using BOCCHI.ActionHelpers;
 using BOCCHI.Data;
 using BOCCHI.Enums;
 using BOCCHI.ItemHelpers;
-using BOCCHI.Modules.Data;
 using BOCCHI.Pathfinding;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using ECommons.DalamudServices;
