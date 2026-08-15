@@ -70,7 +70,12 @@ public class FateActivity(EventData data, Lifestream lifestream, VNavmesh vnav, 
 
     protected override float GetRadius()
     {
-        return module.GetModule<FatesModule>().fates[data.Id].Radius;
+        // ⚠️ 原本是 module.GetModule<FatesModule>().fates[data.Id].Radius —— 字典索引子,
+        // FATE 一結束 FateTracker 就會把它移出 Fates,而這個 Activity 會活得比它久
+        // (IsValid() 的存在本身就說明有那個時間窗),那時索引子會擲 KeyNotFoundException。
+        // 建構時傳進來的 fate 就是同一個物件(Automator 是用 new FateActivity(fate.Data, ..., fate)
+        // 建的,data.Id 與 fate 指的是同一個 FATE),所以這行與原本等值,只是不會擲例外。
+        return fate.Radius;
     }
 
     public override bool IsValid()
