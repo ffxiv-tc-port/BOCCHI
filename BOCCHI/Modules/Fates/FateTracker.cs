@@ -41,12 +41,21 @@ public class FateTracker
                 continue;
             }
 
-            var fate = new Fate(data);
-            if (!Fates.ContainsKey(id))
+            // 🔴 已經在追蹤的 FATE 一律沿用同一個 Fate 物件,只更新它的快照值。
+            // 原本這裡每幀都 `new Fate(data)` 再覆蓋回字典,而進度樣本序列(Fate.Progress)是
+            // 那個物件的欄位 —— 於是每幀開局都是空序列,`Fate.Update` 補進一筆之後又被下一幀
+            // 的新物件丟掉,樣本數永遠停在 1。`EventProgress.EstimateTimeToCompletion` 在
+            // `samples.Count < 2` 時回 null,所以 Panel 的「預計完成時間」從來沒有顯示過。
+            // 物件跨幀重用之後樣本才累積得起來。
+            // (Refresh 只在本幀使用剛取得的 IFate,不保存指標 —— 見 Fate 類別的註解。)
+            if (Fates.TryGetValue(id, out var fate))
             {
-                OnFateSpawned?.Invoke(fate);
+                fate.Refresh(data);
+                continue;
             }
 
+            fate = new Fate(data);
+            OnFateSpawned?.Invoke(fate);
             Fates[id] = fate;
         }
 

@@ -28,6 +28,10 @@ namespace BOCCHI.Modules.Fates;
 ///     FATE 已經不在表上了,而 Alerter.OnFateDespawned 會去讀它的 Name。
 ///   - FateActivity 會活得比 FateTracker.Fates 裡的條目久(見該檔 GetRadius 的註解),
 ///     並在那之後讀 Radius / StartPosition / Name。
+///
+/// 📌 這個物件的生命週期是「一個 FATE 從出現到消失」,不是「一幀」。FateTracker 只在
+/// 第一次看到某個 FATE id 時建它,之後每幀改呼叫 <see cref="Refresh" /> 更新快照值。
+/// 這是 <see cref="Progress" /> 能累積出兩筆以上樣本(也就是 ETA 算得出來)的前提。
 /// </summary>
 public class Fate
 {
@@ -36,14 +40,19 @@ public class Fate
     /// <summary>FATE id。建構時複製成受管值,之後不再解參考,永遠有效。</summary>
     public readonly uint Id;
 
+    /// <summary>
+    /// 進度樣本序列。跨幀累積 —— 物件本身活過整個 FATE,所以這裡會累積到兩筆以上,
+    /// <see cref="EventProgress.EstimateTimeToCompletion" /> 才算得出 ETA。
+    /// </summary>
     public readonly EventProgress Progress = new();
 
-    // 以下三個都是「FATE 一生不變」的值,建構當下就從原生記憶體複製出來,之後只讀副本。
-    private readonly string capturedName;
+    // 以下三個都是「FATE 一生不變」的值,在拿得到有效 IFate 的那一幀複製成受管值,之後只讀副本。
+    // 初值只是為了滿足編譯器的明確賦值分析(它看不進 Refresh);建構式一定會立刻蓋掉它。
+    private string capturedName = string.Empty;
 
-    private readonly float capturedRadius;
+    private float capturedRadius;
 
-    private readonly Vector3 capturedStartPosition;
+    private Vector3 capturedStartPosition;
 
     // 唯一會變的欄位:最後一次成功從 FATE 表讀到的進度。
     private byte lastKnownProgress;
@@ -53,6 +62,22 @@ public class Fate
         Id = fate.FateId;
         Data = EventData.Fates[Id];
 
+        Refresh(fate);
+    }
+
+    /// <summary>
+    /// 用「這一幀剛從 Svc.Fates 拿到的」IFate 重新複製一次快照值。
+    ///
+    /// 🔴 與建構式同一條規則:只在呼叫的當下使用 <paramref name="fate" />,不保存它,
+    /// 呼叫結束後這個物件身上沒有任何原生指標。呼叫端必須保證傳進來的是本幀剛取得的。
+    ///
+    /// 為什麼還要 Refresh 而不是只在建構時複製一次:原本 FateTracker 每幀都重建 Fate 物件,
+    /// 等於每幀都重新複製一次這些值。改成物件跨幀重用之後,若只在建構時複製,
+    /// 第一幀讀到還沒填好的值(例如名稱是空字串)就會被永遠固定住 —— 那是回退既有行為。
+    /// 每幀 Refresh 保留原本的自我修復,同時讓 Progress 得以累積。
+    /// </summary>
+    public void Refresh(IFate fate)
+    {
         capturedName = fate.Name.ToString();
         capturedRadius = fate.Radius;
         capturedStartPosition = fate.Position;
