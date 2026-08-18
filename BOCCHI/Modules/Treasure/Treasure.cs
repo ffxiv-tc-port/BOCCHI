@@ -21,7 +21,7 @@ public class Treasure(IGameObject obj)
     private readonly ulong gameObjectId = obj.GameObjectId;
 
     // DataId 只是純量,建構時複製一份即可,不需要每次解參考。
-    private readonly uint dataId = obj.DataId;
+    private readonly uint dataId = obj.BaseId;
 
     private Vector3 lastKnownPosition = obj.Position;
 

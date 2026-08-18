@@ -97,7 +97,7 @@ public sealed class Plugin : OcelotPlugin
                    Svc.Condition[ConditionFlag.OccupiedInEvent] ||
                    Svc.Condition[ConditionFlag.WatchingCutscene] ||
                    Svc.Condition[ConditionFlag.WatchingCutscene78] ||
-                   Svc.ClientState.LocalPlayer?.IsTargetable != true
+                   Svc.Objects.LocalPlayer?.IsTargetable != true
                );
     }
 }

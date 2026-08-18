@@ -21,7 +21,7 @@ public class StatusPanel : Panel
         OcelotUi.Title("Statuses:");
         OcelotUi.Indent(() =>
         {
-            foreach (var s in Svc.ClientState.LocalPlayer!.StatusList)
+            foreach (var s in Svc.Objects.LocalPlayer!.StatusList)
             {
                 var name = data.GetRowOrDefault(s.StatusId)?.Name.ToString() ?? "?";
                 ImGui.TextUnformatted($"{name} ({s.StatusId})");
