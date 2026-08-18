@@ -83,7 +83,12 @@ public abstract class Hunter
         return config.DetectionRange;
     }
 
-    protected abstract IPathfinder CreatePathfinder();
+    /// <summary>
+    /// 建立這一輪的路徑搜尋器。
+    /// 🔴 可以回 null:原生資料(例如 LayoutWorld 的 ActiveLayout)還沒就緒時,實作要
+    /// fail-closed 放棄而不是硬解參考 null。Update() 在 pathfinder 仍為 null 時會下一拍重試。
+    /// </summary>
+    protected abstract IPathfinder? CreatePathfinder();
 
     protected abstract Func<Chain> GetInteractionChain(IGameObject obj);
 

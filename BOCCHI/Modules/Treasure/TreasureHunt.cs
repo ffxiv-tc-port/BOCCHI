@@ -39,18 +39,33 @@ public class TreasureHunt(TreasureModule module) : Hunter(module)
         return Treasure.First(t => t.Id == CurrentStep.NodeId).Position;
     }
 
-    protected override unsafe IPathfinder CreatePathfinder()
+    protected override unsafe IPathfinder? CreatePathfinder()
     {
         Treasure.Clear();
-        var layout = LayoutWorld.Instance()->ActiveLayout;
+
+        // 🔴 LayoutWorld 是 [StaticAddress(..., isPointer: true)],Instance() 回傳的是靜態槽
+        //    「裡面的值」,可以合法為 null(區域切換、讀取畫面期間)。直接 -> 解參考產生的
+        //    AccessViolationException 在 .NET Core 是 corrupted-state exception,try/catch 攔不到。
+        var layoutWorld = LayoutWorld.Instance();
+        if (layoutWorld == null)
+        {
+            Svc.Log.Warning("No layout world");
+            return null;
+        }
+
+        var layout = layoutWorld->ActiveLayout;
+        // 🔴 原本這裡(以及下面的 TryGetValue)只記了 warning 就往下走,等於檢查完照樣對 null
+        //    解參考——半套邊界檢查。fail-closed:直接放棄這次建路,Hunter.Update() 下一拍會重試。
         if (layout == null)
         {
             Svc.Log.Warning("No active layout");
+            return null;
         }
 
         if (!layout->InstancesByType.TryGetValue(InstanceType.Treasure, out var mapPtr, false))
         {
             Svc.Log.Warning("No active treasure map");
+            return null;
         }
 
         foreach (ILayoutInstance* instance in mapPtr.Value->Values)
