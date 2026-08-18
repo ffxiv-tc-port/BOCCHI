@@ -23,11 +23,6 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0"
         }
       },
-      "ECommons": {
-        "type": "Transitive",
-        "resolved": "3.0.0.17-api13",
-        "contentHash": "r7MblEmo2zOksX2qiapL7eFhGYnXZOvu4QOb6zd8LHApjde3c+iF/JVowqUWxaAz4yS+M/bvrppsfJNIdRLm2A=="
-      },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "Transitive",
         "resolved": "7.0.0",
@@ -997,10 +992,13 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
+      "ecommons": {
+        "type": "Project"
+      },
       "FFXIVOcelot": {
         "type": "Project",
         "dependencies": {
-          "Ecommons": "[3.0.0.17-api13, )",
+          "ECommons": "[3.0.1.15, )",
           "Pictomancy": "[0.0.1, )"
         }
       }
