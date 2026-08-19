@@ -96,7 +96,7 @@ public class TreasureTracker : IDisposable
         }
 
         var addon = (AtkUnitBase*)args.Addon.Address;
-        if (!addon->IsVisible)
+        if (addon == null || !addon->IsVisible)
         {
             return;
         }
@@ -110,7 +110,23 @@ public class TreasureTracker : IDisposable
         LastParseWideText = DateTime.Now;
 
         var pattern = LogMessageHelper.GetLogMessagePattern(10965);
-        var text = addon->GetNodeById(3)->GetAsAtkTextNode()->NodeText.ToString();
+
+        // 🔴 兩層都可為 null：GetNodeById 找不到 id 3 的節點時回 null，
+        // 找到的節點不是文字節點時 GetAsAtkTextNode() 也回 null。
+        // 任一層沒過就跳過本次解析(PostDraw 事件路徑，不寫 log)。
+        var node = addon->GetNodeById(3);
+        if (node == null)
+        {
+            return;
+        }
+
+        var textNode = node->GetAsAtkTextNode();
+        if (textNode == null)
+        {
+            return;
+        }
+
+        var text = textNode->NodeText.ToString();
         var match = Regex.Match(text, pattern);
 
         if (!match.Success)
