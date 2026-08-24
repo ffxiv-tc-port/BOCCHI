@@ -169,6 +169,9 @@
       "messages": {
         "on": "[BOCCHI] 非法模式已開啟",
         "off": "[BOCCHI] 非法模式已關閉"
+      },
+      "buttons": {
+        "toggle_illegal_mode": "切換非法模式"
       }
     }
   }

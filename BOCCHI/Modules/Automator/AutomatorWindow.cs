@@ -27,7 +27,7 @@ public class AutomatorWindow(Plugin _plugin, Config _config) : OcelotWindow(_plu
             },
             Icon = FontAwesomeIcon.Skull,
             IconOffset = new Vector2(2, 2),
-            ShowTooltip = () => ImGui.SetTooltip("Toggle Illegal Mode"),
+            ShowTooltip = () => ImGui.SetTooltip(I18N.T("modules.automator.buttons.toggle_illegal_mode")),
         });
     }
 

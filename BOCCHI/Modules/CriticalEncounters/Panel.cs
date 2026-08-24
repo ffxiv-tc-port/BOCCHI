@@ -148,13 +148,13 @@ public class Panel
             OcelotUi.LabelledValue(I18N.T("modules.critical_encounters.panel.tower.players_on_platform"), TowerHelper.GetPlayersInTowerZone(TowerHelper.TowerType.Blood));
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("This includes your character");
+                ImGui.SetTooltip(I18N.T("modules.critical_encounters.panel.tower.includes_you"));
             }
 
             OcelotUi.LabelledValue(I18N.T("modules.critical_encounters.panel.tower.players_near_platform"), TowerHelper.GetPlayersNearTowerZone(TowerHelper.TowerType.Blood));
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("This includes your character");
+                ImGui.SetTooltip(I18N.T("modules.critical_encounters.panel.tower.includes_you"));
             }
         });
     }
