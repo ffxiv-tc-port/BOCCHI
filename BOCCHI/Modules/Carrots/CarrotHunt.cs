@@ -27,7 +27,7 @@ public class CarrotHunt(CarrotsModule module) : Hunter(module)
             .Where(o => o is
             {
                 ObjectKind: ObjectKind.EventObj,
-                DataId: (uint)OccultObjectType.Carrot,
+                BaseId: (uint)OccultObjectType.Carrot,
                 IsDead: false,
             } && o.IsValid());
     }
@@ -64,7 +64,7 @@ public class CarrotHunt(CarrotsModule module) : Hunter(module)
 
                 var gameObject = (GameObject*)(void*)chest.Address;
                 TargetSystem.Instance()->InteractWithObject(gameObject);
-                return Svc.ClientState.LocalPlayer?.IsCasting == true;
+                return Svc.Objects.LocalPlayer?.IsCasting == true;
             })
             .WaitToCast();
     }
@@ -92,6 +92,6 @@ public class CarrotHunt(CarrotsModule module) : Hunter(module)
 
     private IEnumerable<IEventObj> GetBunnyChests()
     {
-        return Svc.Objects.OfType<IEventObj>().Where(o => o.DataId == (uint)OccultObjectType.BunnyChest);
+        return Svc.Objects.OfType<IEventObj>().Where(o => o.BaseId == (uint)OccultObjectType.BunnyChest);
     }
 }

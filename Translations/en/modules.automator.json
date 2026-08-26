@@ -163,7 +163,8 @@
         },
         "lens": {
           "title": "BOCCHI Illegal Lens"
-        }
+        },
+        "not_enabled": "Illegal Mode is not enabled."
       },
       "messages": {
         "on": "[BOCCHI] Illegal Mode On",

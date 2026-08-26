@@ -1,0 +1,178 @@
+{
+  "modules": {
+    "automator": {
+      "config": {
+        "title": "非法模式",
+        "enabled": {
+          "tooltip": "非法模式是機器人；除了本區塊以外的設定都不會影響它的行為。"
+        },
+        "ai_provider": {
+          "label": "AI 提供者",
+          "tooltip": "你所使用的場地機制 AI 插件"
+        },
+        "toggle_ai_provider": {
+          "label": "自動開關 AI 提供者",
+          "tooltip": "開始 F.A.T.E./緊急遭遇戰時自動開啟 AI 提供者\n前往 F.A.T.E./緊急遭遇戰途中自動關閉 AI 提供者"
+        },
+        "force_target": {
+          "label": "強制保持目標",
+          "tooltip": "確保你在 F.A.T.E. 與緊急遭遇戰中始終保持選取目標。"
+        },
+        "force_target_central_enemy": {
+          "label": "優先選取最中央的敵人",
+          "tooltip": "盡量選取敵群正中央的敵人。"
+        },
+        "engagement_range": {
+          "label": "接戰距離",
+          "tooltip": "與 F.A.T.E. 魔物相距多遠時下坐騎，並把控制權交給你的循環／AI 插件"
+        },
+        "do_critical_encounters": {
+          "label": "參加緊急遭遇戰",
+          "tooltip": "選擇活動時是否將緊急遭遇戰納入考量"
+        },
+        "delay_critical_encounters": {
+          "label": "前往緊急遭遇戰前先延遲",
+          "tooltip": "前往緊急遭遇戰之前，先等待 10～15 秒"
+        },
+        "do_scourge_of_the_mind": {
+          "label": "緊急遭遇戰：Scourge of the Mind",
+          "tooltip": "切換是否參加「Scourge of the Mind」緊急遭遇戰。"
+        },
+        "do_the_black_regiment": {
+          "label": "緊急遭遇戰：The Black Regiment",
+          "tooltip": "切換是否參加「The Black Regiment」緊急遭遇戰。"
+        },
+        "do_the_unbridled": {
+          "label": "緊急遭遇戰：The Unbridled",
+          "tooltip": "切換是否參加「The Unbridled」緊急遭遇戰。"
+        },
+        "do_crawling_death": {
+          "label": "緊急遭遇戰：Crawling Death",
+          "tooltip": "切換是否參加「Crawling Death」緊急遭遇戰。"
+        },
+        "do_calamity_bound": {
+          "label": "緊急遭遇戰：Calamity Bound",
+          "tooltip": "切換是否參加「Calamity Bound」緊急遭遇戰。"
+        },
+        "do_trial_by_claw": {
+          "label": "緊急遭遇戰：Trial by Claw",
+          "tooltip": "切換是否參加「Trial by Claw」緊急遭遇戰。"
+        },
+        "do_from_times_bygone": {
+          "label": "緊急遭遇戰：From Times Bygone",
+          "tooltip": "切換是否參加「From Times Bygone」緊急遭遇戰。"
+        },
+        "do_company_of_stone": {
+          "label": "緊急遭遇戰：Company of Stone",
+          "tooltip": "切換是否參加「Company of Stone」緊急遭遇戰。"
+        },
+        "do_shark_attack": {
+          "label": "緊急遭遇戰：Shark Attack",
+          "tooltip": "切換是否參加「Shark Attack」緊急遭遇戰。"
+        },
+        "do_on_the_hunt": {
+          "label": "緊急遭遇戰：On the Hunt",
+          "tooltip": "切換是否參加「On the Hunt」緊急遭遇戰。"
+        },
+        "do_with_extreme_prejudice": {
+          "label": "緊急遭遇戰：With Extreme Prejudice",
+          "tooltip": "切換是否參加「With Extreme Prejudice」緊急遭遇戰。"
+        },
+        "do_noise_complaint": {
+          "label": "緊急遭遇戰：Noise Complaint",
+          "tooltip": "切換是否參加「Noise Complaint」緊急遭遇戰。"
+        },
+        "do_cursed_concern": {
+          "label": "緊急遭遇戰：Cursed Concern",
+          "tooltip": "切換是否參加「Cursed Concern」緊急遭遇戰。"
+        },
+        "do_eternal_watch": {
+          "label": "緊急遭遇戰：Eternal Watch",
+          "tooltip": "切換是否參加「Eternal Watch」緊急遭遇戰。"
+        },
+        "do_flame_of_dusk": {
+          "label": "緊急遭遇戰：Flame of Dusk",
+          "tooltip": "切換是否參加「Flame of Dusk」緊急遭遇戰。"
+        },
+        "do_fates": {
+          "label": "參加 F.A.T.E.",
+          "tooltip": "選擇活動時是否將 F.A.T.E. 納入考量"
+        },
+        "do_rough_waters": {
+          "label": "F.A.T.E.：Rough Waters",
+          "tooltip": "切換是否參加「Rough Waters」F.A.T.E.。"
+        },
+        "do_the_golden_guardian": {
+          "label": "F.A.T.E.：The Golden Guardian",
+          "tooltip": "切換是否參加「The Golden Guardian」F.A.T.E.。"
+        },
+        "do_king_of_the_crescent": {
+          "label": "F.A.T.E.：King of the Crescent",
+          "tooltip": "切換是否參加「King of the Crescent」F.A.T.E.。"
+        },
+        "do_the_winged_terror": {
+          "label": "F.A.T.E.：The Winged Terror",
+          "tooltip": "切換是否參加「The Winged Terror」F.A.T.E.。"
+        },
+        "do_an_unending_duty": {
+          "label": "F.A.T.E.：An Unending Duty",
+          "tooltip": "切換是否參加「An Unending Duty」F.A.T.E.。"
+        },
+        "do_brain_drain": {
+          "label": "F.A.T.E.：Brain Drain",
+          "tooltip": "切換是否參加「Brain Drain」F.A.T.E.。"
+        },
+        "do_a_delicate_balance": {
+          "label": "F.A.T.E.：A Delicate Balance",
+          "tooltip": "切換是否參加「A Delicate Balance」F.A.T.E.。"
+        },
+        "do_sworn_to_soil": {
+          "label": "F.A.T.E.：Sworn to Soil",
+          "tooltip": "切換是否參加「Sworn to Soil」F.A.T.E.。"
+        },
+        "do_a_prying_eye": {
+          "label": "F.A.T.E.：A Prying Eye",
+          "tooltip": "切換是否參加「A Prying Eye」F.A.T.E.。"
+        },
+        "do_fatal_allure": {
+          "label": "F.A.T.E.：Fatal Allure",
+          "tooltip": "切換是否參加「Fatal Allure」F.A.T.E.。"
+        },
+        "do_serving_darkness": {
+          "label": "F.A.T.E.：Serving Darkness",
+          "tooltip": "切換是否參加「Serving Darkness」F.A.T.E.。"
+        },
+        "do_persistent_pots": {
+          "label": "F.A.T.E.：Persistent Pots",
+          "tooltip": "切換是否參加「Persistent Pots」F.A.T.E.。"
+        },
+        "do_pleading_pots": {
+          "label": "F.A.T.E.：Pleading Pots",
+          "tooltip": "切換是否參加「Pleading Pots」F.A.T.E.。"
+        }
+      },
+      "panel": {
+        "title": "非法模式",
+        "activity": {
+          "label": "目前活動",
+          "none": "無"
+        },
+        "activity_state": {
+          "label": "活動狀態",
+          "none": "等待活動中"
+        },
+        "lens": {
+          "title": "BOCCHI 非法模式檢視器"
+        },
+        "not_enabled": "非法模式尚未啟用。"
+      },
+      "messages": {
+        "on": "[BOCCHI] 非法模式已開啟",
+        "off": "[BOCCHI] 非法模式已關閉"
+      },
+      "buttons": {
+        "toggle_illegal_mode": "切換非法模式"
+      }
+    }
+  }
+}

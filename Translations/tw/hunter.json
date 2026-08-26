@@ -1,0 +1,11 @@
+{
+  "hunter": {
+    "distance_shard": "與城內乙太之晶的距離",
+    "elapsed": "經過時間",
+    "progress": "進度",
+    "export": {
+      "label": "將路徑匯出為 JSON",
+      "tooltip": "將目前／上一次的路徑以 JSON 格式匯出到剪貼簿。"
+    }
+  }
+}

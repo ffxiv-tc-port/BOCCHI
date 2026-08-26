@@ -1,0 +1,18 @@
+{
+  "modules": {
+    "currency": {
+      "config": {
+        "title": "貨幣設定"
+      },
+      "panel": {
+        "title": "貨幣",
+        "silver": {
+          "label": "每小時 Silver"
+        },
+        "gold": {
+          "label": "每小時 Gold"
+        }
+      }
+    }
+  }
+}

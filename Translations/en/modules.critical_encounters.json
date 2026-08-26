@@ -57,7 +57,21 @@
         "none": "No active critical encounters.",
         "register": "Preparing",
         "warmup": "Starting",
-        "estimated": "Est."
+        "estimated": "Est.",
+        "tower": {
+          "wip": "This feature is a work in progress.",
+          "spawn_estimate": "Forked Tower Spawn Estimate",
+          "register": "Forked Tower Register",
+          "critical_encounters_completed": "Critical Encounters completed",
+          "fates_completed": "Fates completed",
+          "players_on_platform": "Players on Platform",
+          "players_near_platform": "Players near Platform",
+          "includes_you": "This includes your character"
+        }
+      },
+      "messages": {
+        "spawned": "{name} has Spawned",
+        "despawned": "{name} has Despawned"
       }
     }
   }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BOCCHI.Enums;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using Ocelot;
 
 namespace BOCCHI.Modules.Fates;
 
@@ -35,7 +36,7 @@ public class Alerter : IDisposable
     {
         if (module.Config.LogSpawn)
         {
-            Svc.Chat.Print($"{fate.Name} has Spawned");
+            Svc.Chat.Print(I18N.T("modules.fates.messages.spawned", new Dictionary<string, string> { ["name"] = fate.Name }));
         }
 
         if (!ShouldAlertForFate(fate))
@@ -50,7 +51,7 @@ public class Alerter : IDisposable
     {
         if (module.Config.LogSpawn)
         {
-            Svc.Chat.Print($"{fate.Name} has Despawned");
+            Svc.Chat.Print(I18N.T("modules.fates.messages.despawned", new Dictionary<string, string> { ["name"] = fate.Name }));
         }
 
         if (!ShouldAlertForFate(fate))

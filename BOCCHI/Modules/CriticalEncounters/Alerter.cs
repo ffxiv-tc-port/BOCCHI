@@ -5,6 +5,7 @@ using BOCCHI.Enums;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using Ocelot;
 
 namespace BOCCHI.Modules.CriticalEncounters;
 
@@ -47,7 +48,7 @@ public class Alerter : IDisposable
     {
         if (module.Config.LogSpawn)
         {
-            Svc.Chat.Print($"{ev.Name} has Spawned");
+            Svc.Chat.Print(I18N.T("modules.critical_encounters.messages.spawned", new Dictionary<string, string> { ["name"] = ev.Name.ToString() }));
         }
 
         if (!ShouldAlertForCriticalEncounter(ev))
@@ -62,7 +63,7 @@ public class Alerter : IDisposable
     {
         if (module.Config.LogSpawn)
         {
-            Svc.Chat.Print($"{ev.Name} has Despawned");
+            Svc.Chat.Print(I18N.T("modules.critical_encounters.messages.despawned", new Dictionary<string, string> { ["name"] = ev.Name.ToString() }));
         }
 
         if (!ShouldAlertForCriticalEncounter(ev))

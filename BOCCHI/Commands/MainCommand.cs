@@ -75,7 +75,7 @@ Opens Occult Crescent Helper main ui
                 if (languageCodes.Contains(code))
                 {
                     I18N.SetLanguage(code);
-                    Svc.Chat.Print($"Language set to: {code}");
+                    Svc.Chat.Print(I18N.T("generic.commands.language_set", new Dictionary<string, string> { ["code"] = code }));
                     return;
                 }
 
@@ -83,7 +83,7 @@ Opens Occult Crescent Helper main ui
                 return;
             }
 
-            Svc.Chat.Print("Usage: /bocchi language <code>");
+            Svc.Chat.Print(I18N.T("generic.commands.language_usage"));
             return;
         }
 

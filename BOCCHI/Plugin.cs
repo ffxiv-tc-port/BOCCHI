@@ -48,6 +48,11 @@ public sealed class Plugin : OcelotPlugin
         I18N.LoadAllFromDirectory("en", "Translations/en");
         I18N.LoadAllFromDirectory("jp", "Translations/jp");
         I18N.LoadAllFromDirectory("fr", "Translations/fr");
+        // Traditional Chinese for the TC (台服) client. Loaded UNCONDITIONALLY -
+        // upstream keeps its Simplified "zh" behind #if DALAMUD_CN, which only the
+        // Release_CN configuration defines, so on our Release build that whole
+        // branch is compiled out and the client falls through to English.
+        I18N.LoadAllFromDirectory("tw", "Translations/tw");
 #if DALAMUD_CN
         I18N.LoadAllFromDirectory("zh", "Translations/zh");
 #endif
@@ -64,6 +69,12 @@ public sealed class Plugin : OcelotPlugin
 #if DALAMUD_CN
             ClientLanguage.ChineseSimplified => "zh",
 #endif
+            // 🔴 Numeric casts, never the enum NAMES. TC reports 7
+            // (TraditionalChinese) since Dalamud 13.0.0.16, but the pin CI builds
+            // against (13.0.0.6) does not have that name at all - spelling it out
+            // compiles locally and fails in CI. 5 is ChineseTraditional, which
+            // some builds report instead.
+            (ClientLanguage)5 or (ClientLanguage)7 => "tw",
             _ => "en",
         };
 
@@ -86,7 +97,7 @@ public sealed class Plugin : OcelotPlugin
                    Svc.Condition[ConditionFlag.OccupiedInEvent] ||
                    Svc.Condition[ConditionFlag.WatchingCutscene] ||
                    Svc.Condition[ConditionFlag.WatchingCutscene78] ||
-                   Svc.ClientState.LocalPlayer?.IsTargetable != true
+                   Svc.Objects.LocalPlayer?.IsTargetable != true
                );
     }
 }

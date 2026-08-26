@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using BOCCHI.Data;
 using BOCCHI.Enums;
-using BOCCHI.Modules.Data;
 using BOCCHI.Pathfinding;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.LayoutEngine;
@@ -42,7 +41,17 @@ public class TreasureHuntPanel : Panel
 
     public unsafe TreasureHuntPanel()
     {
-        var layout = LayoutWorld.Instance()->ActiveLayout;
+        // 🔴 LayoutWorld 是 [StaticAddress(..., isPointer: true)],Instance() 回傳的是靜態槽
+        //    「裡面的值」,可以合法為 null(區域切換、讀取畫面期間)。直接 -> 解參考產生的
+        //    AccessViolationException 在 .NET Core 是 corrupted-state exception,try/catch
+        //    攔不到。取不到就讓清單維持空的(fail-closed),不要對位址 0 解參考。
+        var layoutWorld = LayoutWorld.Instance();
+        if (layoutWorld == null)
+        {
+            return;
+        }
+
+        var layout = layoutWorld->ActiveLayout;
         if (layout == null)
         {
             return;

@@ -1,0 +1,41 @@
+{
+  "modules": {
+    "window_manager": {
+      "config": {
+        "title": "視窗管理設定",
+        "open_main_on_start_up": {
+          "label": "載入時開啟主介面",
+          "tooltip": "插件載入時開啟主介面。"
+        },
+        "open_main_on_enter": {
+          "label": "進入區域時開啟主介面",
+          "tooltip": "進入 Occult Crescent 區域時開啟主介面。"
+        },
+        "close_main_on_exit": {
+          "label": "離開區域時關閉主介面",
+          "tooltip": "離開 Occult Crescent 區域時關閉主介面。"
+        },
+        "hide_main_in_combat": {
+          "label": "戰鬥中關閉主介面",
+          "tooltip": "進入戰鬥時關閉主介面。"
+        },
+        "open_config_on_start_up": {
+          "label": "載入時開啟設定介面",
+          "tooltip": "插件載入時開啟設定介面。"
+        },
+        "open_config_on_enter": {
+          "label": "進入區域時開啟設定介面",
+          "tooltip": "進入 Occult Crescent 區域時開啟設定介面。"
+        },
+        "close_config_on_exit": {
+          "label": "離開區域時關閉設定介面",
+          "tooltip": "離開 Occult Crescent 區域時關閉設定介面。"
+        },
+        "hide_config_in_combat": {
+          "label": "戰鬥中關閉設定介面",
+          "tooltip": "進入戰鬥時關閉設定介面。"
+        }
+      }
+    }
+  }
+}

@@ -57,6 +57,23 @@ public class Wrath : IRotationPlugin
 
     void IDisposable.Dispose()
     {
-        wrath.ReleaseControl(lease);
+        // Plugin teardown order is not guaranteed, so WrathCombo may already be
+        // gone by the time we get here - ReleaseControl then throws
+        // IpcNotReadyError. Ocelot disposes its modules with List.ForEach, so
+        // letting that escape aborts disposal of every module queued after this
+        // one. Observed live on TC 2026-07-29, on every game exit:
+        //   [ERR] [LOCALPLUGIN] BOCCHI(...): 处置 instance 失败
+        //   IpcNotReadyError: IPC method WrathCombo.ReleaseControl was not registered yet
+        // Nothing useful can be done about a lease held by a plugin that no
+        // longer exists, so log it and keep unwinding.
+        try
+        {
+            wrath.ReleaseControl(lease);
+        }
+        catch (Exception ex)
+        {
+            Svc.Log.Warning("[Wrath] ReleaseControl failed during dispose "
+                            + $"(WrathCombo most likely already unloaded): {ex.Message}");
+        }
     }
 }

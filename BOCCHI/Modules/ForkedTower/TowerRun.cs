@@ -2,7 +2,6 @@
 using System.Linq;
 using BOCCHI.Data.Traps;
 using BOCCHI.Enums;
-using BOCCHI.Modules.Data;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface.Colors;
 using ECommons.DalamudServices;
@@ -65,12 +64,12 @@ public class TowerRun(string hash)
                 continue;
             }
 
-            if (config.ForkedTowerConfig.DrawSmallTrapRange && trap.DataId == (uint)OccultObjectType.Trap)
+            if (config.ForkedTowerConfig.DrawSmallTrapRange && trap.BaseId == (uint)OccultObjectType.Trap)
             {
                 context.DrawCircle(trap.Position, 7f, ImGuiColors.DPSRed);
             }
 
-            if (config.ForkedTowerConfig.DrawBigTrapRange && trap.DataId == (uint)OccultObjectType.BigTrap)
+            if (config.ForkedTowerConfig.DrawBigTrapRange && trap.BaseId == (uint)OccultObjectType.BigTrap)
             {
                 context.DrawCircle(trap.Position, 30f, ImGuiColors.DalamudOrange);
             }
@@ -79,6 +78,6 @@ public class TowerRun(string hash)
 
     private IEnumerable<IEventObj> GetNearbyTraps()
     {
-        return Svc.Objects.OfType<IEventObj>().Where(o => o.DataId is (uint)OccultObjectType.Trap or (uint)OccultObjectType.BigTrap);
+        return Svc.Objects.OfType<IEventObj>().Where(o => o.BaseId is (uint)OccultObjectType.Trap or (uint)OccultObjectType.BigTrap);
     }
 }

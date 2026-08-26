@@ -9,7 +9,7 @@ public class Panel
 {
     public void Draw(MobFarmerModule module)
     {
-        OcelotUi.Title("Mob Farmer:");
+        OcelotUi.Title($"{I18N.T("modules.mob_farmer.panel.title")}:");
         OcelotUi.Indent(() =>
         {
             if (ImGui.Button(module.Farmer.Running ? I18N.T("generic.label.stop") : I18N.T("generic.label.start")))
@@ -19,11 +19,11 @@ public class Panel
 
             if (module.Farmer.Running)
             {
-                OcelotUi.LabelledValue("Phase", module.Farmer.StateMachine.State);
+                OcelotUi.LabelledValue(I18N.T("modules.mob_farmer.panel.phase.label"), module.Farmer.StateMachine.State);
             }
 
-            OcelotUi.LabelledValue("Not Engaged", module.Scanner.NotInCombat.Count());
-            OcelotUi.LabelledValue("Engaged", module.Scanner.InCombat.Count());
+            OcelotUi.LabelledValue(I18N.T("modules.mob_farmer.panel.not_engaged.label"), module.Scanner.NotInCombat.Count());
+            OcelotUi.LabelledValue(I18N.T("modules.mob_farmer.panel.engaged.label"), module.Scanner.InCombat.Count());
         });
     }
 }

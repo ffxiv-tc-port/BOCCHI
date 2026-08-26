@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using BOCCHI.Enums;
 using BOCCHI.Modules.CriticalEncounters;
@@ -42,7 +43,30 @@ Utility command.
 
     public override unsafe void Execute(string command, string arguments)
     {
-        var map = AgentMap.Instance();
+        // 🔴 AgentMap.Instance() 由 [Agent(AgentId.Map)] 產生:內部鏈
+        //    AgentModule -> UIModule -> Framework,任一層回 null 整條就回 null(登入前、
+        //    切場景時是常態),而底層 [StaticAddress]/[MemberFunction] 特徵碼失配時改為擲
+        //    InvalidOperationException——兩種失效模式並存,只擋一種等於假防護。
+        //    裸解參考 null 原生指標是 AccessViolationException,在 .NET Core 屬
+        //    corrupted-state exception,try/catch 攔不到 ⇒ 只能事前判空。
+        //    這裡是聊天指令(低頻),所以判空後寫 Information 讓使用者回報得出來。
+        AgentMap* map;
+        try
+        {
+            map = AgentMap.Instance();
+        }
+        catch (Exception ex)
+        {
+            Svc.Log.Information($"[OCHCmd] 取得 AgentMap 失敗(特徵碼可能失配),本次指令略過:{ex.Message}");
+            return;
+        }
+
+        if (map == null)
+        {
+            Svc.Log.Information("[OCHCmd] AgentMap 尚未就緒(通常是還沒進入場景),本次指令略過。");
+            return;
+        }
+
         map->FlagMarkerCount = 0;
 
         switch (arguments)

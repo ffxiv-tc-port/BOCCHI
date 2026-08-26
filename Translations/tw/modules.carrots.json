@@ -1,0 +1,29 @@
+{
+  "modules": {
+    "carrots": {
+      "panel": {
+        "title": null,
+        "none": "附近沒有 Carrot。",
+        "label": null,
+        "hunt": {
+          "title": "Carrot 搜尋器",
+          "distance_node": "與下一個 Carrot 的距離"
+        }
+      },
+      "config": {
+        "title": "Carrot 設定",
+        "draw_line_to_carrots": {
+          "label": "繪製指向 Carrot 的連線",
+          "tooltip": "從你的角色位置繪製一條線指向附近的 Carrot。"
+        },
+        "show_hunt_button": {
+          "label": "顯示 Carrot 搜尋按鈕"
+        },
+        "repeat_carrot_hunt": {
+          "label": "重複",
+          "tooltip": "抵達最後一個採集點後重新開始搜尋"
+        }
+      }
+    }
+  }
+}

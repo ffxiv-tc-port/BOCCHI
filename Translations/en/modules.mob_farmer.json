@@ -51,6 +51,18 @@
           "label": "Minimum mobs to fight",
           "tooltip": "How many mobs to gather before stopping to fight them.\n Note if there are no more out of combat mobs around you, it will start combat regardless."
         }
+      },
+      "panel": {
+        "title": "Mob Farmer",
+        "phase": {
+          "label": "Phase"
+        },
+        "not_engaged": {
+          "label": "Not Engaged"
+        },
+        "engaged": {
+          "label": "Engaged"
+        }
       }
     }
   }

@@ -34,9 +34,14 @@ public class TreasureTracker : IDisposable
 
     public void Tick(Plugin plugin)
     {
+        // 用 GameObjectId 當鍵,不要用 DataId:
+        // (1) 同型寶箱共用 DataId,ToDictionary 遇到重複鍵會丟 ArgumentException,
+        //     而這裡每幀都跑 → 整個 Treasure 模組會靜默失效。
+        // (2) 用 DataId 當鍵時,已消失寶箱的陳舊項目會被「同型的另一個寶箱」保住,
+        //     接著 CheckOpened() 就去解參考已釋放的位址。
         var treasures = Svc.Objects
             .Where(o => o is { ObjectKind: ObjectKind.Treasure })
-            .ToDictionary(o => o.DataId, o => o);
+            .ToDictionary(o => o.GameObjectId, o => o);
 
         var knownIds = Treasures.Select(t => t.Id).ToHashSet();
 
@@ -91,7 +96,7 @@ public class TreasureTracker : IDisposable
         }
 
         var addon = (AtkUnitBase*)args.Addon.Address;
-        if (!addon->IsVisible)
+        if (addon == null || !addon->IsVisible)
         {
             return;
         }
@@ -105,7 +110,23 @@ public class TreasureTracker : IDisposable
         LastParseWideText = DateTime.Now;
 
         var pattern = LogMessageHelper.GetLogMessagePattern(10965);
-        var text = addon->GetNodeById(3)->GetAsAtkTextNode()->NodeText.ToString();
+
+        // 🔴 兩層都可為 null：GetNodeById 找不到 id 3 的節點時回 null，
+        // 找到的節點不是文字節點時 GetAsAtkTextNode() 也回 null。
+        // 任一層沒過就跳過本次解析(PostDraw 事件路徑，不寫 log)。
+        var node = addon->GetNodeById(3);
+        if (node == null)
+        {
+            return;
+        }
+
+        var textNode = node->GetAsAtkTextNode();
+        if (textNode == null)
+        {
+            return;
+        }
+
+        var text = textNode->NodeText.ToString();
         var match = Regex.Match(text, pattern);
 
         if (!match.Success)

@@ -10,7 +10,6 @@ using BOCCHI.ActionHelpers;
 using BOCCHI.Data;
 using BOCCHI.Enums;
 using BOCCHI.ItemHelpers;
-using BOCCHI.Modules.Data;
 using BOCCHI.Pathfinding;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using ECommons.DalamudServices;
@@ -106,7 +105,7 @@ public class CarrotHuntPanel : Panel
             var obj = Svc.Objects.OfType<IEventObj>();
             foreach (var o in obj)
             {
-                ImGui.TextUnformatted(o.Name + " " + o.ObjectKind + " " + o.DataId);
+                ImGui.TextUnformatted(o.Name + " " + o.ObjectKind + " " + o.BaseId);
             }
 
             if (!HasRun)
@@ -247,6 +246,6 @@ public class CarrotHuntPanel : Panel
 
     private IEnumerable<IEventObj> GetBunnyChests()
     {
-        return Svc.Objects.OfType<IEventObj>().Where(o => o.DataId == (uint)OccultObjectType.BunnyChest);
+        return Svc.Objects.OfType<IEventObj>().Where(o => o.BaseId == (uint)OccultObjectType.BunnyChest);
     }
 }

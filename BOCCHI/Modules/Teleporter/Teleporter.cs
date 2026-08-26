@@ -14,6 +14,8 @@ using Ocelot.Ui;
 using Ocelot.Chain;
 using Ocelot.Chain.ChainEx;
 using Ocelot.IPC;
+using Ocelot;
+using System.Collections.Generic;
 
 namespace BOCCHI.Modules.Teleporter;
 
@@ -58,7 +60,7 @@ public class Teleporter(TeleporterModule module)
 
         if (ImGui.IsItemHovered())
         {
-            ImGui.SetTooltip($"Pathfind to {name}");
+            ImGui.SetTooltip(I18N.T("modules.teleporter.tooltip.pathfind_to", new Dictionary<string, string> { ["name"] = name }));
         }
 
         if (!module.TryGetIPCSubscriber<Lifestream>(out var lifestream) || lifestream == null || !lifestream.IsReady())
@@ -109,15 +111,15 @@ public class Teleporter(TeleporterModule module)
 
         if (!isNearShards)
         {
-            ImGui.SetTooltip($"You must be near an aetheryte to teleport");
+            ImGui.SetTooltip(I18N.T("modules.teleporter.tooltip.must_be_near_aetheryte"));
         }
         else if (isNearCurrentShard)
         {
-            ImGui.SetTooltip($"You're already at this aetheryte");
+            ImGui.SetTooltip(I18N.T("modules.teleporter.tooltip.already_at_aetheryte"));
         }
         else
         {
-            ImGui.SetTooltip($"Teleport to {aethernet.ToFriendlyString()}");
+            ImGui.SetTooltip(I18N.T("modules.teleporter.tooltip.teleport_to", new Dictionary<string, string> { ["name"] = aethernet.ToFriendlyString() }));
         }
     }
 

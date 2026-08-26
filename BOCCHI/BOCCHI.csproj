@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/13.0.0">
     <PropertyGroup>
-        <Version>0.0.0.1</Version>
         <Description>A helper for Occult Crescent.</Description>
         <PackageProjectUrl>https://github.com/OhKannaDuh/OccultCrescentHelper</PackageProjectUrl>
         <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -9,7 +8,31 @@
         <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
         <NoWarn>$(NoWarn);4014</NoWarn>
         <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=$(MSBuildProjectName)/</PathMap>
+
+        <!-- 🔴 建 BOCCHI.sln 時,MSBuild 預設會把 Configuration/Platform 從 ProjectReference 上
+             「解掉」(ShouldUnsetParentConfigurationAndPlatform 預設 true),改由方案的組態對應表
+             決定子專案要建哪個組態。Ocelot 是子模組、沒有被收進 BOCCHI.sln,查不到對應就退回它
+             自己的預設值 Debug —— 於是 `dotnet build BOCCHI.sln -c Release` 會把 **Debug 版**的
+             Ocelot.dll 複製進 BOCCHI/bin/Release/,而建置本身 0 error、完全沒有徵兆。
+             ⚠️ 在 ProjectReference 上寫 SetConfiguration 沒有用:AssignProjectConfiguration 會
+             覆寫掉那份 metadata。
+             直接建 .csproj 時本來就是繼承父組態,所以這對 CI 與發版路徑(兩者都是直接建 .csproj)
+             是 no-op。 -->
+        <ShouldUnsetParentConfigurationAndPlatform>false</ShouldUnsetParentConfigurationAndPlatform>
     </PropertyGroup>
+    <PropertyGroup>
+        <BuildNumberFile>$(MSBuildProjectDirectory)\BuildNumber.txt</BuildNumberFile>
+        <_PreviousBuildNumber Condition="Exists('$(BuildNumberFile)')">$([System.IO.File]::ReadAllText('$(BuildNumberFile)').Trim())</_PreviousBuildNumber>
+        <_PreviousBuildNumber Condition="'$(_PreviousBuildNumber)' == ''">0</_PreviousBuildNumber>
+        <BuildNumber>$([MSBuild]::Add($(_PreviousBuildNumber), 1))</BuildNumber>
+        <VersionPrefix>7.20.0</VersionPrefix>
+        <Version>$(VersionPrefix).$(BuildNumber)</Version>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+        <FileVersion>$(Version)</FileVersion>
+    </PropertyGroup>
+    <Target Name="PersistBuildNumber" AfterTargets="Build">
+        <WriteLinesToFile File="$(BuildNumberFile)" Lines="$(BuildNumber)" Overwrite="true" />
+    </Target>
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <DefineConstants>DEBUG;TRACE;DEBUG_BUILD</DefineConstants>
     </PropertyGroup>
@@ -31,11 +54,12 @@
             <Link>Data\%(RecursiveDir)%(Filename)%(Extension)</Link>
         </None>
     </ItemGroup>
-    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <!-- 上游原本只有 Debug 用子模組原始碼、Release 改抓 NuGet 的 FFXIVOcelot，
+         結果出貨的 Ocelot.dll 永遠是上游發佈的套件，子模組裡的任何修正都不會生效
+         （2026-07-31 用雜湊比對確認：輸出的 Ocelot.dll 與 NuGet 套件位元組完全相同）。
+         兩種組態統一改用子模組原始碼，我們的修正才會真的進到出貨檔。 -->
+    <ItemGroup>
         <ProjectReference Include="../Ocelot/Ocelot/Ocelot.csproj"/>
-    </ItemGroup>
-    <ItemGroup Condition="'$(Configuration)' == 'Release'">
-        <PackageReference Include="FFXIVOcelot" Version="1.1.1"/>
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="TextCopy" Version="6.2.1"/>

@@ -24,7 +24,7 @@ public class Radar
             return;
         }
 
-        if (Svc.ClientState.LocalPlayer == null || Svc.Condition[ConditionFlag.InCombat])
+        if (Svc.Objects.LocalPlayer == null || Svc.Condition[ConditionFlag.InCombat])
         {
             return;
         }

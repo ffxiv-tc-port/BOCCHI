@@ -33,13 +33,13 @@ public static class ZoneData
 
     public static bool IsInOccultCrescent()
     {
-        return Svc.ClientState.LocalPlayer != null && IsInSouthHorn();
+        return Svc.Objects.LocalPlayer != null && IsInSouthHorn();
     }
 
     // Tower functions
     private static bool IsInForkedTowerBlood()
     {
-        var player = Svc.ClientState.LocalPlayer;
+        var player = Svc.Objects.LocalPlayer;
         if (player == null)
         {
             return false;
@@ -82,27 +82,27 @@ public static class ZoneData
 
     public static IList<IGameObject> GetNearbyAethernetShards(float range = 4.3f)
     {
-        var playerPos = Svc.ClientState.LocalPlayer?.Position ?? Vector3.Zero;
+        var playerPos = Svc.Objects.LocalPlayer?.Position ?? Vector3.Zero;
 
         return Svc.Objects
             .Where(o => o.ObjectKind == ObjectKind.EventObj)
-            .Where(o => AethernetData.All().Select((datum) => datum.DataId).Contains(o.DataId))
+            .Where(o => AethernetData.All().Select((datum) => datum.DataId).Contains(o.BaseId))
             .Where(o => Vector3.Distance(o.Position, playerPos) <= range)
             .ToList();
     }
 
     public static bool IsNearAethernetShard(Aethernet aethernet, float range = 4.3f)
     {
-        return GetNearbyAethernetShards(range).Any(o => o.DataId == aethernet.GetData().DataId);
+        return GetNearbyAethernetShards(range).Any(o => o.BaseId == aethernet.GetData().DataId);
     }
 
     public static IList<IGameObject> GetNearbyKnowledgeCrystal(float range = 4.5f)
     {
-        var playerPos = Svc.ClientState.LocalPlayer?.Position ?? Vector3.Zero;
+        var playerPos = Svc.Objects.LocalPlayer?.Position ?? Vector3.Zero;
 
         return Svc.Objects
             .Where(o => o.ObjectKind == ObjectKind.EventObj)
-            .Where(o => o.DataId == (uint)OccultObjectType.KnowledgeCrystal)
+            .Where(o => o.BaseId == (uint)OccultObjectType.KnowledgeCrystal)
             .Where(o => Vector3.Distance(o.Position, playerPos) <= range)
             .ToList();
     }

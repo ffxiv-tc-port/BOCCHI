@@ -1,0 +1,19 @@
+{
+  "modules": {
+    "state_manager": {
+      "config": {
+        "title": "狀態管理設定",
+        "show_debug": {
+          "label": "顯示狀態",
+          "tooltip": "在主介面顯示目前狀態。"
+        }
+      },
+      "panel": {
+        "title": "狀態管理",
+        "state": {
+          "label": "狀態"
+        }
+      }
+    }
+  }
+}
