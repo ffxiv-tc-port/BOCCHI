@@ -19,14 +19,25 @@ public class EnemyPanel : Panel
         return "Nearby Enemies";
     }
 
-    private List<IGameObject> enemies = [];
+    // Only the GameObjectId is retained across frames. Dalamud's IGameObject
+    // wrappers are preallocated per object-table slot and have their Address
+    // rewritten in place on access, so holding one past the current frame
+    // silently points at a different actor (or at freed memory).
+    private List<ulong> enemyIds = [];
 
     public override unsafe void Render(DebugModule module)
     {
         OcelotUi.Indent(() =>
         {
-            foreach (var enemy in enemies)
+            foreach (var id in enemyIds)
             {
+                // Re-resolve every frame; skip the row if the actor is gone
+                // rather than rendering stale data.
+                if (Svc.Objects.SearchById(id) is not { } enemy)
+                {
+                    continue;
+                }
+
                 if (ImGui.CollapsingHeader($"{enemy.Name} - {enemy.BaseId}##{enemy.ObjectIndex}"))
                 {
                     OcelotUi.Indent(() =>
@@ -86,7 +97,7 @@ public class EnemyPanel : Panel
         if (EzThrottler.Throttle("enemies", 2000))
         {
             // DoThing();
-            enemies = Svc.Objects
+            enemyIds = Svc.Objects
                 .Where(o =>
                     o != null &&
                     o.IsHostile() &&
@@ -94,6 +105,7 @@ public class EnemyPanel : Panel
                     o.Name.TextValue.Length > 0
                 )
                 .OrderBy(o => Vector3.Distance(o.Position, Player.Position))
+                .Select(o => o.GameObjectId)
                 .ToList();
         }
     }

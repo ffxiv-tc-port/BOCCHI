@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using Lumina.Excel.Sheets;
@@ -9,8 +7,6 @@ namespace BOCCHI.Modules.Debug.Panels;
 
 public class JobLevelPanel : Panel
 {
-    private List<IGameObject> enemies = [];
-
     public override string GetName()
     {
         return "Job Level";
