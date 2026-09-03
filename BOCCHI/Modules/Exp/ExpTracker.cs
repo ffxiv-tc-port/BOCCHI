@@ -35,7 +35,7 @@ public class ExpTracker
         var language = Svc.ClientState.ClientLanguage;
         pattern = getExpMessagePattern(language);
 
-        // 使用者跑 LogLevel 2，診斷一律寫 Information。
+        // 使用者跑 LogLevel 1，診斷一律寫 Information。
         if (pattern == null)
         {
             Svc.Log.Information(
