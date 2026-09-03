@@ -14,7 +14,12 @@ public class AutomatorConfig : ModuleConfig
     public bool Enabled { get; set; } = false;
 
     [Enum(typeof(AiType), nameof(AiTypeProvider))]
-    public AiType AiProvider { get; set; } = AiType.VBM;
+        // 🔴 預設是 BMR 不是 VBM：本艦隊出貨的戰鬥 AI 只有 BossModReborn（指令 /bmrai），
+    //    feed 裡沒有 veyn 的 Boss Mod（/vbmai）。預設留在 VBM 的話，開箱即用時這個開關
+    //    會送出一個不存在的指令 —— 沒有閘門、沒有訊息，使用者只會覺得「戰鬥 AI 沒有動」。
+    // ⚠️ 改預設只對全新安裝有效：這個鍵一旦寫進使用者的設定檔，反序列化就會覆蓋欄位初始值，
+    //    既有使用者要自己在 UI 切一次（刻意不做一次性遷移 —— 那會回退他自己選過的值）。
+    public AiType AiProvider { get; set; } = AiType.BMR;
 
     [Checkbox] public bool ToggleAiProvider { get; set; } = true;
 
