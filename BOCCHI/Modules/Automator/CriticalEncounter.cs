@@ -4,6 +4,7 @@ using BOCCHI.Modules.CriticalEncounters;
 using BOCCHI.Modules.StateManager;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.Types;
+using ECommons;
 using ECommons.Automation.NeoTaskManager;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
@@ -171,7 +172,7 @@ public class CriticalEncounter : Activity
 
     public override string GetName()
     {
-        return Encounter.Name.ToString();
+        return Encounter.Name.GetText();
     }
 
     private bool IsCloseToZone(float radius = 50f)

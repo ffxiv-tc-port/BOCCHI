@@ -3,6 +3,7 @@ using System.Linq;
 using BOCCHI.Data;
 using BOCCHI.Modules.CriticalEncounters;
 using BOCCHI.Modules.Teleporter;
+using ECommons;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Dalamud.Bindings.ImGui;
@@ -26,7 +27,7 @@ public class CriticalEncountersPanel : Panel
             {
                 var ev = module.GetModule<CriticalEncountersModule>().CriticalEncounters[data.Id];
 
-                ImGui.TextUnformatted(ev.Name.ToString());
+                ImGui.TextUnformatted(ev.Name.GetText());
 
                 if (ev.State == DynamicEventState.Inactive)
                 {
@@ -60,7 +61,7 @@ public class CriticalEncountersPanel : Panel
                 {
                     var start = ev.MapMarker.Position;
 
-                    teleporter.teleporter.Button(data.Aethernet, start, ev.Name.ToString(), $"ce_{data.Id}", data);
+                    teleporter.teleporter.Button(data.Aethernet, start, ev.Name.GetText(), $"ce_{data.Id}", data);
                 }
 
                 OcelotUi.Indent(() => EventIconRenderer.Drops(data, module.PluginConfig.EventDropConfig));
@@ -191,11 +192,11 @@ public class CriticalEncountersPanel : Panel
 
         OcelotUi.Title("Name:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Name.ToString());
+        ImGui.TextUnformatted(ev.Name.GetText());
 
         OcelotUi.Title("Description:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Description.ToString());
+        ImGui.TextUnformatted(ev.Description.GetText());
 
         OcelotUi.Title("Icon Objective 0:");
         ImGui.SameLine();

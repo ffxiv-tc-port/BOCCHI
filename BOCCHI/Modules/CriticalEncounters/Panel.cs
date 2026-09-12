@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using BOCCHI.Data;
 using BOCCHI.Modules.Teleporter;
+using ECommons;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using Dalamud.Bindings.ImGui;
 using Ocelot.Ui;
@@ -47,7 +48,7 @@ public class Panel
                     continue;
                 }
 
-                ImGui.TextUnformatted(ev.Name.ToString());
+                ImGui.TextUnformatted(ev.Name.GetText());
 
                 switch (ev.State)
                 {
@@ -98,7 +99,7 @@ public class Panel
                 {
                     var start = ev.MapMarker.Position;
 
-                    teleporter.teleporter.Button(data.Aethernet, start, ev.Name.ToString(), $"ce_{ev.DynamicEventId}", data);
+                    teleporter.teleporter.Button(data.Aethernet, start, ev.Name.GetText(), $"ce_{ev.DynamicEventId}", data);
                 }
 
                 OcelotUi.Indent(() => EventIconRenderer.Drops(data, module.PluginConfig.EventDropConfig));
