@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using BOCCHI.Modules;
 using Dalamud.Interface.Utility.Raii;
@@ -22,9 +23,12 @@ public class ConfigWindow(Plugin primaryPlugin, Config config) : OcelotConfigWin
         };
     }
 
+    // 模組在外掛初始化時就登記完、之後不增減：排序好的清單留著用，不必每幀重排。
+    private List<IModule>? orderedModules;
+
     protected override void Render(RenderContext context)
     {
-        var modules = Plugin.Modules.GetModulesByConfigOrder().ToList();
+        var modules = orderedModules ??= Plugin.Modules.GetModulesByConfigOrder().ToList();
         selectedConfigModule ??= modules.FirstOrDefault();
 
         using (ImRaii.Child("##LeftPanel", new Vector2(300, 0), true))

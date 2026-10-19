@@ -1,0 +1,47 @@
+{
+  "modules": {
+    "window_manager": {
+      "config": {
+        "title": "視窗管理設定",
+        "open_main_on_start_up": {
+          "label": "載入時開啟主介面",
+          "tooltip": "插件載入時開啟主介面。"
+        },
+        "open_main_on_enter": {
+          "label": "進入區域時開啟主介面",
+          "tooltip": "進入 蜃景幻界新月島 區域時開啟主介面。"
+        },
+        "close_main_on_exit": {
+          "label": "離開區域時關閉主介面",
+          "tooltip": "離開 蜃景幻界新月島 區域時關閉主介面。"
+        },
+        "hide_main_in_combat": {
+          "label": "戰鬥中關閉主介面",
+          "tooltip": "進入戰鬥時關閉主介面。"
+        },
+        "open_config_on_start_up": {
+          "label": "載入時開啟設定介面",
+          "tooltip": "插件載入時開啟設定介面。"
+        },
+        "open_config_on_enter": {
+          "label": "進入區域時開啟設定介面",
+          "tooltip": "進入 蜃景幻界新月島 區域時開啟設定介面。"
+        },
+        "close_config_on_exit": {
+          "label": "離開區域時關閉設定介面",
+          "tooltip": "離開 蜃景幻界新月島 區域時關閉設定介面。"
+        },
+        "hide_config_in_combat": {
+          "label": "戰鬥中關閉設定介面",
+          "tooltip": "進入戰鬥時關閉設定介面。"
+        },
+        "main_order": {
+          "label": "主視窗區段順序",
+          "tooltip": "主視窗裡各區段由上到下的順序：按 ▲／▼ 上移或下移一格，改了馬上生效並存檔。\n最上方的「自動化控制」固定在最上面，不在這個清單裡。\n之後新加的區段排在最後；現在沒有顯示的區段（例如兩歧塔）照樣保留位置。",
+          "reset": "恢復預設順序",
+          "reset_tooltip": "回到原本的順序（插件預設）。"
+        }
+      }
+    }
+  }
+}

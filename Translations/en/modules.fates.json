@@ -34,12 +34,65 @@
         "alert_orpiment": {
           "label": "Alert for Orpiment Demiatma Fate",
           "tooltip": "Play a sound effect when a fate that drops the Orpiment Demiatma spawns"
+        },
+        "show_pot_timer": {
+          "label": "Show pot FATE timer",
+          "tooltip": "Above the Fates list, show whether a pot FATE (Persistent Pots / Pleading Pots) is up and when the next one is expected.\nThe estimate assumes the two pots alternate on a fixed cycle and is re-anchored every time one is seen; until then it shows \"?\"."
+        },
+        "pot_cycle_minutes": {
+          "label": "Pot FATE cycle (minutes)",
+          "tooltip": "Cycle used for the estimate. Default 30 minutes.\nMeasured in game: on the same instance the two pots alternate, the next one appearing about 30:04 after the previous one appeared (each pot about once an hour).\nEvery time a pot FATE is seen, the measured interval since the previous one is shown in the timer tooltip; adjust this to match.\nThe two pot alerts below and the illegal mode option \"Skip Critical Engagements this many minutes before a pot FATE\" use this cycle too."
+        },
+        "alert_pot_soon": {
+          "label": "Alert when a pot FATE is about to appear",
+          "tooltip": "When the next pot FATE (Persistent Pots / Pleading Pots) is expected soon, print one chat message and play a sound.\nThe estimate counts from when the previous pot appeared. If no pot has been seen since you entered, or the estimated time passed 5 minutes ago without a pot, the next time is unknown and there is no alert.\nWorks without \"Show pot FATE timer\" and without illegal mode. Each alert writes one line to the Dalamud log ([BOCCHI][魔法甕提醒])."
+        },
+        "pot_soon_minutes": {
+          "label": "Minutes before",
+          "tooltip": "Alert this many minutes before the estimated time; once per appearance."
+        },
+        "alert_pot_spawned": {
+          "label": "Alert when a pot FATE appears",
+          "tooltip": "When a pot FATE appears (or, after entering, you first see one that is already running), print one chat message and play a sound.\nThe same pot alerts at most once every 10 minutes; this resets when you change zones or re-enter the island.\nWhile on, the \"Print chat message on (de)spawn\", \"Alert for all Fates\" and the demiatma alerts above skip a pot FATE appearing, so only this alert fires; the pot despawn message is unchanged. While off, pot FATEs go through those alerts as before."
+        },
+        "pot_alert_sound": {
+          "label": "Pot alert sound",
+          "tooltip": "Used by both pot alerts. Sound effect number 1-16, the same sounds as <se.1>-<se.16> in chat."
         }
       },
       "panel": {
         "title": "Fates",
         "none": "No active fates.",
-        "estimated": "Est."
+        "estimated": "Est.",
+        "pot": {
+          "active": "Pot FATE up: ",
+          "next": "Next pot FATE: ",
+          "in_prefix": "in ~",
+          "in_suffix": "",
+          "overdue": "overdue by ",
+          "estimate": " (estimate)",
+          "tooltip": {
+            "unknown": "No pot FATE seen since entering this island, so there is nothing to estimate from yet.\nOnce either pot FATE is seen, the other one is estimated from the configured cycle.",
+            "observed": "Seen on the FATE list right now (not an estimate).",
+            "spawned_at": "Spawned: ",
+            "source_game": " (game start time)",
+            "source_seen": " (first seen; may be late)",
+            "predicted_at": "Expected: ",
+            "anchor": "Based on: ",
+            "period": "Cycle: ",
+            "minutes": " min (adjustable in settings)",
+            "last_interval": "Last measured interval: ",
+            "missed": "Expected spawns not seen within 5 minutes: ",
+            "note": "This is an estimate: it is re-anchored every time a pot FATE is seen and resets when you enter a new island."
+          }
+        }
+      },
+      "messages": {
+        "tag": "FATE",
+        "spawned": "{name} has Spawned",
+        "despawned": "{name} has Despawned",
+        "pot_soon": "Pot FATE \"{name}\" expected in about {minutes} min (around {time})",
+        "pot_spawned": "Pot FATE \"{name}\" has appeared"
       }
     }
   }

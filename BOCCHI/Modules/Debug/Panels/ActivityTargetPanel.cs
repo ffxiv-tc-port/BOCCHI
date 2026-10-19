@@ -17,7 +17,11 @@ namespace BOCCHI.Modules.Debug.Panels;
 
 public class ActivityTargetPanel : Panel
 {
-    private List<IGameObject> enemies = [];
+    // Only the GameObjectId is retained across frames. Dalamud's IGameObject
+    // wrappers are preallocated per object-table slot and have their Address
+    // rewritten in place on access, so holding one past the current frame
+    // silently points at a different actor (or at freed memory).
+    private List<ulong> enemyIds = [];
 
     public override string GetName()
     {
@@ -30,11 +34,18 @@ public class ActivityTargetPanel : Panel
         {
             if (EzThrottler.Throttle("ActivityTargetPanel", 1000))
             {
-                enemies = GetEnemies();
+                enemyIds = GetEnemyIds();
             }
 
-            foreach (var enemy in enemies)
+            foreach (var id in enemyIds)
             {
+                // Re-resolve every frame; skip the row if the actor is gone
+                // rather than rendering stale data.
+                if (Svc.Objects.SearchById(id) is not { } enemy)
+                {
+                    continue;
+                }
+
                 ImGui.TextUnformatted(enemy.Name.ToString());
                 OcelotUi.Indent(() =>
                 {
@@ -47,11 +58,12 @@ public class ActivityTargetPanel : Panel
         });
     }
 
-    private List<IGameObject> GetEnemies()
+    private List<ulong> GetEnemyIds()
     {
         return Svc.Objects
             .Where(o => o != null && Player.DistanceTo(o) <= 50f && o.ObjectKind == ObjectKind.BattleNpc)
             .OrderBy(o => o.IsTargetable ? 0 : 1)
+            .Select(o => o.GameObjectId)
             .ToList();
     }
 

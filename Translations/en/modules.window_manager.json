@@ -34,6 +34,12 @@
         "hide_config_in_combat": {
           "label": "Close config UI in combat",
           "tooltip": "Close the config UI when you enter combat."
+        },
+        "main_order": {
+          "label": "Main window section order",
+          "tooltip": "Top-to-bottom order of the sections in the main window: press the up/down arrows to move a section one step; changes apply and save immediately.\nThe automation controls always stay at the top and are not in this list.\nSections added later go to the end; sections that are not showing right now (e.g. Forked Tower) keep their place.",
+          "reset": "Reset to default order",
+          "reset_tooltip": "Go back to the original (default) order."
         }
       }
     }

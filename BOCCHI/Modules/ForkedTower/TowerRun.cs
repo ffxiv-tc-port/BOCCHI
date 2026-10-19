@@ -2,7 +2,6 @@
 using System.Linq;
 using BOCCHI.Data.Traps;
 using BOCCHI.Enums;
-using BOCCHI.Modules.Data;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface.Colors;
 using ECommons.DalamudServices;
@@ -16,7 +15,10 @@ public class TowerRun(string hash)
 {
     public readonly string Hash = hash;
 
-    private readonly Dictionary<string, IEventObj> DiscoveredTraps = [];
+    // ⚠️ 只拿來當「這個陷阱發現過了沒」的去重鍵，值從不被讀回；
+    // 存 IEventObj 包裝等於跨幀持有原生指標（見 TrackedGroup.Traps 的說明），
+    // 所以改存 GameObjectId 純量。
+    private readonly Dictionary<string, ulong> DiscoveredTraps = [];
 
     private readonly Dictionary<string, TrackedGroup> TrackedGroups = [];
 
@@ -34,7 +36,7 @@ public class TowerRun(string hash)
     {
         foreach (var trap in GetNearbyTraps())
         {
-            if (!DiscoveredTraps.TryAdd(trap.GetKey(), trap))
+            if (!DiscoveredTraps.TryAdd(trap.GetKey(), trap.GameObjectId))
             {
                 continue;
             }
@@ -47,7 +49,7 @@ public class TowerRun(string hash)
                 TrackedGroups.Add(group.GetKey(), trackedGroup);
             }
 
-            trackedGroup.Traps.Add(trap);
+            trackedGroup.Traps.Add(trap.GameObjectId);
         }
     }
 
@@ -65,12 +67,12 @@ public class TowerRun(string hash)
                 continue;
             }
 
-            if (config.ForkedTowerConfig.DrawSmallTrapRange && trap.DataId == (uint)OccultObjectType.Trap)
+            if (config.ForkedTowerConfig.DrawSmallTrapRange && trap.BaseId == (uint)OccultObjectType.Trap)
             {
                 context.DrawCircle(trap.Position, 7f, ImGuiColors.DPSRed);
             }
 
-            if (config.ForkedTowerConfig.DrawBigTrapRange && trap.DataId == (uint)OccultObjectType.BigTrap)
+            if (config.ForkedTowerConfig.DrawBigTrapRange && trap.BaseId == (uint)OccultObjectType.BigTrap)
             {
                 context.DrawCircle(trap.Position, 30f, ImGuiColors.DalamudOrange);
             }
@@ -79,6 +81,6 @@ public class TowerRun(string hash)
 
     private IEnumerable<IEventObj> GetNearbyTraps()
     {
-        return Svc.Objects.OfType<IEventObj>().Where(o => o.DataId is (uint)OccultObjectType.Trap or (uint)OccultObjectType.BigTrap);
+        return Svc.Objects.OfType<IEventObj>().Where(o => o.BaseId is (uint)OccultObjectType.Trap or (uint)OccultObjectType.BigTrap);
     }
 }

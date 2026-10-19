@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using BOCCHI.Modules.Data;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 
 namespace BOCCHI.Data.Traps;

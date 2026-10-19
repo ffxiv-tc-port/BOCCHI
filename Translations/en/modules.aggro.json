@@ -1,0 +1,136 @@
+{
+  "modules": {
+    "aggro": {
+      "config": {
+        "title": "Aggro Display",
+        "text": "Draws the detection range of nearby monsters that would attack you. While BOCCHI moves you on its own, it can also steer around these ranges (\"Steer around aggro ranges while BOCCHI travels\" below; this never starts any movement by itself).\nFaint thin outline = possible, solid thick outline = certain. All ranges are estimates.",
+        "enabled": {
+          "label": "Enabled",
+          "tooltip": "Monsters whose level is below your real knowledge level are not drawn (they are passive).\nWhen the knowledge level or a monster level cannot be read, the monster is drawn as \"possible\"."
+        },
+        "draw_sight": {
+          "label": "Draw sight aggro (cone)",
+          "tooltip": "Sight monsters notice you inside a cone in front of them."
+        },
+        "sight_radius": {
+          "label": "Sight range (estimate, yalms)",
+          "tooltip": "Measured from the edge of the monster's model."
+        },
+        "sight_angle": {
+          "label": "Sight cone angle (estimate, degrees)",
+          "tooltip": "Total width of the cone."
+        },
+        "draw_sound": {
+          "label": "Draw sound aggro (circle)",
+          "tooltip": "Sound monsters notice you all around them."
+        },
+        "sound_radius": {
+          "label": "Sound range (estimate, yalms)",
+          "tooltip": "Measured from the edge of the monster's model."
+        },
+        "draw_proximity": {
+          "label": "Draw proximity aggro (circle)",
+          "tooltip": "Proximity monsters notice anyone who comes close."
+        },
+        "proximity_radius": {
+          "label": "Proximity range (estimate, yalms)",
+          "tooltip": "Measured from the edge of the monster's model."
+        },
+        "draw_magic": {
+          "label": "Draw magic aggro (circle)",
+          "tooltip": "Magic monsters notice spells cast nearby."
+        },
+        "magic_radius": {
+          "label": "Magic range (estimate, yalms)",
+          "tooltip": "Measured from the edge of the monster's model."
+        },
+        "draw_blood": {
+          "label": "Draw blood aggro when your HP is low (circle)",
+          "tooltip": "Blood monsters (the night undead) notice players whose HP is low.\nLike every other monster, they do not attack on sight when their level is below your real knowledge level."
+        },
+        "blood_radius": {
+          "label": "Blood range (estimate, yalms)",
+          "tooltip": "Measured from the edge of the monster's model."
+        },
+        "blood_hp_threshold": {
+          "label": "HP threshold for blood aggro (%, estimate)",
+          "tooltip": "Below this share of your max HP, the blood range is drawn, and avoided while BOCCHI moves you.\nWhether the monster itself is \"certain\" or \"possible\" follows the level rule, regardless of your HP."
+        },
+        "show_unknown": {
+          "label": "Show monsters without data",
+          "tooltip": "Monsters that are not in the aggro table are drawn as a faint \"possible\" circle."
+        },
+        "unknown_radius": {
+          "label": "Range for monsters without data (estimate, yalms)",
+          "tooltip": "Measured from the edge of the monster's model."
+        },
+        "avoid_while_moving": {
+          "label": "Steer around aggro ranges while BOCCHI travels",
+          "tooltip": "When BOCCHI moves you somewhere on its own (illegal mode heading to a F.A.T.E. or critical encounter, treasure and carrot hunts, the teleporter's walk buttons, walking to the aetheryte after returning), and while EurekaHelper's pot treasure hunt moves you, it plans the route around the ranges above.\nWorks even when the display is off, using the same estimated ranges (turn the display on to adjust them).\nNot applied in combat, except when you were noticed while mounted and keep riding to the destination: monsters that have not noticed you are still avoided. Not applied while chasing F.A.T.E. enemies or by mob farming."
+        },
+        "avoid_possible": {
+          "label": "Also avoid \"possible\" ranges",
+          "tooltip": "Off: only ranges marked \"certain\" are avoided.\nOn: \"possible\" ranges are avoided too, and are the first to be ignored when no route around them can be found."
+        },
+        "avoid_margin": {
+          "label": "Extra clearance when avoiding (yalms)",
+          "tooltip": "Added to every range and around each monster's model when planning the route."
+        },
+        "walk_through_sound": {
+          "label": "Walk through sound aggro ranges instead of detouring",
+          "tooltip": "Monsters that only detect by sound do not notice you while you walk: while BOCCHI moves you, sound ranges on the route are not avoided; it switches to walking just before one and back to running after.\nIt switches by pressing the game's \"Toggle walk/run\" keybind for you, so that keybind needs a keyboard key (mouse buttons, a lone modifier or a movement key cannot be used); without one, sound ranges are avoided as before.\nIf you were already walking it does not touch it and will not switch you back to running; if you switch back to running yourself mid-way, it stops for the rest of that trip.\nWorks while mounted too (it does not dismount). Not used in combat (you were already noticed): it keeps running, sound ranges are avoided instead, and it switches back to running at once if you are noticed while walking. The monster's other senses (for example blood when your HP is low) are still avoided.\nOff: sound ranges are avoided too."
+        }
+      },
+      "panel": {
+        "title": "Aggro Display",
+        "knowledge": {
+          "value": "Knowledge level: {real} (synced {synced})",
+          "unknown": "Knowledge level: ?",
+          "unknown_tooltip": "The knowledge level cannot be read right now, so every monster is drawn as \"possible\"."
+        },
+        "calibration": {
+          "reliable": "Monster level source: nameplate (matches table {matches}, mismatches {mismatches})",
+          "unreliable": "Monster level source: table (nameplate unreliable; matches {matches}, mismatches {mismatches})",
+          "reliable_short": "Monster level source: nameplate",
+          "unreliable_short": "Monster level source: table (nameplate unreliable)",
+          "tooltip": "Fixed-level monsters are compared against the table.\nIf too many do not match, fixed-level monsters use the table level and multi-level monsters are drawn as \"possible\"."
+        },
+        "clock": {
+          "night": "Eorzea time {time} - night undead hours",
+          "day": "Eorzea time {time} - outside night undead hours"
+        },
+        "counts": {
+          "value": "Within 60 yalms: certain {certain}, possible {possible}, skipped {skipped}",
+          "with_dropped": "Within 60 yalms: certain {certain}, possible {possible}, skipped {skipped}, not drawn (limit) {dropped}",
+          "tooltip": "Skipped = below your real knowledge level (passive), a critical encounter boss that is never drawn, or a persistent pot (not a monster; the pot F.A.T.E.s protect it)."
+        },
+        "legend": {
+          "sight": "Sight",
+          "sound": "Sound",
+          "proximity": "Proximity",
+          "magic": "Magic",
+          "blood": "Blood",
+          "unknown": "Unknown",
+          "states": "Faint thin = possible, solid thick = certain"
+        },
+        "avoid": {
+          "label": "Aggro avoidance",
+          "off": "Off",
+          "idle": "Standing by (BOCCHI is not moving you)",
+          "combat": "Paused in combat",
+          "watching": "Watching the route ahead",
+          "planning": "Planning a detour",
+          "rerouted": "Detoured around aggro ranges",
+          "unavoidable": "Could not get around, keeping the original route",
+          "mitigated": "Could not get around, taking a shallower route through the aggro range",
+          "suppressed": "Paused ({seconds}s left)",
+          "endpoint_missing": "This vnavmesh cannot detour, keeping the original route",
+          "holding": "Too many failed detours, replanning slower (keeping the current route)",
+          "walk_key_missing": "Walking through is unavailable: the game's \"Toggle walk/run\" keybind has no usable keyboard key, so sound ranges are avoided as before",
+          "walk_paused": "Walking through is paused: pressing \"Toggle walk/run\" had no effect, retrying in a minute (sound ranges are avoided meanwhile)",
+          "tooltip": "This session: detoured {rerouted} times, shortened a detour {shortened} times, could not get around {unavoidable} times, took a shallower route when it could not get around {mitigated} times, went back to the original route after a detour got stuck {gaveway} times.\nOnly while BOCCHI moves you on its own (illegal mode, treasure and carrot hunts, the teleporter's walk buttons, walking to the aetheryte after returning), vnavmesh is walking and you are not in combat (or are still riding while in combat): every 0.25 seconds it checks the next 60 yalms of the route and asks vnavmesh for a detour when the route crosses an aggro range.\nWhile detouring, if the monster being avoided starts fighting someone else, wanders off or turns away, the route is planned again and switched when it is at least 5 yalms shorter.\nWhen there is truly no way around, vnavmesh's alternative route is used if it spends less distance inside the ranges and gets no closer to any monster (it still crosses the range).\nDetails are written to the Dalamud log with the prefix [BOCCHI][仇恨迴避]."
+        }
+      }
+    }
+  }
+}

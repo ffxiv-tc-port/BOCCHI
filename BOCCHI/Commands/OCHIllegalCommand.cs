@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BOCCHI.Automation;
 using BOCCHI.Enums;
 using BOCCHI.Modules.Automator;
 using BOCCHI.Modules.CriticalEncounters;
@@ -6,6 +7,7 @@ using BOCCHI.Modules.Fates;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using Ocelot;
 using Ocelot.Commands;
 using Ocelot.Modules;
 
@@ -22,11 +24,11 @@ public class OCHIllegalCommand(Plugin plugin) : OcelotCommand
     protected override string Description
     {
         get => @"
-Manage och automator/illegal mode.
- - /bocchiillegal (Toggles the automator lens window)
- - /bocchiillegal on (Enables illegal mode (Automation))
- - /bocchiillegal off (Disables illegal mode (Automation))
- - /bocchiillegal toggle (Toggles illegal mode (Automation))
+管理非法模式（自動參加 F.A.T.E.／緊急遭遇戰）。
+ - /bocchiillegal：開關非法模式檢視器
+ - /bocchiillegal on：開始非法模式
+ - /bocchiillegal off：停止非法模式
+ - /bocchiillegal toggle：切換非法模式
 --------------------------------
 ".Trim();
     }
@@ -49,21 +51,17 @@ Manage och automator/illegal mode.
             return;
         }
 
-        if (!plugin.Modules.TryGetModule<AutomatorModule>(out var automator) || automator == null)
-        {
-            return;
-        }
-
+        var source = I18N.T("automation.source.command");
         switch (arguments)
         {
             case "on":
-                automator.EnableIllegalMode();
+                plugin.Automation.Start(AutomationKind.IllegalMode, source, true);
                 break;
             case "off":
-                automator.DisableIllegalMode();
+                plugin.Automation.Stop(AutomationKind.IllegalMode, source, true);
                 break;
             case "toggle":
-                AutomatorModule.ToggleIllegalMode(plugin);
+                plugin.Automation.Toggle(AutomationKind.IllegalMode, source, true);
                 break;
         }
 
@@ -84,7 +82,7 @@ Manage och automator/illegal mode.
                 continue;
             }
 
-            map->SetFlagMapMarker(Svc.ClientState.TerritoryType, Svc.ClientState.MapId, encounter.MapMarker.Position);
+            map->SetFlagMapMarker(Svc.ClientState.TerritoryType, Svc.ClientState.MapId, encounter.Position);
             return;
         }
     }

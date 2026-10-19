@@ -19,6 +19,18 @@
         "max_level": {
           "label": "Max area level",
           "tooltip": "The maximum level of mobs near which you are willing to hunt for objects."
+        },
+        "follow_knowledge_level": {
+          "label": "Follow knowledge level",
+          "tooltip": "Use (your real knowledge level - 1) as the max area level, so hunts only visit areas whose monsters will not attack you.\nOnce your knowledge level is maxed (20 in the South Horn), \"Max area level\" is used instead, so you are not stuck at 19.\nAlso falls back to \"Max area level\" when the knowledge level cannot be read."
+        },
+        "resume_expiry_minutes": {
+          "label": "Resume window (minutes)",
+          "tooltip": "How long a paused carrot hunt can still be resumed. After that only a fresh start is possible, because visited spots may have new carrots. 0 = no limit.\nThe treasure hunt is not limited by this: coffers do not despawn and checked spawn points are only cleared by Clear, changing zones or logging out, so a paused treasure hunt can always be resumed (changing zones or logging out still invalidates it)."
+        },
+        "yield_to_manual_movement": {
+          "label": "Yield while you move the character yourself",
+          "tooltip": "While a treasure or carrot hunt is travelling, if navigation stops but the character keeps moving on its own (you are using the movement keys, WASD or turning with the mouse), stop re-sending the route and summoning the mount and let you drive; once the character has been still for about 1.5 seconds, continue to the spot from where you are.\nThe character must keep moving for about 1.5 seconds to count as you driving: one-off displacement such as knockbacks or teleports does not count, and nothing is judged while mounting, casting or jumping. The \"step took too long\" timer is paused while yielding.\nAlso, if navigation stops right after you pressed a movement key (WASD, Q/E, arrow keys, both mouse buttons, the left gamepad stick; custom key bindings are not read), or while you are opening a coffer or talking (not one BOCCHI opened itself), even a short tap counts as you driving: no re-send, and it continues once there is no key, no interaction and the character has been still for about 1.5 seconds; this kind of yield is capped at 60 seconds per step, after which that step goes back to the old behaviour.\nRegardless of this option, the hunt waits in place while you are in combat (letting your combat AI or you finish the fight; manual movement is not judged and the mount is not summoned meanwhile) and continues from where you are about 2 seconds after combat ends; if combat is still going after 180 seconds, that fight goes back to the old behaviour.\nAfter more than 30 seconds of continuous yielding on one step, that step goes back to the old behaviour (re-send as soon as navigation stops).\nWhile Lifestream is running a task (for example you clicked a destination on the map and it is taking you there), BOCCHI also yields: it stops its own navigation first (otherwise Lifestream aborts the task), that time does not count towards the 30 seconds, and it continues from where you are once Lifestream is done and the character has been still for about 1.5 seconds.\nThe first yield and continuation of each run write one line to the Dalamud log ([BOCCHI][巡迴讓位]); the hunt end line gains a 讓位= field (seconds).\nOn (default) = yield. Off = unchanged, re-send as soon as navigation stops."
         }
       }
     }

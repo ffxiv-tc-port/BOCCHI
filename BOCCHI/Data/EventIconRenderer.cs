@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using BOCCHI.Modules.EventDrop;
 using Dalamud.Interface.Textures;
@@ -7,45 +8,59 @@ using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
+using Ocelot;
 
 namespace BOCCHI.Data;
 
 public struct EventIconRenderer
 {
+    /// <summary>外框邊長（像素）；圖示本身少 2。</summary>
+    public const float DefaultIconSize = 50f;
+
     public static void Drops(EventData data, EventDropConfig config)
     {
-        uint rendered = 0;
+        Drops(data, config, DefaultIconSize, false);
+    }
+
+    /// <param name="sameLine">第一個圖示接在同一列上一個項目後面；一個都沒畫時不動游標，不會留下懸空的 SameLine。</param>
+    public static void Drops(EventData data, EventDropConfig config, float size, bool sameLine)
+    {
+        var rendered = sameLine;
 
         if (data.Demiatma != null && config.ShowDemiatmaDrops)
         {
-            Demiatma(data);
-            rendered++;
+            if (rendered)
+            {
+                ImGui.SameLine();
+            }
+
+            Demiatma(data, size);
+            rendered = true;
         }
 
         if (data.Note != null && config.ShowNoteDrops)
         {
-            if (rendered > 0)
+            if (rendered)
             {
                 ImGui.SameLine();
             }
 
-            Notes(data);
-            rendered++;
+            Notes(data, size);
+            rendered = true;
         }
 
         if (data.Soulshard != null && config.ShowSoulShardDrops)
         {
-            if (rendered > 0)
+            if (rendered)
             {
                 ImGui.SameLine();
             }
 
-            SoulShard(data);
-            rendered++;
+            SoulShard(data, size);
         }
     }
 
-    public static unsafe void Demiatma(EventData data)
+    public static unsafe void Demiatma(EventData data, float size = DefaultIconSize)
     {
         var itemData = Svc.Data.GetExcelSheet<Item>().GetRow((uint)data.Demiatma!);
 
@@ -56,31 +71,28 @@ public struct EventIconRenderer
 
         var demiatma = Svc.Texture.GetFromGameIcon(new GameIconLookup(itemData.Icon)).GetWrapOrEmpty();
 
-        DrawIcon(demiatma, border, $"Demiatma_{itemData.RowId}_fate_{data.Id}");
+        DrawIcon(demiatma, border, $"Demiatma_{itemData.RowId}_fate_{data.Id}", size);
 
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
 
-            var label = $"Needed ({needed})";
-            ;
-            if (needed <= 0)
-            {
-                label = $"Not Needed ({count})";
-            }
+            var label = needed > 0
+                ? I18N.T("generic.event_drop.needed", new Dictionary<string, string> { ["count"] = needed.ToString() })
+                : I18N.T("generic.event_drop.not_needed", new Dictionary<string, string> { ["count"] = count.ToString() });
 
             ImGui.TextUnformatted($"{itemData.Name}: {label}");
             ImGui.EndTooltip();
         }
     }
 
-    public static void Notes(EventData data)
+    public static void Notes(EventData data, float size = DefaultIconSize)
     {
         var itemData = Svc.Data.GetExcelSheet<Item>().GetRow((uint)data.Note!);
 
         var notes = Svc.Texture.GetFromGameIcon(new GameIconLookup(itemData.Icon)).GetWrapOrEmpty();
 
-        DrawIcon(notes, new Vector4(1f, 1f, 1f, 1f), $"Note_{itemData.RowId}_fate_{data.Id}");
+        DrawIcon(notes, new Vector4(1f, 1f, 1f, 1f), $"Note_{itemData.RowId}_fate_{data.Id}", size);
 
         if (ImGui.IsItemHovered())
         {
@@ -90,13 +102,13 @@ public struct EventIconRenderer
         }
     }
 
-    private static void SoulShard(EventData data)
+    private static void SoulShard(EventData data, float size)
     {
         var itemData = Svc.Data.GetExcelSheet<Item>().GetRow((uint)data.Soulshard!);
 
         var soulshard = Svc.Texture.GetFromGameIcon(new GameIconLookup(itemData.Icon)).GetWrapOrEmpty();
 
-        DrawIcon(soulshard, new Vector4(1f, 1f, 1f, 1f), $"SoulShard_{itemData.RowId}_ce_{data.Id}");
+        DrawIcon(soulshard, new Vector4(1f, 1f, 1f, 1f), $"SoulShard_{itemData.RowId}_ce_{data.Id}", size);
 
         if (ImGui.IsItemHovered())
         {
@@ -106,14 +118,14 @@ public struct EventIconRenderer
         }
     }
 
-    public static void DrawIcon(IDalamudTextureWrap icon, Vector4 border, string id)
+    public static void DrawIcon(IDalamudTextureWrap icon, Vector4 border, string id, float size = DefaultIconSize)
     {
         ImGui.PushStyleColor(ImGuiCol.Border, border);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
 
-        ImGui.BeginChild($"ImageBorder##{id}", new Vector2(50, 50), true, ImGuiWindowFlags.NoScrollbar);
+        ImGui.BeginChild($"ImageBorder##{id}", new Vector2(size, size), true, ImGuiWindowFlags.NoScrollbar);
 
-        ImGui.Image(icon.Handle, new Vector2(48, 48));
+        ImGui.Image(icon.Handle, new Vector2(size - 2, size - 2));
 
         ImGui.EndChild();
 

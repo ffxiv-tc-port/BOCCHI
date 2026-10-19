@@ -95,8 +95,7 @@ public class ForkedTowerModule(Plugin plugin, Config config) : Module(plugin, co
 
     public override bool RenderMainUi(RenderContext context)
     {
-        panel.Draw(this);
-        return true;
+        return panel.Draw(this);
     }
 
     private IEnumerable<TrapDatum> GetTrapsToRender()
@@ -120,7 +119,7 @@ public class ForkedTowerModule(Plugin plugin, Config config) : Module(plugin, co
         return groups.SelectMany(group => group.Traps);
     }
 
-    private void OnCriticalEncounterBattle(DynamicEvent ev)
+    private void OnCriticalEncounterBattle(CriticalEncounterSnapshot ev)
     {
         if (ev.EventType < 4)
         {

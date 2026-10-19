@@ -10,7 +10,6 @@ using BOCCHI.ActionHelpers;
 using BOCCHI.Data;
 using BOCCHI.Enums;
 using BOCCHI.ItemHelpers;
-using BOCCHI.Modules.Data;
 using BOCCHI.Pathfinding;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using ECommons.DalamudServices;
@@ -85,7 +84,8 @@ public class CarrotHuntPanel : Panel
 
                         Svc.Targets.Target = target;
 
-                        if (!vnav.IsRunning())
+                        // 算路期間 IsRunning 仍是 false，不判算路中會每幀蓋掉還沒算完的那一次。
+                        if (!vnav.IsRunning() && !vnav.IsSimpleMoveInProgress())
                         {
                             vnav.PathfindAndMoveTo(target.Position, false);
                         }
@@ -106,16 +106,12 @@ public class CarrotHuntPanel : Panel
             var obj = Svc.Objects.OfType<IEventObj>();
             foreach (var o in obj)
             {
-                ImGui.TextUnformatted(o.Name + " " + o.ObjectKind + " " + o.DataId);
+                ImGui.TextUnformatted(o.Name + " " + o.ObjectKind + " " + o.BaseId);
             }
 
             if (!HasRun)
             {
-                if (ImGui.Button("Run"))
-                {
-                    ShouldRun = true;
-                }
-
+                DrawHuntDataRegenDisabled();
                 return;
             }
 
@@ -199,7 +195,8 @@ public class CarrotHuntPanel : Panel
                     Chain.Create()
                         .Then(async void (_) =>
                         {
-                            var path = await vnav.Pathfind(datum.Destination, carrot.Position, false);
+                            // 巡迴拿這張表當「從節點走到乙太之晶去傳送」，路線兩個方向不一定一樣長。
+                            var path = await vnav.Pathfind(carrot.Position, datum.Destination, false);
                             var distance = CalculatePathLength(path);
 
                             var nodes = path.Select(Position.Create).ToList();
@@ -247,6 +244,6 @@ public class CarrotHuntPanel : Panel
 
     private IEnumerable<IEventObj> GetBunnyChests()
     {
-        return Svc.Objects.OfType<IEventObj>().Where(o => o.DataId == (uint)OccultObjectType.BunnyChest);
+        return Svc.Objects.OfType<IEventObj>().Where(o => o.BaseId == (uint)OccultObjectType.BunnyChest);
     }
 }

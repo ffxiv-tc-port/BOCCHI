@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Bindings.ImGui;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using Lumina.Excel.Sheets;
@@ -9,8 +8,6 @@ namespace BOCCHI.Modules.Debug.Panels;
 
 public class JobLevelPanel : Panel
 {
-    private List<IGameObject> enemies = [];
-
     public override string GetName()
     {
         return "Job Level";
@@ -20,6 +17,12 @@ public class JobLevelPanel : Panel
     {
         // var level = PublicContentOccultCrescent.GetState()->SupportJobLevels[1];
         var state = PublicContentOccultCrescent.GetState();
+        if (state == null)
+        {
+            ImGui.TextUnformatted("(Occult Crescent state not loaded)");
+            return;
+        }
+
         OcelotUi.Indent(() =>
         {
             foreach (var job in Svc.Data.GetExcelSheet<MKDSupportJob>())

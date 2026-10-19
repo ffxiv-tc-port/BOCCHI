@@ -1,0 +1,37 @@
+{
+  "modules": {
+    "notifications": {
+      "config": {
+        "title": "Windows 通知設定",
+        "notify_critical_encounters": {
+          "label": "緊急遭遇戰開放報名時發 Windows 通知",
+          "tooltip": "緊急遭遇戰（含兩歧塔）開放報名時，發一則 Windows 通知（系統匣）。\n需要安裝並啟用 NotificationMaster 插件。"
+        },
+        "notify_pot_fates": {
+          "label": "魔法甕出現時發 Windows 通知",
+          "tooltip": "「{fate:1976|幸福的魔法甕}」或「{fate:1977|瑟瑟發抖的魔法甕}」出現時，發一則 Windows 通知（系統匣）。\n需要安裝並啟用 NotificationMaster 插件。"
+        },
+        "notify_when_game_focused": {
+          "label": "遊戲在前景時也通知",
+          "tooltip": "關閉：遊戲視窗在前景時不發 Windows 通知（遊戲內已經看得到）。\n開啟：一律通知。"
+        },
+        "test": {
+          "label": "發送測試通知",
+          "tooltip": "現在透過 NotificationMaster 發一則 Windows 通知，確認設定可用（不看前景設定）。",
+          "sent": "已送出。",
+          "not_loaded": "NotificationMaster 沒有安裝或沒有啟用。",
+          "failed": "NotificationMaster 沒有顯示（詳見 dalamud.log）。"
+        }
+      },
+      "toast": {
+        "ce_title": "BOCCHI：緊急遭遇戰",
+        "ce_body": "{name} 開放報名了",
+        "ce_body_with_time": "{name} 開放報名了（約 {time} 後開始）",
+        "pot_title": "BOCCHI：魔法甕",
+        "pot_body": "{name} 出現了",
+        "test_title": "BOCCHI：測試通知",
+        "test_body": "看到這則通知，表示 NotificationMaster 已經收到 BOCCHI 的通知。"
+      }
+    }
+  }
+}

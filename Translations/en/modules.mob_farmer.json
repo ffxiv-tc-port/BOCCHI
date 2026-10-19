@@ -50,6 +50,27 @@
         "minimum_mobs_to_start_fight": {
           "label": "Minimum mobs to fight",
           "tooltip": "How many mobs to gather before stopping to fight them.\n Note if there are no more out of combat mobs around you, it will start combat regardless."
+        },
+        "target_min_hold_seconds": {
+          "label": "Minimum target hold (seconds)",
+          "tooltip": "While fighting, a target picked by another plugin or by you is kept for at least this many seconds before BOCCHI switches back, as long as it is a living, attackable enemy; a target that is attacking you is never switched.\nWhile pulling, the mob being pulled stays targeted instead of switching whenever the distance order changes as you move.\n0 = old behaviour: re-target every time."
+        }
+      },
+      "panel": {
+        "title": "Mob Farmer",
+        "phase": {
+          "label": "Phase",
+          "waiting": "Waiting",
+          "buffing": "Buffing",
+          "gathering": "Gathering",
+          "stacking": "Stacking",
+          "fighting": "Fighting"
+        },
+        "not_engaged": {
+          "label": "Not Engaged"
+        },
+        "engaged": {
+          "label": "Engaged"
         }
       }
     }

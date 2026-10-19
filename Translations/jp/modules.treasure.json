@@ -17,10 +17,6 @@
         "cast_treasure_sight_upon_return": {
           "label": "帰還後にトレジャーサーチを使用する",
           "tooltip": "FATEやCEの後にベースキャンプへ戻った際、宝箱の数を更新するためにマギトレジャーサーチを使用します"
-        },
-        "show_percentage_active_treasure_count": {
-          "label": "アクティブな宝箱をパーセンテージで表示",
-          "tooltip": "全体数の横にアクティブな宝箱の割合を表示します"
         }
       },
       "panel": {
@@ -29,12 +25,6 @@
         "hunt": {
           "title": "トレジャーハンター",
           "distance_node": "次の宝箱までの距離"
-        },
-        "active_bronze": {
-          "label": "銅の宝箱"
-        },
-        "active_silver": {
-          "label": "銀の宝箱"
         }
       }
     }

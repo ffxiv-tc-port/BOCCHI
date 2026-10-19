@@ -1,0 +1,29 @@
+{
+  "modules": {
+    "phantom_jobs": {
+      "config": {
+        "title": "Phantom Jobs",
+        "show_level_overview": {
+          "label": "Show the phantom job level overview in the main window",
+          "tooltip": "Lists the current and max level (max taken from the game data) of all 13 phantom jobs in the main window.\nDisplay only, it never changes your job; to switch automatically when a job is maxed, start \"Phantom job leveling\" in the Automation section at the top of the main window."
+        }
+      },
+      "panel": {
+        "title": "Phantom Job Levels",
+        "not_loaded": "Phantom job state not available (loading or not in Occult Crescent)",
+        "not_unlocked": "Not unlocked",
+        "current": " (current)",
+        "tooltip": {
+          "no_max": "No max level in the game data: this phantom job does not level from combat experience.\nPhantom job leveling skips it, and switches away to the next unmaxed phantom job while you are on it.",
+          "experience": "Experience: "
+        },
+        "leveling": {
+          "switching": "Phantom job leveling: about to switch to ",
+          "nothing": "Phantom job leveling: no other unlocked phantom job below max level",
+          "waiting": "Phantom job leveling: switches once the current phantom job is maxed",
+          "tooltip": "Only switches out of combat, outside F.A.T.E.s and Critical Engagements, and while BOCCHI has no other action in progress; with Illegal Mode running it switches between two activities.\nThe next job is searched in job order, skipping locked, maxed and non-experience phantom jobs."
+        }
+      }
+    }
+  }
+}

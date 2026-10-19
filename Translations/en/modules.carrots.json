@@ -7,7 +7,10 @@
         "label": "Carrot",
         "hunt": {
           "title": "Carrot Hunter",
-          "distance_node": "Distance to next carrot"
+          "distance_node": "Distance to next carrot",
+          "range": {
+            "tooltip": "Left = carrot spots within the max area level when this run was planned (already visited ones included); right = all carrot spots.\nWith \"Follow knowledge level\" on, the max is your real knowledge level - 1; once your knowledge level is maxed (level {cap}) the \"Max area level\" setting is used instead.\nTo cover more spots, raise \"Max area level\" (up to {ceiling}) or turn off following the knowledge level."
+          }
         }
       },
       "config": {
@@ -15,6 +18,18 @@
         "draw_line_to_carrots": {
           "label": "Draw line to Carrots",
           "tooltip": "Render a line from your character's position to nearby carrots."
+        },
+        "alert_carrots": {
+          "label": "Play a sound when a carrot is found",
+          "tooltip": "In the Occult Crescent, play a sound once when a new carrot comes into view. Each carrot sounds only once; the record resets when you leave the island.\nEach alert also writes an Information line to the Dalamud log ([BOCCHI][胡蘿蔔]).\nNo game actions. On (default) = sound. Off = no sound."
+        },
+        "carrot_alert_sound": {
+          "label": "Alert sound",
+          "tooltip": "Sound effect number 1-16, the same sounds as <se.1>-<se.16> in chat."
+        },
+        "praise_carrots": {
+          "label": "Ask Tataru to say a line when a carrot is found",
+          "tooltip": "When a new carrot comes into view, ask the Tataru Praise plugin to say a line (its situation: 發現幸運胡蘿蔔). Each carrot only once.\nAlso needs \"Praise occult events\" on the critical encounter settings page, Tataru Praise installed and enabled, and that situation synthesized once; does nothing when it is not installed. Each call writes a line to the Dalamud log ([BOCCHI][塔塔露]).\nNo game actions. On (default) = ask. Off = never call."
         },
         "show_hunt_button": {
           "label": "Show Carrot Hunt Button"

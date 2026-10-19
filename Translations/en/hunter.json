@@ -6,6 +6,25 @@
     "export": {
       "label": "Export Path to JSON",
       "tooltip": "Export the current/last path to JSON to your clipboard."
+    },
+    "range": {
+      "label": "This run",
+      "value": "{in}/{total} spots (max area level {max}, {source})",
+      "unknown_tooltip": "This run has not been planned yet. Once you start or resume and the route is planned, this shows how many spots the run covers and which max area level it used.",
+      "source": {
+        "manual": "setting",
+        "follow": "follows knowledge level",
+        "at_cap": "knowledge level maxed, using setting",
+        "unavailable": "knowledge level unreadable, using setting"
+      },
+      "direction": "; {direction}"
+    },
+    "direction": {
+      "label": "Direction",
+      "forward": "Forward",
+      "reverse": "Reverse",
+      "alternate": "Alternate each run",
+      "tooltip": "How this treasure hunt run orders its spots.\n- Forward: in planned order (default, same as before this option).\n- Reverse: recorded coffers are still opened first; the remaining spots start from the other end of the forward plan and run it backwards (the order is then fine-tuned for that direction, since paths are not always the same length both ways). The first leg still compares walking, walking to an aethernet shard and teleporting, and returning then teleporting.\n- Alternate each run: forward and reverse take turns every time you press Start (the first run after the plugin loads is forward).\nA change takes effect the next time you press Start; resuming a paused run keeps that run's direction (the remaining spots are ordered the same way)."
     }
   }
 }

@@ -47,9 +47,56 @@ public class AethernetData
         return All().OrderBy(a => Vector3.Distance(a.Position, position));
     }
 
+    // GetClosestTo 每幀會被呼叫（非法模式待命時）：只建一次。順序同 All()，平手取前面的（同 OrderBy().First()）。
+    private static AethernetData[]? closestCandidates;
+
+    /// <summary>同 aethernet.GetData().DataId，不新建物件。</summary>
+    public static uint DataIdOf(Aethernet aethernet)
+    {
+        var all = closestCandidates ??= All().ToArray();
+        for (var i = 0; i < all.Length; i++)
+        {
+            if (all[i].Aethernet == aethernet)
+            {
+                return all[i].DataId;
+            }
+        }
+
+        return aethernet.GetData().DataId;
+    }
+
+    /// <summary>dataId 是不是某一顆傳送水晶（同 All().Select(d => d.DataId).Contains(dataId)）。</summary>
+    public static bool IsShard(uint dataId)
+    {
+        var all = closestCandidates ??= All().ToArray();
+        for (var i = 0; i < all.Length; i++)
+        {
+            if (all[i].DataId == dataId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>回傳的是共用的實例，不要改它的欄位。</summary>
     public static AethernetData GetClosestTo(Vector3 to)
     {
-        return All().OrderBy(data => Vector3.Distance(to, data.Position)).First();
+        var all = closestCandidates ??= All().ToArray();
+        var best = all[0];
+        var bestDistance = Vector3.Distance(to, best.Position);
+        for (var i = 1; i < all.Length; i++)
+        {
+            var distance = Vector3.Distance(to, all[i].Position);
+            if (distance < bestDistance)
+            {
+                best = all[i];
+                bestDistance = distance;
+            }
+        }
+
+        return best;
     }
 
     public static AethernetData GetClosestToPlayer()
@@ -72,7 +119,8 @@ public static class AethernetExtensions
 {
     public static string ToFriendlyString(this Aethernet aethernet)
     {
-        return Svc.Data.GetExcelSheet<PlaceName>().FirstOrDefault(p => p.RowId == (uint)aethernet).Name.ToString();
+        // O(1) 查表；查不到時回傳空字串，而不是讓 default(PlaceName).Name 丟 NullReferenceException
+        return Svc.Data.GetExcelSheet<PlaceName>().GetRowOrDefault((uint)aethernet)?.Name.ToString() ?? string.Empty;
     }
 
     public static AethernetData GetData(this Aethernet aethernet)
@@ -109,7 +157,7 @@ public static class AethernetExtensions
                     Aethernet = Aethernet.Eldergrowth,
                     DataId = 2014667,
                     Position = new Vector3(306.94f, 105.18f, 305.65f),
-                    Destination = new Vector3(-302.3f, 103f, 306f),
+                    Destination = new Vector3(302.3f, 103f, 306f),
                 };
             case Aethernet.Stonemarsh:
                 return new AethernetData

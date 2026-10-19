@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using BOCCHI.Data;
 using BOCCHI.Modules.CriticalEncounters;
 using BOCCHI.Modules.Teleporter;
+using ECommons;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Dalamud.Bindings.ImGui;
@@ -24,9 +26,12 @@ public class CriticalEncountersPanel : Panel
         {
             foreach (var data in EventData.CriticalEncounters.Values)
             {
-                var ev = module.GetModule<CriticalEncountersModule>().CriticalEncounters[data.Id];
+                if (!module.GetModule<CriticalEncountersModule>().CriticalEncounters.TryGetValue(data.Id, out var ev))
+                {
+                    continue;
+                }
 
-                ImGui.TextUnformatted(ev.Name.ToString());
+                ImGui.TextUnformatted(ev.Name);
 
                 if (ev.State == DynamicEventState.Inactive)
                 {
@@ -58,9 +63,9 @@ public class CriticalEncountersPanel : Panel
 
                 if (module.TryGetModule<TeleporterModule>(out var teleporter) && teleporter!.IsReady())
                 {
-                    var start = ev.MapMarker.Position;
+                    var start = ev.Position;
 
-                    teleporter.teleporter.Button(data.Aethernet, start, ev.Name.ToString(), $"ce_{data.Id}", data);
+                    teleporter.teleporter.Button(data.Aethernet, start, ev.Name, $"ce_{data.Id}", data);
                 }
 
                 OcelotUi.Indent(() => EventIconRenderer.Drops(data, module.PluginConfig.EventDropConfig));
@@ -70,224 +75,253 @@ public class CriticalEncountersPanel : Panel
                     OcelotUi.VSpace();
                 }
 
+                // 細節欄位直接讀當幀的原生資料（不經快照、不跨幀保存），拿不到就不畫。
                 if (ImGui.CollapsingHeader($"Event Data##{data.Id}"))
                 {
-                    PrintEvent(ev);
+                    var native = FindLiveEvent(data.Id);
+                    if (native != null)
+                    {
+                        PrintEvent(native);
+                    }
                 }
 
                 if (ImGui.CollapsingHeader($"Map Marker Data##{data.Id}"))
                 {
-                    PrintMapMarker(ev.MapMarker);
+                    var native = FindLiveEvent(data.Id);
+                    if (native != null)
+                    {
+                        PrintMapMarker(&native->MapMarker);
+                    }
                 }
             }
         });
     }
 
-    private unsafe void PrintEvent(DynamicEvent ev)
+    private static unsafe DynamicEvent* FindLiveEvent(uint id)
+    {
+        var director = PublicContentOccultCrescent.GetInstance();
+        if (director == null)
+        {
+            return null;
+        }
+
+        var events = director->DynamicEventContainer.Events;
+        for (var i = 0; i < events.Length; i++)
+        {
+            if (events[i].DynamicEventId == id)
+            {
+                return (DynamicEvent*)Unsafe.AsPointer(ref events[i]);
+            }
+        }
+
+        return null;
+    }
+
+    private unsafe void PrintEvent(DynamicEvent* ev)
     {
         OcelotUi.Title("Name Offset:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.NameOffset.ToString());
+        ImGui.TextUnformatted(ev->NameOffset.ToString());
 
         OcelotUi.Title("Description Offset:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.DescriptionOffset.ToString());
+        ImGui.TextUnformatted(ev->DescriptionOffset.ToString());
 
         OcelotUi.Title("LGB Event Object:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.LGBEventObject.ToString());
+        ImGui.TextUnformatted(ev->LGBEventObject.ToString());
 
         OcelotUi.Title("LGB Map Range:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.LGBMapRange.ToString());
+        ImGui.TextUnformatted(ev->LGBMapRange.ToString());
 
         OcelotUi.Title("Quest (RowId):");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Quest.ToString());
+        ImGui.TextUnformatted(ev->Quest.ToString());
 
         OcelotUi.Title("Announce (RowId):");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Announce.ToString());
+        ImGui.TextUnformatted(ev->Announce.ToString());
 
         OcelotUi.Title("Unknown0:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Unknown0.ToString());
+        ImGui.TextUnformatted(ev->Unknown0.ToString());
 
         OcelotUi.Title("Unknown1:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Unknown1.ToString());
+        ImGui.TextUnformatted(ev->Unknown1.ToString());
 
         OcelotUi.Title("Unknown6:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Unknown6.ToString());
+        ImGui.TextUnformatted(ev->Unknown6.ToString());
 
         OcelotUi.Title("Unknown7:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Unknown7.ToString());
+        ImGui.TextUnformatted(ev->Unknown7.ToString());
 
         OcelotUi.Title("Unknown2:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Unknown2.ToString());
+        ImGui.TextUnformatted(ev->Unknown2.ToString());
 
         OcelotUi.Title("Event Type (RowId):");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.EventType.ToString());
+        ImGui.TextUnformatted(ev->EventType.ToString());
 
         OcelotUi.Title("Enemy Type (RowId):");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.EnemyType.ToString());
+        ImGui.TextUnformatted(ev->EnemyType.ToString());
 
         OcelotUi.Title("Max Participants:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.MaxParticipants.ToString());
+        ImGui.TextUnformatted(ev->MaxParticipants.ToString());
 
         OcelotUi.Title("Radius?:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Unknown4.ToString());
+        ImGui.TextUnformatted(ev->Unknown4.ToString());
 
         OcelotUi.Title("Unknown5:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Unknown5.ToString());
+        ImGui.TextUnformatted(ev->Unknown5.ToString());
 
         OcelotUi.Title("Single Battle (RowId):");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.SingleBattle.ToString());
+        ImGui.TextUnformatted(ev->SingleBattle.ToString());
 
         OcelotUi.Title("Unknown8:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Unknown8.ToString());
+        ImGui.TextUnformatted(ev->Unknown8.ToString());
 
         OcelotUi.Title("Start Timestamp:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.StartTimestamp.ToString());
+        ImGui.TextUnformatted(ev->StartTimestamp.ToString());
 
         OcelotUi.Title("Seconds Left:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.SecondsLeft.ToString());
+        ImGui.TextUnformatted(ev->SecondsLeft.ToString());
 
         OcelotUi.Title("Seconds Duration:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.SecondsDuration.ToString());
+        ImGui.TextUnformatted(ev->SecondsDuration.ToString());
 
         OcelotUi.Title("Dynamic Event Id:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.DynamicEventId.ToString());
+        ImGui.TextUnformatted(ev->DynamicEventId.ToString());
 
         OcelotUi.Title("Dynamic Event Type:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.DynamicEventType.ToString());
+        ImGui.TextUnformatted(ev->DynamicEventType.ToString());
 
         OcelotUi.Title("State:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.State.ToString());
+        ImGui.TextUnformatted(ev->State.ToString());
 
         OcelotUi.Title("Participants:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Participants.ToString());
+        ImGui.TextUnformatted(ev->Participants.ToString());
 
         OcelotUi.Title("Progress:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Progress.ToString());
+        ImGui.TextUnformatted(ev->Progress.ToString());
 
         OcelotUi.Title("Name:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Name.ToString());
+        ImGui.TextUnformatted(ev->Name.GetText());
 
         OcelotUi.Title("Description:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.Description.ToString());
+        ImGui.TextUnformatted(ev->Description.GetText());
 
         OcelotUi.Title("Icon Objective 0:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.IconObjective0.ToString());
+        ImGui.TextUnformatted(ev->IconObjective0.ToString());
 
         OcelotUi.Title("Max Participants 2:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(ev.MaxParticipants2.ToString());
+        ImGui.TextUnformatted(ev->MaxParticipants2.ToString());
 
         OcelotUi.Title("Map Marker:");
         ImGui.SameLine();
         ImGui.TextUnformatted(
-            $"X: {ev.MapMarker.Position.X}, Y: {ev.MapMarker.Position.Y}, IconId: {ev.MapMarker.IconId}"); // example, adjust fields accordingly
+            $"X: {ev->MapMarker.Position.X}, Y: {ev->MapMarker.Position.Y}, IconId: {ev->MapMarker.IconId}"); // example, adjust fields accordingly
 
         OcelotUi.Title("Event Container Pointer:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(((IntPtr)ev.EventContainer).ToString("X"));
+        ImGui.TextUnformatted(((IntPtr)ev->EventContainer).ToString("X"));
     }
 
 
-    private unsafe void PrintMapMarker(MapMarkerData marker)
+    private unsafe void PrintMapMarker(MapMarkerData* marker)
     {
         OcelotUi.Title("Level Id:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.LevelId.ToString());
+        ImGui.TextUnformatted(marker->LevelId.ToString());
 
         OcelotUi.Title("Objective Id:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.ObjectiveId.ToString());
+        ImGui.TextUnformatted(marker->ObjectiveId.ToString());
 
         OcelotUi.Title("Tooltip String:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.TooltipString != null ? marker.TooltipString->ToString() : "null");
+        ImGui.TextUnformatted(marker->TooltipString != null ? marker->TooltipString->ToString() : "null");
 
         OcelotUi.Title("Icon Id:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.IconId.ToString());
+        ImGui.TextUnformatted(marker->IconId.ToString());
 
         OcelotUi.Title("Position X:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.Position.X.ToString("F2"));
+        ImGui.TextUnformatted(marker->Position.X.ToString("F2"));
 
         OcelotUi.Title("Position Y:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.Position.Y.ToString("F2"));
+        ImGui.TextUnformatted(marker->Position.Y.ToString("F2"));
 
         OcelotUi.Title("Position Z:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.Position.Z.ToString("F2"));
+        ImGui.TextUnformatted(marker->Position.Z.ToString("F2"));
 
         OcelotUi.Title("Radius:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.Radius.ToString("F2"));
+        ImGui.TextUnformatted(marker->Radius.ToString("F2"));
 
         OcelotUi.Title("Map Id:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.MapId.ToString());
+        ImGui.TextUnformatted(marker->MapId.ToString());
 
         OcelotUi.Title("Place Name Zone Id:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.PlaceNameZoneId.ToString());
+        ImGui.TextUnformatted(marker->PlaceNameZoneId.ToString());
 
         OcelotUi.Title("Place Name Id:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.PlaceNameId.ToString());
+        ImGui.TextUnformatted(marker->PlaceNameId.ToString());
 
         OcelotUi.Title("End Timestamp:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.EndTimestamp.ToString());
+        ImGui.TextUnformatted(marker->EndTimestamp.ToString());
 
         OcelotUi.Title("Recommended Level:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.RecommendedLevel.ToString());
+        ImGui.TextUnformatted(marker->RecommendedLevel.ToString());
 
         OcelotUi.Title("Territory Type Id:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.TerritoryTypeId.ToString());
+        ImGui.TextUnformatted(marker->TerritoryTypeId.ToString());
 
         OcelotUi.Title("Data Id:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.DataId.ToString());
+        ImGui.TextUnformatted(marker->DataId.ToString());
 
         OcelotUi.Title("Marker Type:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.MarkerType.ToString());
+        ImGui.TextUnformatted(marker->MarkerType.ToString());
 
         OcelotUi.Title("Event State:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.EventState.ToString());
+        ImGui.TextUnformatted(marker->EventState.ToString());
 
         OcelotUi.Title("Flags:");
         ImGui.SameLine();
-        ImGui.TextUnformatted(marker.Flags.ToString());
+        ImGui.TextUnformatted(marker->Flags.ToString());
     }
 }

@@ -9,14 +9,9 @@ namespace BOCCHI.Modules.Treasure;
 
 public class Radar
 {
-    public void Draw(RenderContext context)
+    public void Draw(RenderContext context, TreasureModule module)
     {
         if (!ZoneData.IsInOccultCrescent() || Svc.Condition[ConditionFlag.InCombat])
-        {
-            return;
-        }
-
-        if (!context.IsForModule<TreasureModule>(out var module))
         {
             return;
         }

@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using BOCCHI.Enums;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using Ocelot;
 
 namespace BOCCHI.Modules.Fates;
 
 public class Alerter : IDisposable
 {
     private readonly FatesModule module;
+
+    // 聊天訊息前的標籤顏色（UIColor 列號）：綠色，與緊急遭遇戰的橘色區分。
+    private const ushort ChatTagColor = 45;
 
     private Dictionary<Demiatma, Func<bool>> DemiatmaAlerts
     {
@@ -31,11 +35,22 @@ public class Alerter : IDisposable
         this.module.tracker.OnFateDespawned += OnFateDespawned;
     }
 
+    /// <summary>魔法甕出現的提醒（<see cref="PotAlerter"/>）開著時，這裡的出現訊息與提示音跳過魔法甕；消失照舊。</summary>
+    public static bool LeavesSpawnToPotAlert(FatesConfig config, uint fateId)
+    {
+        return config.AlertPotSpawned && PotCycle.IsPot(fateId);
+    }
+
     private void OnFateSpawned(Fate fate)
     {
+        if (LeavesSpawnToPotAlert(module.Config, fate.Id))
+        {
+            return;
+        }
+
         if (module.Config.LogSpawn)
         {
-            Svc.Chat.Print($"{fate.Name} has Spawned");
+            Svc.Chat.Print(I18N.T("modules.fates.messages.spawned", new Dictionary<string, string> { ["name"] = fate.Name }), I18N.T("modules.fates.messages.tag"), ChatTagColor);
         }
 
         if (!ShouldAlertForFate(fate))
@@ -50,7 +65,7 @@ public class Alerter : IDisposable
     {
         if (module.Config.LogSpawn)
         {
-            Svc.Chat.Print($"{fate.Name} has Despawned");
+            Svc.Chat.Print(I18N.T("modules.fates.messages.despawned", new Dictionary<string, string> { ["name"] = fate.Name }), I18N.T("modules.fates.messages.tag"), ChatTagColor);
         }
 
         if (!ShouldAlertForFate(fate))

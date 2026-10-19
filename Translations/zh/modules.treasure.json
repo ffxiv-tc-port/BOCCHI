@@ -17,10 +17,6 @@
         "cast_treasure_sight_upon_return": {
           "label": "返回时使用魔寻宝",
           "tooltip": "在返回到起点时自动使用魔寻宝技能"
-        },
-        "show_percentage_active_treasure_count": {
-          "label": "以百分比显示宝箱",
-          "tooltip": "在总数量旁显示当前宝箱的百分比"
         }
       },
       "panel": {
@@ -29,12 +25,6 @@
         "hunt": {
           "title": "宝箱猎人",
           "distance_node": "距下一个宝箱的距离"
-        },
-        "active_bronze": {
-          "label": "青铜宝箱"
-        },
-        "active_silver": {
-          "label": "白银宝箱"
         }
       }
     }

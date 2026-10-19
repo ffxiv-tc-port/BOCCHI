@@ -1,11 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.Numerics;
+using BOCCHI.Pathfinding;
 
 namespace BOCCHI.Data;
 
 public static class TreasureData
 {
     public readonly record struct TreasureDatum(uint Id, Vector3 Position, uint Type);
+
+    /// <summary>刻意不去的生成點填這個等級（比區域等級上限的最大值 28 高，任何設定都不會排進巡迴）。</summary>
+    public const uint Avoided = 99;
+
+    /// <summary>刻意不去的生成點：那裡的寶箱照樣記錄與顯示，但不排進巡迴、不插隊。</summary>
+    public static bool IsAvoided(uint node)
+    {
+        return Levels.TryGetValue(node, out var level) && level == Avoided;
+    }
+
+    /// <summary>
+    /// 寶箱在網格接不上的低台上、巡迴要先跳上去的生成點（地面 Y 3.0、台面 3.8）。起跳點與落點取自使用者實機騎乘跳上去的那一次。
+    /// </summary>
+    public readonly static Dictionary<uint, HuntLedge> Ledges = new()
+    {
+        { 1842, new HuntLedge(new Vector3(-878.9f, 3.0f, -686.5f), new Vector3(-885.5f, 3.8f, -678.0f), 3.5f, 12f) },
+    };
 
     public readonly static Dictionary<uint, uint> Levels = new()
     {
@@ -62,7 +80,7 @@ public static class TreasureData
         { 1839, 22 },
         { 1840, 22 },
         { 1841, 22 },
-        { 1842, 99 }, // 23 marked as 99 to avoid this chest
+        { 1842, 23 }, // 寶箱在低台上：網格只有從台上往下的連結，上台要跳（Ledges）
         { 1843, 24 },
         { 1844, 24 },
         { 1845, 25 },

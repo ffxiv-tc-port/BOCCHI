@@ -1,8 +1,14 @@
 ﻿using System;
+using System.IO;
+using BOCCHI.Automation;
 using BOCCHI.Chains;
 using BOCCHI.Data;
+using BOCCHI.Ledger;
+using BOCCHI.Modules.Automator;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.Text;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin;
 using ECommons;
 using ECommons.DalamudServices;
@@ -30,6 +36,12 @@ public sealed class Plugin : OcelotPlugin
         get => ChainManager.Get("OCH##main");
     }
 
+    /// <summary>所有自動化的開始／停止入口；模組建構期間還是 null。</summary>
+    public AutomationControl Automation { get; private set; } = null!;
+
+    /// <summary>新月島的場次帳與活動帳（只寫 log）；模組建構期間還是 null。</summary>
+    public IslandLedger? Ledger { get; private set; }
+
     public Plugin(IDalamudPluginInterface plugin)
         : base(plugin, Module.DalamudReflector)
     {
@@ -40,6 +52,26 @@ public sealed class Plugin : OcelotPlugin
         OcelotInitialize(OcelotFeature.All);
 
         ChainHelper.Initialize(this);
+
+        Automation = new AutomationControl(this);
+
+        // 換區時要在 AutomationControl 停完自動化之後才結束場次：訂閱順序在它後面。記錄失敗不可以讓插件載入失敗。
+        try
+        {
+            Ledger = new IslandLedger(this);
+        }
+        catch (Exception ex)
+        {
+            Svc.Log.Warning($"[BOCCHI][場次記錄錯誤] 初始化失敗，這次載入不寫 [場次]／[活動帳]：{ex.GetType().Name}：{ex.Message}");
+        }
+    }
+
+    public override void Dispose()
+    {
+        // 先於模組與動作鏈收掉：卸載當下還在跑的自動化要先把導航停下來。
+        Automation?.Dispose();
+        Ledger?.Dispose();
+        base.Dispose();
     }
 
     private void SetupLanguage(IDalamudPluginInterface plugin)
@@ -48,6 +80,12 @@ public sealed class Plugin : OcelotPlugin
         I18N.LoadAllFromDirectory("en", "Translations/en");
         I18N.LoadAllFromDirectory("jp", "Translations/jp");
         I18N.LoadAllFromDirectory("fr", "Translations/fr");
+        // Traditional Chinese for the TC (台服) client. Loaded UNCONDITIONALLY -
+        // upstream keeps its Simplified "zh" behind #if DALAMUD_CN, which only the
+        // Release_CN configuration defines, so on our Release build that whole
+        // branch is compiled out and the client falls through to English.
+        I18N.LoadAllFromDirectory("tw", "Translations/tw");
+        GameTextTokens.Apply("tw", Path.Combine(plugin.AssemblyLocation.Directory?.FullName ?? string.Empty, "Translations", "tw"));
 #if DALAMUD_CN
         I18N.LoadAllFromDirectory("zh", "Translations/zh");
 #endif
@@ -64,6 +102,9 @@ public sealed class Plugin : OcelotPlugin
 #if DALAMUD_CN
             ClientLanguage.ChineseSimplified => "zh",
 #endif
+            // 數值轉型、不寫列舉成員名：這兩個成員名不是每個 Dalamud 版本都有。
+            // 台服回報 7（TraditionalChinese）；5 是 ChineseTraditional，有些版本回報它。
+            (ClientLanguage)5 or (ClientLanguage)7 => "tw",
             _ => "en",
         };
 
@@ -76,6 +117,19 @@ public sealed class Plugin : OcelotPlugin
         }
     }
 
+    // 先記再分派：分派給模組的那一段只送給這一幀有更新的模組（開箱時整個插件不更新）。
+    protected override void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
+    {
+        if (ZoneData.IsInOccultCrescent())
+        {
+            var text = message.TextValue;
+            SecondTreasureNotice.Observe(text, Environment.TickCount64);
+            global::BOCCHI.Modules.Treasure.TreasureSenseNotice.Observe(text);
+        }
+
+        base.OnChatMessage(type, timestamp, ref sender, ref message, ref isHandled);
+    }
+
     protected override bool ShouldUpdate()
     {
         return ZoneData.IsInOccultCrescent()
@@ -86,7 +140,7 @@ public sealed class Plugin : OcelotPlugin
                    Svc.Condition[ConditionFlag.OccupiedInEvent] ||
                    Svc.Condition[ConditionFlag.WatchingCutscene] ||
                    Svc.Condition[ConditionFlag.WatchingCutscene78] ||
-                   Svc.ClientState.LocalPlayer?.IsTargetable != true
+                   Svc.Objects.LocalPlayer?.IsTargetable != true
                );
     }
 }

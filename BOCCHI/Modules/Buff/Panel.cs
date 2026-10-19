@@ -1,8 +1,8 @@
 using BOCCHI.Data;
+using BOCCHI.Windows;
 using Dalamud.Interface;
 using ECommons.ImGuiMethods;
 using Dalamud.Bindings.ImGui;
-using Ocelot.Ui;
 
 namespace BOCCHI.Modules.Buff;
 
@@ -10,21 +10,20 @@ public class Panel
 {
     public void Draw(BuffModule module)
     {
-        OcelotUi.Title($"{module.T("panel.title")}:");
-        OcelotUi.Indent(() =>
+        MainPanelUi.Title(module.T("panel.title"), true);
+        ImGui.SameLine();
+
+        var isNearKnowledgeCrystal = ZoneData.IsNearKnowledgeCrystal();
+        var isQueued = module.BuffManager.IsQueued();
+
+        if (ImGuiEx.IconButton(FontAwesomeIcon.Redo, "Button##ApplyBuffs", enabled: isNearKnowledgeCrystal && !isQueued))
         {
-            var isNearKnowledgeCrystal = ZoneData.IsNearKnowledgeCrystal();
-            var isQueued = module.BuffManager.IsQueued();
+            module.BuffManager.QueueBuffs();
+        }
 
-            if (ImGuiEx.IconButton(FontAwesomeIcon.Redo, "Button##ApplyBuffs", enabled: isNearKnowledgeCrystal && !isQueued))
-            {
-                module.BuffManager.QueueBuffs();
-            }
-
-            if (ImGui.IsItemHovered())
-            {
-                ImGui.SetTooltip(module.T("panel.button.tooltip"));
-            }
-        });
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip(module.T("panel.button.tooltip"));
+        }
     }
 }

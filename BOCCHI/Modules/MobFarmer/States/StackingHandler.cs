@@ -34,6 +34,7 @@ public class StackingHandler(MobFarmerModule module) : FarmerPhaseHandler(module
             return FarmerPhase.Fighting;
         }
 
+        BOCCHI.Automation.OwnMoveDestinations.Note(furthest.Position);
         vnav.PathfindAndMoveTo(furthest.Position, false);
         HasRunStack = true;
 

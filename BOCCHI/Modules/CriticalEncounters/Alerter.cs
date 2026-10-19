@@ -2,15 +2,20 @@
 using System.Collections.Generic;
 using BOCCHI.Data;
 using BOCCHI.Enums;
+using ECommons;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using Ocelot;
 
 namespace BOCCHI.Modules.CriticalEncounters;
 
 public class Alerter : IDisposable
 {
     private readonly CriticalEncountersModule module;
+
+    // 聊天訊息前的標籤顏色（UIColor 列號）：橘色，與 F.A.T.E. 的綠色區分。
+    private const ushort ChatTagColor = 500;
 
     private Dictionary<Demiatma, Func<bool>> DemiatmaAlerts
     {
@@ -43,11 +48,11 @@ public class Alerter : IDisposable
         this.module.Tracker.OnInactiveState += OnCriticalEncounterDepawned;
     }
 
-    private void OnCriticalEncounterSpawned(DynamicEvent ev)
+    private void OnCriticalEncounterSpawned(CriticalEncounterSnapshot ev)
     {
         if (module.Config.LogSpawn)
         {
-            Svc.Chat.Print($"{ev.Name} has Spawned");
+            Svc.Chat.Print(I18N.T("modules.critical_encounters.messages.spawned", new Dictionary<string, string> { ["name"] = ev.Name }), I18N.T("modules.critical_encounters.messages.tag"), ChatTagColor);
         }
 
         if (!ShouldAlertForCriticalEncounter(ev))
@@ -58,11 +63,11 @@ public class Alerter : IDisposable
         UIGlobals.PlaySoundEffect(66);
     }
 
-    private void OnCriticalEncounterDepawned(DynamicEvent ev)
+    private void OnCriticalEncounterDepawned(CriticalEncounterSnapshot ev)
     {
         if (module.Config.LogSpawn)
         {
-            Svc.Chat.Print($"{ev.Name} has Despawned");
+            Svc.Chat.Print(I18N.T("modules.critical_encounters.messages.despawned", new Dictionary<string, string> { ["name"] = ev.Name }), I18N.T("modules.critical_encounters.messages.tag"), ChatTagColor);
         }
 
         if (!ShouldAlertForCriticalEncounter(ev))
@@ -73,7 +78,7 @@ public class Alerter : IDisposable
         UIGlobals.PlaySoundEffect(68);
     }
 
-    private bool ShouldAlertForCriticalEncounter(DynamicEvent ev)
+    private bool ShouldAlertForCriticalEncounter(CriticalEncounterSnapshot ev)
     {
         if (module.Config.AlertAll)
         {

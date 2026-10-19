@@ -29,7 +29,15 @@ public class CarrotsModule(Plugin plugin, Config config) : Module(plugin, config
 
     private readonly CarrotsTracker tracker = new();
 
+    private readonly CarrotAlerter alerter = new();
+
     private CarrotHunt hunter = null!;
+
+    /// <summary>PostInitialize 之前（或它失敗時）是 null。</summary>
+    public CarrotHunt? Hunter
+    {
+        get => hunter;
+    }
 
     public List<Carrot> carrots
     {
@@ -48,12 +56,13 @@ public class CarrotsModule(Plugin plugin, Config config) : Module(plugin, config
     public override void Update(UpdateContext context)
     {
         tracker.Tick(context.Framework);
+        alerter.Tick(this, PluginConfig.NotificationsConfig.PraiseOccultEvents);
         hunter.Update();
     }
 
     public override void Render(RenderContext context)
     {
-        radar.Draw(context.ForModule(this));
+        radar.Draw(context, this);
     }
 
     public override bool RenderMainUi(RenderContext context)

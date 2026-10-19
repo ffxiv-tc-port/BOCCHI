@@ -1,0 +1,37 @@
+{
+  "modules": {
+    "notifications": {
+      "config": {
+        "title": "Windows Notifications",
+        "notify_critical_encounters": {
+          "label": "Notify when a Critical Encounter opens for registration",
+          "tooltip": "Show one Windows notification (system tray) when a Critical Encounter (including the Forked Tower) opens for registration.\nRequires the NotificationMaster plugin."
+        },
+        "notify_pot_fates": {
+          "label": "Notify when a pot FATE spawns",
+          "tooltip": "Show one Windows notification when Persistent Pots or Pleading Pots spawns.\nRequires the NotificationMaster plugin."
+        },
+        "notify_when_game_focused": {
+          "label": "Also notify while the game window is focused",
+          "tooltip": "Off: no Windows notification while the game is the foreground window (you can already see it in game).\nOn: always notify."
+        },
+        "test": {
+          "label": "Send test notification",
+          "tooltip": "Send one Windows notification now through NotificationMaster to check that it works (ignores the foreground setting).",
+          "sent": "Sent.",
+          "not_loaded": "NotificationMaster is not installed or not enabled.",
+          "failed": "NotificationMaster did not show it (see dalamud.log)."
+        }
+      },
+      "toast": {
+        "ce_title": "BOCCHI: Critical Encounter",
+        "ce_body": "{name} is open for registration",
+        "ce_body_with_time": "{name} is open for registration (starts in ~{time})",
+        "pot_title": "BOCCHI: Pot FATE",
+        "pot_body": "{name} has spawned",
+        "test_title": "BOCCHI: Test notification",
+        "test_body": "If you can see this, NotificationMaster is receiving BOCCHI notifications."
+      }
+    }
+  }
+}

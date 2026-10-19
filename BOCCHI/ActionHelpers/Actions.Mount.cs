@@ -15,6 +15,9 @@ public static partial class Actions
 
     public static Action Unmount { get; private set; } = new(ActionType.Mount, 0);
 
+    /// <summary>一般動作「跳下」（從坐騎上下來）。</summary>
+    public static Action Dismount { get; private set; } = new(ActionType.GeneralAction, 23);
+
     public static void TryUnmount()
     {
         if (Svc.Condition[ConditionFlag.Mounted])

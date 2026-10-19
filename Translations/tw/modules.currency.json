@@ -1,0 +1,18 @@
+{
+  "modules": {
+    "currency": {
+      "config": {
+        "title": "貨幣設定"
+      },
+      "panel": {
+        "title": "貨幣",
+        "silver": {
+          "label": "每小時{item:45043|十二城邦銀幣}"
+        },
+        "gold": {
+          "label": "每小時{item:45044|十二城邦金幣}"
+        }
+      }
+    }
+  }
+}

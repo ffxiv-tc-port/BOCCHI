@@ -12,6 +12,14 @@ public class BlankRotationPlugin : IRotationPlugin
     {
     }
 
+    public void Release()
+    {
+    }
+
+    public void Tick()
+    {
+    }
+
     public void Dispose()
     {
     }

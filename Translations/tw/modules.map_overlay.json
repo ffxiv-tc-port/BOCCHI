@@ -1,0 +1,53 @@
+{
+  "modules": {
+    "map_overlay": {
+      "config": {
+        "title": "Mappy 地圖顯示",
+        "show_on_mappy": {
+          "label": "在 Mappy 顯示巡迴路線與生成點",
+          "tooltip": "在 Mappy 的地圖上畫出：\n・寶箱巡迴規劃的順序：淡色直線加序號，顏色照分段，傳送處斷開\n・寶箱生成點：已記錄的寶箱是銅色／銀色實心，沒巡過的是段色淡色空心，巡過沒有寶箱的是灰色小點\n・{item:48096|幸運胡蘿蔔}巡迴進行中時的胡蘿蔔生成點\n・BOCCHI 目前要去的地方，以及等魔法甕時的出生點與等待點\n滑鼠移到點上看說明。實際要走的路線由 Mappy 自己向 vnavmesh 讀。\n需要安裝並啟用有疊加層功能的 Mappy；沒有時不做任何事。"
+        },
+        "show_visited_spawn_points": {
+          "label": "顯示巡過沒有寶箱的生成點",
+          "tooltip": "巡過、確認沒有寶箱的寶箱生成點畫成灰色小點。關掉就不畫這些點。"
+        }
+      },
+      "label": {
+        "plan_node": "{route}・{direction}・第 {n} 站：生成點 {node}",
+        "plan_shard": "走到乙太之晶「{name}」",
+        "plan_teleport": "傳送到「{name}」",
+        "plan_return": "返回營地",
+        "direction_alternate": "本輪{direction}（{alternate}）",
+        "spawn_open": "寶箱生成點 {node}（{route}）：沒巡過",
+        "spawn_visited": "寶箱生成點 {node}（{route}）：巡過，沒有寶箱",
+        "chest": "已記錄的{type}：生成點 {node}（{route}）",
+        "chest_unmatched": "已記錄的{type}（對不上生成點）",
+        "avoided_suffix": "；刻意不去",
+        "unreachable_suffix": "；前往失敗，按清除或換區前不再去",
+        "carrot_open": "{item:48096|幸運胡蘿蔔}生成點 {id}：這一輪還沒去",
+        "carrot_done": "{item:48096|幸運胡蘿蔔}生成點 {id}：這一輪去過了",
+        "carrot_seen": "{item:48096|幸運胡蘿蔔}生成點 {id}：看得到胡蘿蔔",
+        "destination": "BOCCHI 目前的目的地：{source}",
+        "pot_spawn": "魔法甕「{pot}」的出生點",
+        "pot_wait": "等魔法甕「{pot}」的等待點"
+      },
+      "source": {
+        "none": "其他",
+        "illegal_mode_fate": "非法模式前往 F.A.T.E.",
+        "illegal_mode_critical_encounter": "非法模式前往緊急遭遇戰",
+        "illegal_mode_shard": "非法模式先走到乙太之晶再傳送",
+        "teleporter_walk": "傳送面板的「走過去」",
+        "teleporter_after_teleport": "傳送面板的「傳送後走過去」",
+        "nearest_shard": "傳送前走到最近的乙太之晶",
+        "aetheryte": "返回後走到乙太之光旁",
+        "knowledge_crystal": "返回後去補增益效果",
+        "hunt_node": "巡迴走向下一個點",
+        "hunt_shard": "巡迴走到乙太之晶",
+        "critical_encounter_spot": "緊急遭遇戰報名範圍內的站位",
+        "silver_chest": "順路去開白銀寶箱",
+        "pot_wait_spot": "走到等魔法甕的等待點",
+        "eureka_pot_hunt": "EurekaHelper 魔法甕尋寶自動走向"
+      }
+    }
+  }
+}

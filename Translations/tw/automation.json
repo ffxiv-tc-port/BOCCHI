@@ -1,0 +1,127 @@
+{
+  "automation": {
+    "panel": {
+      "title": "自動化控制",
+      "running": "執行中",
+      "stopped": "已停止",
+      "stop_all_tooltip": "全部停止：停下所有自動化，並取消進行中的移動、傳送與動作。",
+      "paused": "已暫停",
+      "progress_invalid": "已失效",
+      "progress_tooltip": "已跑 {progress} 點",
+      "pause_tooltip": "暫停：停下移動與動作，但保留進度。之後按續跑，會從當時的位置重新規劃，接著跑還沒跑過的點。",
+      "resume_tooltip": "續跑：從目前位置重新規劃，接著跑還沒跑過的點（已跑 {progress} 點）。要從頭開始的話，先按停止放棄進度。",
+      "start_fresh_tooltip": "按這裡從頭開始（會放棄保留的進度：已跑 {progress} 點）。",
+      "stop_discard_tooltip": "停止並放棄進度。之後還要接著跑的話，請改按暫停。",
+      "abandon_tooltip": "放棄暫停中的進度（已跑 {progress} 點）。",
+      "death_restore": "倒地時停下：{names}",
+      "death_restore_tooltip": "恢復倒地時停下的自動化：照一般的開始條件逐項開始，寶箱／{item:48096|幸運胡蘿蔔}巡迴從保留的進度續跑。開不起來的那一項會在聊天視窗說原因。",
+      "combo_start": "開始組合",
+      "combo_stop": "停止組合",
+      "combo_start_tooltip": "一次開始常用組合：{names}。\n已經在跑的不重開；每一項仍可單獨開始／停止，「全部停止」與急停照舊停下全部。\n組合內容在非法模式設定裡勾選。",
+      "combo_stop_tooltip": "停止常用組合裡的：{names}。\n只停這幾項，其他自動化照舊。"
+    },
+    "kind": {
+      "illegal_mode": "非法模式（自動參加 F.A.T.E.／緊急遭遇戰）",
+      "mob_farmer": "自動打怪",
+      "treasure_hunt": "寶箱巡迴",
+      "carrot_hunt": "{item:48096|幸運胡蘿蔔}巡迴",
+      "return_after_events": "打完 F.A.T.E.／緊急遭遇戰後自動返回",
+      "phantom_job_leveling": "輔助職業練等（目前的輔助職業滿級後，自動切換到下一個還沒滿級的）"
+    },
+    "kind_short": {
+      "illegal_mode": "非法模式",
+      "mob_farmer": "自動打怪",
+      "treasure_hunt": "寶箱巡迴",
+      "carrot_hunt": "{item:48096|幸運胡蘿蔔}巡迴",
+      "return_after_events": "打完自動返回",
+      "phantom_job_leveling": "輔助職業練等"
+    },
+    "blocked": {
+      "already_running": "已經在執行中。",
+      "not_in_zone": "要在蜃景幻界新月島裡才能開始。",
+      "dead": "無法戰鬥狀態下不能開始。",
+      "other_running": "請先停止「{name}」。",
+      "module_disabled": "這個模組在設定裡是關閉的。",
+      "module_unavailable": "這個功能沒有載入成功，詳情請看記錄檔。",
+      "option_off": "請先到設定開啟「{option}」。",
+      "return_not_configured": "請先到傳送設定勾選「{fate}」或「{ce}」。",
+      "missing_plugins": "缺少必要的插件：{plugins}。"
+    },
+    "source": {
+      "main_window": "主視窗",
+      "module_panel": "模組面板",
+      "title_button": "標題列按鈕",
+      "command": "指令",
+      "config_window": "設定視窗",
+      "start_fresh": "從頭開始",
+      "death_restore": "倒地後恢復（{source}）",
+      "combo": "常用組合（{source}）"
+    },
+    "reason": {
+      "left_zone": "離開新月島",
+      "zone_changed": "區域切換",
+      "dead": "角色陷入無法戰鬥狀態",
+      "logged_out": "登出或斷線",
+      "external": "其他插件要求停止：{source}",
+      "stalled": "第 {step} 步超過 {seconds} 秒沒有進展，判定卡住",
+      "no_path": "第 {step} 步 {seconds} 秒內都沒開始移動（vnavmesh 算不出路）",
+      "manual_start": "手動開始「{name}」",
+      "data_load_failed": "讀不到尋路成本表（原因見記錄檔）"
+    },
+    "resume_blocked": {
+      "none": "沒有暫停中的進度可以續跑。",
+      "zone_changed": "暫停後換過區域或離開過新月島，寶箱與胡蘿蔔已經不是同一批；請按開始從頭跑。",
+      "logged_out": "暫停後登出或斷線過；請按開始從頭跑。",
+      "expired": "暫停超過 {minutes} 分鐘（尋路設定的續跑有效時間），跑過的點可能已經重新出現寶箱或胡蘿蔔；請按開始從頭跑。"
+    },
+    "messages": {
+      "started": "[BOCCHI] 已開始：{name}",
+      "stopped": "[BOCCHI] 已停止：{names}（{reason}）",
+      "cannot_start": "[BOCCHI] 無法開始「{name}」：{reason}",
+      "not_running": "[BOCCHI] 「{name}」沒有在執行。",
+      "nothing_running": "[BOCCHI] 目前沒有正在執行的自動化；進行中的動作也已一併取消。",
+      "command_usage": "[BOCCHI] 用法：/bocchi start|stop [illegal|farm|treasure|carrot|return|leveling]；/bocchi pause|resume [treasure|carrot]；/bocchi restore；/bocchi skip [clear]；/bocchi combo",
+      "paused": "[BOCCHI] 已暫停：{name}（已跑 {progress} 點）。按續跑或輸入 /bocchi resume 接著跑。",
+      "resumed": "[BOCCHI] 續跑：{name}（已跑 {progress} 點，從目前位置重新規劃剩下的點）",
+      "cannot_resume": "[BOCCHI] 無法續跑「{name}」：{reason}",
+      "progress_abandoned": "[BOCCHI] 已放棄「{name}」的進度（已跑 {progress} 點）。",
+      "progress_kept": "[BOCCHI] 已保留「{name}」的進度（已跑 {progress} 點），不會自己續跑；要接著跑請按續跑或輸入 /bocchi resume {key}。",
+      "not_pausable": "[BOCCHI] 「{name}」不能暫停或續跑。",
+      "nothing_to_pause": "[BOCCHI] 目前沒有正在跑的巡迴可以暫停。",
+      "nothing_to_resume": "[BOCCHI] 沒有暫停中的巡迴可以續跑。",
+      "death_restore_prompt": "[BOCCHI] 已復活。倒地時停下的自動化：{names}。要恢復請按主視窗「自動化控制」的恢復鈕，或輸入 /bocchi restore（不會自己恢復）。",
+      "death_restore_notification_title": "BOCCHI：可以恢復自動化",
+      "death_restore_notification": "倒地時停下：{names}\n按主視窗「自動化控制」的恢復鈕，或輸入 /bocchi restore。",
+      "nothing_to_restore": "[BOCCHI] 沒有倒地時停下的自動化可以恢復（換區、登出、手動開始任何一項或全部停止之後就不再保留）。",
+      "restore_option_off": "[BOCCHI] 請先到非法模式設定開啟「{option}」。",
+      "cannot_restore": "[BOCCHI] 無法恢復倒地時停下的自動化：{reason}",
+      "skip_done": "[BOCCHI] 換一場：略過「{name}」，改挑下一場（非法模式照常執行）。",
+      "skip_done_in_fate": "[BOCCHI] 換一場：略過「{name}」。你還在它的範圍內，BOCCHI 不會帶你離開：離開範圍或它結束後才選下一場。",
+      "skip_done_in_ce": "[BOCCHI] 換一場：略過「{name}」。你已經在這場緊急遭遇戰裡：它結束後才選下一場。",
+      "skip_done_in_combat": "[BOCCHI] 換一場：略過「{name}」。目前在戰鬥中：脫離戰鬥後才選下一場。",
+      "skip_quick_restart": "[BOCCHI] 停止後 {seconds} 秒又開始，當成換一場：略過「{name}」，改選下一場（主視窗「本場略過」可以清空；非法模式設定可以關掉這個行為）。",
+      "skip_nothing": "[BOCCHI] 換一場：{reason}",
+      "skips_cleared": "[BOCCHI] 已清空本場略過（{count} 場）。",
+      "combo_started": "[BOCCHI] 已開始組合：{names}",
+      "combo_stopped": "[BOCCHI] 已停止組合：{names}",
+      "combo_cannot_start": "[BOCCHI] 無法開始組合：{reason}",
+      "combo_nothing_running": "[BOCCHI] 組合裡沒有正在執行的自動化。"
+    },
+    "skip": {
+      "label": "本場略過",
+      "tooltip": "換一場：略過非法模式目前選定的那一場，非法模式不停、馬上改挑下一場；沒有別場可接時照常待命。\n角色已經在它的範圍內、在緊急遭遇戰裡或戰鬥中時，不會帶你離開：離開範圍、它結束或脫離戰鬥後才選下一場。\n略過的場次列在下方「本場略過」，可以清空；那一場結束、換區或登出就自動拿掉。",
+      "list_tooltip": "這幾場這一輪不會再被選到：\n{names}\n那一場結束、換區或登出就自動拿掉。",
+      "clear_tooltip": "清空本場略過：上面這幾場之後又可以被選到。",
+      "blocked_not_running": "非法模式沒有在執行。",
+      "blocked_no_activity": "目前沒有選定的活動（待命中）。",
+      "blocked_pot_wait": "目前是在魔法甕出生點等它出現，不是一場活動，沒有可略過的。",
+      "cleared_by": "你按了清空（{source}）"
+    },
+    "combo": {
+      "empty": "常用組合沒有勾選任何項目：請到非法模式設定勾選。",
+      "conflict": "組合裡的「{names}」都會自己移動，不能同時開：請到非法模式設定只留一項。",
+      "blocked_item": "「{name}」：{reason}",
+      "all_running": "組合裡的項目都已經在執行。"
+    }
+  }
+}

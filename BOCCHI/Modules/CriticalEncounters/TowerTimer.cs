@@ -71,7 +71,7 @@ public class TowerTimer : IDisposable
         FatesCompleted++;
     }
 
-    private void OnCriticalEncounterDespawned(DynamicEvent ev)
+    private void OnCriticalEncounterDespawned(CriticalEncounterSnapshot ev)
     {
         CriticalEncountersCompleted++;
 
@@ -88,7 +88,7 @@ public class TowerTimer : IDisposable
         ForkedTowerSpawnTimer = TimeSpan.FromMinutes(60);
     }
 
-    private void OnCriticalEncounterRegistered(DynamicEvent ev)
+    private void OnCriticalEncounterRegistered(CriticalEncounterSnapshot ev)
     {
         if (ev.EventType < 4)
         {

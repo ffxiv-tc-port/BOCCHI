@@ -22,9 +22,110 @@
           "label": "Prioritize central most enemy",
           "tooltip": "Try and target the enemy in the middle of the group."
         },
+        "target_min_hold_seconds": {
+          "label": "Minimum target hold (seconds)",
+          "tooltip": "A target picked by another plugin (e.g. BossMod Reborn) or by you is kept for at least this many seconds before BOCCHI switches back, as long as it is a living, attackable enemy.\nAlso: a target that is an enemy of this F.A.T.E./critical encounter, or that is attacking you, is never switched; the target is never cleared when the enemy list is empty; when a switch is needed, the previous target is kept if it is within 3 yalms of the best pick.\n0 = old behaviour: while participating, re-target the central/closest enemy every 0.5 seconds and clear the target when the enemy list is empty."
+        },
         "engagement_range": {
           "label": "Engagement Range",
           "tooltip": "The range to be at from a fate monster before dismounting and letting your rotation/ai plugin take over"
+        },
+        "early_engage_when_fate_mob_engaged": {
+          "label": "Engage early when the F.A.T.E. mob is already in combat",
+          "tooltip": "While Illegal Mode travels to a F.A.T.E., if your target is one of its mobs and that mob is already in combat (for example fighting other players), ranged and healer jobs dismount and stop to engage within the distance below instead of walking in to the engagement range; tanks and melee jobs keep using the engagement range.\nIt does not stop early when the stopping point is inside another mob's detection range (as judged by the aggro display); it walks in as before. If you are still not in combat 10 seconds after engaging early, it walks in as before for the rest of that F.A.T.E.\nOn arriving inside the F.A.T.E., if your target is not one of its mobs and is not attacking you, it switches to one of its mobs, preferring ones already in combat (requires Force Target and follows the Minimum target hold rules).\nOff = old behaviour: dismount only at the engagement range."
+        },
+        "ranged_engagement_range": {
+          "label": "Early engagement range for ranged and healer jobs",
+          "tooltip": "How close to the mob (measured to its hitbox) ranged and healer jobs must be before dismounting to engage early."
+        },
+        "manage_wrath_occult_options": {
+          "label": "Let BOCCHI manage phantom job actions (Wrath Combo, only checked actions)",
+          "tooltip": "When on, BOCCHI temporarily takes over Wrath Combo's phantom job actions while Illegal Mode or Mob Farmer is running:\nchecked actions in the list below may be used, unchecked ones are turned off; the phantom job of a checked action is turned on as well.\nWhen the automation stops (Stop all, leaving Occult Crescent, KO, logging out, unloading the plugin) BOCCHI hands control back and your own Wrath Combo settings apply again.\nOff (default): Wrath Combo is left untouched."
+        },
+        "sync_wrath_occult_options": {
+          "label": "Keep the list in sync with Wrath Combo's own phantom action switches",
+          "tooltip": "When on, the list below and Wrath Combo's own phantom job action switches (the phantom job group in its settings window) are kept the same, so you do not have to set both; nothing changes at the moment BOCCHI stops and hands control back.\n- Checking or unchecking an action in the list writes that action to Wrath Combo's own settings right away and saves them (its phantom job is turned on when needed; other actions of the same phantom job keep their effect).\n- Changing an action in Wrath Combo's window updates the list within about 2 seconds.\n- Items that already differ when you turn this on are not changed automatically: they are marked in the list and you choose with \"Use the list\" or \"Use Wrath Combo\".\nOnly the phantom job action switches are touched, no other Wrath Combo setting, and when actions are used does not change. While BOCCHI runs it still takes over according to the list and hands control back afterwards.\nNeeds the Wrath Combo from the same update; the list shows a notice when it cannot be read. Off (default): unchanged, the two sides do not affect each other."
+        },
+        "allowed_wrath_occult_options": {
+          "label": "Phantom job actions BOCCHI may use",
+          "tooltip": "Checked: Wrath Combo may use it while BOCCHI runs. Unchecked: turned off. Nothing is checked by default, so no action is used.\nFor example leave Phantom Berserker's Rage unchecked and the automated fights will not use it (it can make you eat mechanics when used automatically).\nChecking any of Phantom Geomancer's weather actions also turns on Weather.\nIn Mob Farmer, Phantom Cannoneer itself is still switched by Mob Farmer; the cannon actions still need to be checked to be used.\nChanges made while running apply right away. Hover an action to see its Wrath Combo option name.",
+          "empty": "Could not get the phantom job action list from Wrath Combo: it is not loaded, or this version does not provide it.",
+          "status_active": "Active: {allowed} action(s) allowed, {blocked} turned off.",
+          "status_idle": "Not active: BOCCHI takes over only while Illegal Mode or Mob Farmer is running; unchecked actions are turned off.",
+          "status_failed": "Running, but not applied (Wrath Combo is not loaded or refused BOCCHI; see the log).",
+          "stale": "{count} checked item(s) are not in the loaded Wrath Combo and will be skipped.",
+          "stale_clear": "Clear",
+          "select_all": "Check all",
+          "select_none": "Uncheck all",
+          "sync_reading": "Sync: reading Wrath Combo's own settings...",
+          "sync_unavailable": "Sync: cannot read Wrath Combo's own settings (it is not loaded, or this version does not provide them). Changes made in the list meanwhile are not written to it.",
+          "sync_ok": "Sync: the list matches Wrath Combo's own settings.",
+          "sync_mismatch": "Sync: {count} item(s) differ from Wrath Combo's own settings (marked on their rows). Choose which side to keep:",
+          "sync_use_list": "Use the list",
+          "sync_use_list_tooltip": "Write the list to Wrath Combo's own phantom action settings and save them (unchecked actions are turned off; phantom jobs are turned on where needed). The list is not changed.",
+          "sync_use_wrath": "Use Wrath Combo",
+          "sync_use_wrath_tooltip": "Change the list to match Wrath Combo's own settings (only actions Wrath Combo would use are checked). Wrath Combo's settings are not changed.",
+          "mark_on": "≠ Wrath Combo: on",
+          "mark_off": "≠ Wrath Combo: off",
+          "mark_unknown": "Wrath Combo: ?",
+          "group_mismatch": "  {count} differ",
+          "lease_name": "BOCCHI (phantom action list)"
+        },
+        "auto_repair": {
+          "label": "Self-repair with Dark Matter when durability is low",
+          "tooltip": "While Illegal Mode runs, between two activities (out of combat, not mounted, nothing else in progress) BOCCHI checks your equipped gear: when the lowest durability of the gear you can repair yourself drops to the threshold below, it uses Repair, Repair All and confirms, spending Dark Matter.\nOnly gear you can repair yourself is counted (Dark Matter of a high enough grade, repair class level at least item level minus 10); if none can be repaired it writes one log line and does not retry for 10 minutes.\nBefore confirming it asks YesAlready to pause its confirmation handling and does not repair if that fails; a confirmation that is not the self-repair question is never pressed.\nStopping Illegal Mode (including Stop all) stops any further clicks. Off (default): no repairs."
+        },
+        "auto_repair_threshold": {
+          "label": "Durability threshold (%)",
+          "tooltip": "Repair when the lowest durability among the gear you can repair yourself is at or below this percentage."
+        },
+        "prompt_restore_after_death": {
+          "label": "Offer to restore automation after death",
+          "tooltip": "When all automation stops because your character was KO'd, show a chat message and a notification once you are revived, and a restore button under Automation Control in the main window (or type /bocchi restore).\nNothing restores by itself: pressing it starts each one with the usual checks, and treasure and carrot hunts resume from the kept progress.\nThe list is dropped after a zone change, logout, starting any automation manually, or Stop All (including the emergency stop).\nOff (default) = unchanged; start things again yourself after reviving."
+        },
+        "yield_to_manual_movement": {
+          "label": "Yield while you move the character yourself",
+          "tooltip": "While Illegal Mode is travelling, if navigation stops but the character keeps moving on its own (you are using the movement keys, WASD or turning with the mouse), stop re-sending the route and chasing enemies and let you drive; once the character has been still for about 1.5 seconds, continue to the activity from where you are.\nThe character must keep moving for about 1.5 seconds to count as you driving: one-off displacement such as knockbacks or teleports does not count, and nothing is judged while mounting, casting or jumping.\nAlso, if navigation stops right after you pressed a movement key (WASD, Q/E, arrow keys, both mouse buttons, the left gamepad stick; custom key bindings are not read), or while you are opening a coffer or talking (not one BOCCHI opened itself), even a short tap counts as you driving: no re-send and no re-send count, and it continues once there is no key, no interaction and the character has been still for about 1.5 seconds; this kind of yield is capped at 60 seconds per trip, after which the old behaviour applies.\nThe walk to a silver coffer on the way and the walk to the in-town aethernet shard before teleporting yield by the same rules (no re-walk, not counted as a re-walk; Dalamud log [BOCCHI][尋路讓位]).\nAfter more than 30 seconds of continuous yielding, this trip goes back to the old behaviour (re-send when stopped, abort and restart when out of re-sends).\nWhile Lifestream is running a task (for example you clicked a destination on the map and it is taking you there), BOCCHI also yields: it stops its own navigation first (otherwise Lifestream aborts the task), that time does not count towards the 30 seconds, and it continues from where you are once Lifestream is done and the character has been still for about 1.5 seconds.\nThe first yield and the continuation each write one line to the Dalamud log ([BOCCHI][趕路讓位]).\nOn (default) = yield. Off = unchanged, re-send as soon as navigation stops."
+        },
+        "skip_activity_on_quick_restart": {
+          "label": "Stop then start again quickly = switch",
+          "tooltip": "When you stop Illegal Mode yourself (main window, command, title bar, settings page, Stop All, another plugin's emergency stop) and start it again yourself within 2 minutes, the event that was picked when you stopped is added to Skipped and another one is picked; a chat line says so.\nAutomatic stops (KO, zone change, logout) do not count, and neither does stopping with no event picked (idle, waiting for a pot).\nSkipped events can be cleared under Skipped in the main window's Automation section; each drops off by itself when that event ends, on a zone change or on logout.\nOn (default) = skip. Off = unchanged; starting again may pick the same event (use the switch button in the Illegal Mode cell instead)."
+        },
+        "combo_illegal_mode": {
+          "label": "Usual combo: Illegal Mode",
+          "tooltip": "The Start combo button under Automation in the main window (or /bocchi combo) starts everything ticked here in one go; when all of them are running the button turns into Stop combo, which stops only these.\nThe four that move the character (Illegal Mode, Mob Farmer, Treasure Hunt, Carrot Hunt) cannot run together, so tick only one of them; Return after F.A.T.E. / CE and phantom job leveling can be added.\nEach one can still be started / stopped on its own; Stop All and the emergency stop still stop everything. Nothing starts until you press it (not on plugin load, entering the island or logging in).\nDefault: Illegal Mode + Return after F.A.T.E. / CE + phantom job leveling."
+        },
+        "combo_mob_farmer": {
+          "label": "Usual combo: Mob Farmer",
+          "tooltip": "The Start combo button under Automation in the main window (or /bocchi combo) starts everything ticked here in one go; when all of them are running the button turns into Stop combo, which stops only these.\nThe four that move the character (Illegal Mode, Mob Farmer, Treasure Hunt, Carrot Hunt) cannot run together, so tick only one of them; Return after F.A.T.E. / CE and phantom job leveling can be added.\nEach one can still be started / stopped on its own; Stop All and the emergency stop still stop everything. Nothing starts until you press it (not on plugin load, entering the island or logging in).\nDefault: Illegal Mode + Return after F.A.T.E. / CE + phantom job leveling."
+        },
+        "combo_treasure_hunt": {
+          "label": "Usual combo: Treasure Hunt",
+          "tooltip": "The Start combo button under Automation in the main window (or /bocchi combo) starts everything ticked here in one go; when all of them are running the button turns into Stop combo, which stops only these.\nThe four that move the character (Illegal Mode, Mob Farmer, Treasure Hunt, Carrot Hunt) cannot run together, so tick only one of them; Return after F.A.T.E. / CE and phantom job leveling can be added.\nEach one can still be started / stopped on its own; Stop All and the emergency stop still stop everything. Nothing starts until you press it (not on plugin load, entering the island or logging in).\nDefault: Illegal Mode + Return after F.A.T.E. / CE + phantom job leveling."
+        },
+        "combo_carrot_hunt": {
+          "label": "Usual combo: Carrot Hunt",
+          "tooltip": "The Start combo button under Automation in the main window (or /bocchi combo) starts everything ticked here in one go; when all of them are running the button turns into Stop combo, which stops only these.\nThe four that move the character (Illegal Mode, Mob Farmer, Treasure Hunt, Carrot Hunt) cannot run together, so tick only one of them; Return after F.A.T.E. / CE and phantom job leveling can be added.\nEach one can still be started / stopped on its own; Stop All and the emergency stop still stop everything. Nothing starts until you press it (not on plugin load, entering the island or logging in).\nDefault: Illegal Mode + Return after F.A.T.E. / CE + phantom job leveling."
+        },
+        "combo_return_after_events": {
+          "label": "Usual combo: Return after F.A.T.E. / CE",
+          "tooltip": "The Start combo button under Automation in the main window (or /bocchi combo) starts everything ticked here in one go; when all of them are running the button turns into Stop combo, which stops only these.\nThe four that move the character (Illegal Mode, Mob Farmer, Treasure Hunt, Carrot Hunt) cannot run together, so tick only one of them; Return after F.A.T.E. / CE and phantom job leveling can be added.\nEach one can still be started / stopped on its own; Stop All and the emergency stop still stop everything. Nothing starts until you press it (not on plugin load, entering the island or logging in).\nDefault: Illegal Mode + Return after F.A.T.E. / CE + phantom job leveling."
+        },
+        "combo_phantom_job_leveling": {
+          "label": "Usual combo: phantom job leveling",
+          "tooltip": "The Start combo button under Automation in the main window (or /bocchi combo) starts everything ticked here in one go; when all of them are running the button turns into Stop combo, which stops only these.\nThe four that move the character (Illegal Mode, Mob Farmer, Treasure Hunt, Carrot Hunt) cannot run together, so tick only one of them; Return after F.A.T.E. / CE and phantom job leveling can be added.\nEach one can still be started / stopped on its own; Stop All and the emergency stop still stop everything. Nothing starts until you press it (not on plugin load, entering the island or logging in).\nDefault: Illegal Mode + Return after F.A.T.E. / CE + phantom job leveling."
+        },
+        "prioritize_silver_chests": {
+          "label": "Open silver coffers on the way between activities",
+          "tooltip": "While Illegal Mode is running, between two activities (after one ends, before or while travelling to the next), if a silver coffer has already been spotted nearby, go open it first and then continue to the next activity.\nIt never goes looking for coffers: only coffers the Treasure module can already see, within the distance below; when already heading to an activity, stopping at the coffer must also add no more than the extra distance below.\nNot while in combat, casting, teleporting or close to the next activity, and not while an enabled critical encounter has less than 90 seconds of registration left. Each coffer is tried once; walking and opening give up after about a minute (longer for coffers beyond 100 yalms, about a minute and a half at 200).\nRequires the Treasure module to be enabled. Every decision is written to the Dalamud log ([BOCCHI][順路銀寶箱]).\nOff (default) = unchanged behaviour."
+        },
+        "silver_chest_max_distance": {
+          "label": "Max distance to the coffer (yalms)",
+          "tooltip": "Only go when the coffer is at most this far from you (straight line)."
+        },
+        "silver_chest_max_detour": {
+          "label": "Max extra distance (yalms)",
+          "tooltip": "When already heading to an activity, only go when stopping at the coffer adds at most this much distance compared with going straight there (straight-line estimate)."
         },
         "do_critical_encounters": {
           "label": "Do Critical Encounters",
@@ -32,7 +133,15 @@
         },
         "delay_critical_encounters": {
           "label": "Delay before heading to Critical Encounter",
-          "tooltip": "Add a 10 - 15 second delay before heading to a critical Encounter"
+          "tooltip": "Don't head to a Critical Engagement until 10 - 15 seconds after its registration opened (counted from when the plugin first saw it open; if that is unknown, from when the encounter was selected). If registration has already been open long enough, e.g. right after a F.A.T.E., leave immediately. Waits at most once per encounter: restarting the trip does not wait again."
+        },
+        "leave_fate_travel_for_critical_encounter": {
+          "label": "While travelling to a F.A.T.E., switch to a Critical Engagement whose registration is about to close",
+          "tooltip": "On the way to a F.A.T.E. (not inside it yet, not in combat): if a Critical Engagement you have enabled is open for registration and has no more than the seconds below left, stop travelling to the F.A.T.E. and go to that Critical Engagement instead (using the usual Illegal Mode route to Critical Engagements).\nNever switches once you are inside the F.A.T.E., in combat, or while a return/teleport is being cast or loading.\nOff (default): unchanged, Critical Engagements are considered after the selected F.A.T.E. ends."
+        },
+        "leave_fate_travel_for_critical_encounter_seconds": {
+          "label": "Registration seconds left",
+          "tooltip": "Only switch when the Critical Engagement has at most this many seconds of registration left; 0 = switch as soon as one is open. Also switches when the time left cannot be read."
         },
         "do_scourge_of_the_mind": {
           "label": "CE: Scourge of the Mind",
@@ -149,6 +258,22 @@
         "do_pleading_pots": {
           "label": "Fate: Pleading Pots",
           "tooltip": "Toggle participation in the 'Pleading Pots' fate."
+        },
+        "prioritize_pots": {
+          "label": "Prioritize Pots F.A.T.E.s (before Critical Engagements and other F.A.T.E.s)",
+          "tooltip": "When choosing the next activity: an enabled Pots F.A.T.E. (Persistent Pots / Pleading Pots, enable them above) > Critical Engagements > other F.A.T.E.s.\nOn the way to a Critical Engagement or another F.A.T.E. (not inside it yet, not in combat): as soon as an enabled Pots F.A.T.E. appears, stop travelling and go to it instead. On the way to a Pots F.A.T.E., never switch to a Critical Engagement.\nNever abandons an activity you are already taking part in, and never interrupts a return/teleport cast or loading.\nOff (default): unchanged, Critical Engagements first."
+        },
+        "skip_critical_encounters_before_pot_minutes": {
+          "label": "Skip Critical Engagements this many minutes before a pot FATE",
+          "tooltip": "With Prioritize Pots on: when the next enabled pot FATE is expected within this many minutes, do not pick a Critical Engagement (and do not switch to one on the way to a F.A.T.E.); 0 = never skip.\nThe estimate counts from when the previous pot appeared; the two pots alternate, about one every 30 minutes (cycle in the F.A.T.E. settings). If no pot has been seen since you entered, or the estimated time passed 5 minutes ago without a pot, the time is unknown and Critical Engagements are joined as usual.\nA Critical Engagement you are already heading to, waiting at or taking part in is never abandoned. Each Critical Engagement skipped this way writes one line to the Dalamud log.\nTurn on \"Show pot FATE timer\" in the F.A.T.E. settings to see the estimate."
+        },
+        "skip_fates_before_pot_minutes": {
+          "label": "Skip F.A.T.E.s this many minutes before a pot FATE",
+          "tooltip": "With Prioritize Pots on: when the next enabled pot FATE is expected within this many minutes, do not pick a new regular F.A.T.E. when choosing the next activity, and idle as usual until the pot appears (nearby silver coffers are still opened; with \"Wait at the pot spawn\" on it waits near the pot's spawn point, otherwise it returns to the base camp and waits by the aetheryte); 0 = never skip.\nA F.A.T.E. you are already heading to or taking part in is never abandoned. If no pot has been seen since you entered, or the estimated time passed 5 minutes ago without a pot, the time is unknown and F.A.T.E.s are joined as usual.\nCounted separately from the Critical Engagement option above: by default, 2-5 minutes before a pot no Critical Engagements but F.A.T.E.s are fine; within 2 minutes neither. Each F.A.T.E. skipped this way writes one line to the Dalamud log."
+        },
+        "wait_at_pot_spawn": {
+          "label": "Wait at the pot spawn when a pot is about to appear",
+          "tooltip": "With Prioritize Pots on: when the next enabled pot FATE is expected soon (the larger of the two \"Skip ... before a pot FATE\" windows above, counting only the activity types you join) and there is nothing else to do, travel to that pot's spawn point and wait there (nearby silver coffers are still opened before leaving; route choice and aggro avoidance work as usual on the way). On arrival it stands at the point within 30 m of the spawn that is closest to it while staying at least 3 m outside every monster aggro range (sight counts as a full circle; it moves if a monster wanders close; if no point is safe it stands at the one closest to the spawn).\nWhen the pot appears it joins it as usual. If the estimate passes by 5 minutes without a pot, or an activity you can join comes up while waiting, it stops waiting and picks activities as usual. If attacked while waiting it dismounts (and turns the AI provider on when Toggle AI Provider is enabled), then goes back to the waiting point after the fight; once you move the character yourself it stops adjusting the position for this wait.\nOff = as before, idle by the base camp aetheryte. Departure, arrival, the pot appearing and a missed estimate each write one line to the Dalamud log."
         }
       },
       "panel": {
@@ -159,11 +284,20 @@
         },
         "activity_state": {
           "label": "Activity State",
-          "none": "Waiting for Activity"
+          "none": "Waiting for Activity",
+          "idle": "Idle",
+          "pathfinding": "Pathfinding",
+          "waiting_to_start": "Waiting to Start (CE)",
+          "participating": "Participating",
+          "done": "Done",
+          "waiting_for_pot": "Waiting for the pot",
+          "unknown": "Unknown"
         },
+        "pot_wait": "Waiting at the pot spawn ({pot})",
         "lens": {
           "title": "BOCCHI Illegal Lens"
-        }
+        },
+        "not_enabled": "Illegal Mode is not enabled."
       },
       "messages": {
         "on": "[BOCCHI] Illegal Mode On",

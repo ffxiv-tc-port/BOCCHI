@@ -50,14 +50,131 @@
         "alert_ranger": {
           "label": "Alert for Ranger Soul Shard Critical Encounter",
           "tooltip": "Play a sound effect when a critical encounter that drops the Ranger Soul Shard spawns"
+        },
+        "show_history": {
+          "label": "Show Critical Encounter history",
+          "tooltip": "Below the Critical Encounter list, show every Critical Encounter seen since entering this island: when it was first seen, and how it ended (success or failure, last progress read, battle duration).\nSuccess or failure is inferred: time left when it ended means completed, 0 seconds left means failed; if BOCCHI was not updating when it ended, it is shown as unknown."
+        },
+        "random_registration_spot": {
+          "label": "Stand at a random free spot when registering for a Critical Encounter",
+          "tooltip": "When heading to a Critical Encounter that is open for registration (illegal mode, the main window's run / teleport-then-walk buttons, and party CE farming), stand at a random spot inside the registration area instead of the usual destination: at least 3 yalms inside the edge (the area is the map marker plus a 20-yalm radius) and at least 2 yalms away from every other player.\nThe spot is picked once, about 50 yalms before arriving, from the players visible at that moment; if someone overlaps you on arrival, it moves once to a free spot within 5 yalms. If no free spot is found, or the spot cannot be reached, it goes to the usual destination.\nNot used for the Forked Tower. Each pick writes one line to the Dalamud log ([BOCCHI][CE站位]). Off = the usual destination."
+        },
+        "ce_farm_wait_minutes": {
+          "label": "Party CE farming: max wait for registration after pressing Start (minutes)",
+          "tooltip": "Party CE farming (main window, critical encounter section): after pressing Start (or arming while on the island), if the chosen critical encounter does not open for registration within this many minutes, farming is disarmed (and the chat says why)."
+        },
+        "praise_occult_events": {
+          "label": "Have Tataru praise Occult Crescent events",
+          "tooltip": "Ask the TataruPraise plugin to say a line when a Critical Encounter you took part in succeeds, your knowledge level goes up, or a new silver coffer comes into view (its categories 緊急遭遇戰成功 / 知見等級提升 / 發現白銀寶箱).\nRequires TataruPraise installed and enabled with its master switch on, and the voice for those three categories synthesized once; does nothing if it is not installed.\nEach silver coffer is announced once (needs the Treasure module enabled); Critical Encounters you did not join, failed, or with an unknown result are not announced. Each call writes one line to the Dalamud log ([BOCCHI][塔塔露]).\nNo game actions. Off (default) = never called."
         }
       },
       "panel": {
+        "farm": {
+          "title": "Party CE farming",
+          "pick": "Pick an encounter",
+          "target_tooltip": "The critical encounter to farm. Changes take effect the next time you arm.",
+          "rounds": "Rounds",
+          "rounds_tooltip": "How many rounds before disarming automatically (a round = the encounter succeeded and you left the duty). 0 = no limit.\nChanges take effect the next time you arm.",
+          "arm": "Arm",
+          "arm_tooltip": "Arm once while in a party (for example a party-finder group that keeps re-queueing for the island). Every time you enter the Occult Crescent it stays on standby until you press Start for that round (arming while on the island starts the round right away):\nwait for the chosen encounter to open for registration -> run there with the same route as the encounter's run button -> fighting is left to BossMod / WrathCombo as usual -> when that encounter succeeds, leave the duty through the duty menu (Leave -> confirmation).\nThe next round is queued by the party leader and accepted by YesAlready; BOCCHI never touches the duty finder.\nDisarms (one chat line + a [BOCCHI][跟團刷CE] log line) when: you leave the party, the round count is reached, you are knocked out, stop all / emergency stop, the encounter does not open within {minutes} minutes of pressing Start, the encounter fails / you did not take part / its result cannot be read, or leaving the duty does not work.\nOnly kept in memory: reloading the plugin or logging out disarms it. While not armed nothing changes.",
+          "blocked": "Cannot arm right now: {reason}",
+          "disarm": "Disarm",
+          "start": "Start",
+          "start_tooltip": "Start this round: wait for {name} to open for registration (up to {minutes} min) -> run there -> leave the duty after it succeeds.\nNeeded once every time you enter the Occult Crescent; nothing happens until you press it.",
+          "no_limit": "no limit",
+          "status_tooltip": "Party CE farming is armed. Disarms by itself when you leave the party, the rounds are done, you are knocked out, stop all is used, the encounter does not open in time, fails or cannot be read, or leaving the duty does not work. Press Disarm to stop now.",
+          "status": {
+            "away": "{done} round(s) done (of {limit}); waiting for the leader to queue the next island",
+            "ready": "Round {round}: on the island, press Start to begin",
+            "waiting": "Round {round}: waiting for {name} to open ({waited} / {minutes} min)",
+            "joined": "Round {round}: taking part in {name}",
+            "exiting": "Round {round}: succeeded, leaving the duty"
+          }
+        },
         "title": "Critical Encounters",
         "none": "No active critical encounters.",
         "register": "Preparing",
         "warmup": "Starting",
-        "estimated": "Est."
+        "estimated": "Est.",
+        "history": {
+          "title": "Seen on this island",
+          "empty": "No Critical Encounters seen since entering this island.",
+          "battle": "In battle ",
+          "completed": "Completed",
+          "failed": "Failed, last progress ",
+          "ended": "Ended, last progress ",
+          "no_battle": "Ended without a battle",
+          "unknown": "? (end not seen)",
+          "unobserved": " (not observed when it ended, result unknown)",
+          "duration_prefix": " (battle ",
+          "duration_suffix": ")",
+          "tooltip": {
+            "first_seen": "First seen: ",
+            "from_register": " (while open for registration)",
+            "joined_late": " (registration was already over)",
+            "battle_start": "Battle started: ",
+            "end": "Ended: ",
+            "last_progress": "Last progress read: ",
+            "seconds_left": "Last time left read: ",
+            "participants": "Most participants seen: ",
+            "participated": "You took part in this one",
+            "not_participated": "You did not take part in this one",
+            "unobserved": "BOCCHI was not updating at the moment this encounter ended (e.g. dead, in a cutscene, a dialogue or a loading screen), so success or failure cannot be told.",
+            "note": "Success or failure is inferred (the game does not expose it): time left when it ended means completed, 0 seconds left means failed. Progress often stops at 99% or below on success, so it is not used."
+          }
+        },
+        "tower": {
+          "wip": "This feature is a work in progress.",
+          "wip_short": "WIP",
+          "spawn_estimate": "Forked Tower Spawn Estimate",
+          "register": "Forked Tower Register",
+          "critical_encounters_completed": "Critical Encounters completed",
+          "fates_completed": "Fates completed",
+          "players_on_platform": "Players on Platform",
+          "players_near_platform": "Players near Platform",
+          "includes_you": "This includes your character"
+        }
+      },
+      "farm": {
+        "messages": {
+          "armed": "[BOCCHI] Party CE farming armed: {name}, {rounds}.",
+          "stopped": "[BOCCHI] Party CE farming disarmed: {reason} ({done} round(s) done).",
+          "ready": "[BOCCHI] Party CE farming: entered the Occult Crescent, round {round} is on standby. Press Start under Party CE farming in the main window to begin waiting for {name}.",
+          "cannot_arm": "[BOCCHI] Cannot arm party CE farming: {reason}"
+        },
+        "rounds_limit": "{limit} round(s)",
+        "rounds_unlimited": "no round limit",
+        "reason": {
+          "manual": "disarmed by you",
+          "error": "an error occurred ({detail})",
+          "stop_all": "stop all ({detail})",
+          "left_party": "you left the party",
+          "rounds_done": "all {done} round(s) are done",
+          "dead": "you were knocked out",
+          "wait_timeout": "{name} did not open for registration within {minutes} minutes of pressing Start",
+          "ce_failed": "{name} failed",
+          "ce_unknown": "could not tell whether {name} succeeded (the game was loading or in a cutscene when it ended)",
+          "not_participated": "you did not take part in {name} (did not make it in time to register)",
+          "joined_too_long": "{name} did not end within {minutes} minutes",
+          "exit_timeout": "did not leave the duty within {seconds} seconds",
+          "exit_confirm": "the leave confirmation was not pressed within {seconds} seconds (YesAlready could not be paused, so BOCCHI did not press it)",
+          "exit_menu": "pressed Leave in the duty menu 3 times without a confirmation",
+          "exit_menu_mismatch": "the first entry of the duty menu was “{detail}”, not “{expected}”, so nothing was pressed (no other entry was tried)",
+          "exit_busy": "could not leave the duty for 5 minutes after the encounter (in combat or casting)",
+          "logged_out": "you logged out",
+          "module_disabled": "the critical encounter module was disabled"
+        },
+        "block": {
+          "no_target": "no encounter picked yet",
+          "module_disabled": "the critical encounter module is disabled",
+          "not_in_party": "you are not in a party (this is for farming with a group)",
+          "movement_running": "an automation that moves you is running (illegal mode, mob farmer or a hunt); stop it first"
+        }
+      },
+      "messages": {
+        "tag": "Critical Engagement",
+        "spawned": "{name} is open for registration",
+        "despawned": "{name} has ended"
       }
     }
   }

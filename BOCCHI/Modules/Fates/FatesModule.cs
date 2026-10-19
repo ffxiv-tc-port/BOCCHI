@@ -24,6 +24,8 @@ public class FatesModule : Module
 
     public readonly FateTracker tracker = new();
 
+    public readonly PotCycleTracker potCycle = new();
+
     public Dictionary<uint, Fate> fates
     {
         get => tracker.Fates;
@@ -33,15 +35,23 @@ public class FatesModule : Module
 
     private readonly Alerter alerter;
 
+    private readonly PotAlerter potAlerter;
+
     public FatesModule(Plugin plugin, Config config)
         : base(plugin, config)
     {
         alerter = new Alerter(this);
+        potAlerter = new PotAlerter(this);
     }
 
     public override void Update(UpdateContext context)
     {
-        tracker.Update(context);
+        // 表讀不到的那一幀，魔法甕週期也不拿沒更新的追蹤內容去算。
+        if (tracker.Update(context))
+        {
+            potCycle.Update(tracker, Config.GetPotCyclePeriod());
+            potAlerter.Tick();
+        }
     }
 
     public override bool RenderMainUi(RenderContext context)
@@ -59,5 +69,7 @@ public class FatesModule : Module
     {
         base.Dispose();
         alerter.Dispose();
+        potAlerter.Dispose();
+        potCycle.Dispose();
     }
 }

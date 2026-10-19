@@ -1,0 +1,181 @@
+{
+  "modules": {
+    "critical_encounters": {
+      "config": {
+        "title": "緊急遭遇戰設定",
+        "track_forked_tower": {
+          "label": "追蹤兩歧塔",
+          "tooltip": "記錄兩歧塔上次結束的時間"
+        },
+        "log_spawn": {
+          "label": "出現／消失時輸出聊天訊息",
+          "tooltip": "緊急遭遇戰出現或消失時在聊天視窗（默語）輸出一則訊息"
+        },
+        "alert_all": {
+          "label": "所有緊急遭遇戰都提醒",
+          "tooltip": "任何緊急遭遇戰出現時播放提示音"
+        },
+        "alert_azurite": {
+          "label": "提醒掉落青色半魂晶的緊急遭遇戰",
+          "tooltip": "當掉落青色半魂晶的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_verdigris": {
+          "label": "提醒掉落碧色半魂晶的緊急遭遇戰",
+          "tooltip": "當掉落碧色半魂晶的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_malachite": {
+          "label": "提醒掉落綠色半魂晶的緊急遭遇戰",
+          "tooltip": "當掉落綠色半魂晶的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_realgar": {
+          "label": "提醒掉落橙色半魂晶的緊急遭遇戰",
+          "tooltip": "當掉落橙色半魂晶的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_caput_mortuum": {
+          "label": "提醒掉落紫色半魂晶的緊急遭遇戰",
+          "tooltip": "當掉落紫色半魂晶的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_orpiment": {
+          "label": "提醒掉落黃色半魂晶的緊急遭遇戰",
+          "tooltip": "當掉落黃色半魂晶的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_oracle": {
+          "label": "提醒掉落「靈魂碎晶：預言士」的緊急遭遇戰",
+          "tooltip": "當掉落「靈魂碎晶：預言士」的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_berserker": {
+          "label": "提醒掉落「靈魂碎晶：狂戰士」的緊急遭遇戰",
+          "tooltip": "當掉落「靈魂碎晶：狂戰士」的緊急遭遇戰出現時播放提示音"
+        },
+        "alert_ranger": {
+          "label": "提醒掉落「靈魂碎晶：獵人」的緊急遭遇戰",
+          "tooltip": "當掉落「靈魂碎晶：獵人」的緊急遭遇戰出現時播放提示音"
+        },
+        "show_history": {
+          "label": "顯示緊急遭遇戰紀錄",
+          "tooltip": "在緊急遭遇戰清單下方列出本次進島看到的每一場緊急遭遇戰：第一次看到的時間、結束時的狀況（成功／失敗、最後讀到的進度、戰鬥時間）。\n成敗是推論：結束時還有剩餘時間記為完成、剩 0 秒記為失敗；結束那一刻沒在更新的記為不明。"
+        },
+        "random_registration_spot": {
+          "label": "緊急遭遇戰報名時站到範圍內隨機的空位",
+          "tooltip": "前往正在報名的緊急遭遇戰時（非法模式、主視窗的跑過去／傳送後走過去、跟團刷 CE），不走原本的目的地，改站到報名範圍內隨機一點：離邊緣至少 3 米（範圍＝地圖標記中心、半徑 20 米），離每一個其他玩家至少 2 米。\n快到時（離中心約 50 米）依當下看得到的玩家挑一次；到了如果有人疊在一起，就在 5 米內再挪一次。找不到空位或那一點走不到，就照原本的目的地。\n兩歧塔不套用。每次挑點都會在 Dalamud 記錄檔寫一行（[BOCCHI][CE站位]）。關閉＝照原本的目的地。"
+        },
+        "ce_farm_wait_minutes": {
+          "label": "跟團刷 CE：按出發後等開放報名的上限（分鐘）",
+          "tooltip": "跟團刷 CE（主視窗緊急遭遇戰那一區）：按「出發」（或在島上武裝）之後，選的緊急遭遇戰超過這麼多分鐘都沒開放報名，就解除武裝（聊天視窗說明原因）。"
+        },
+        "praise_occult_events": {
+          "label": "新月島事件叫塔塔露誇獎",
+          "tooltip": "有參加的緊急遭遇戰成功、知見等級提升、看到新的白銀寶箱時，請「塔塔露誇獎」插件念一句（它那邊的情境：緊急遭遇戰成功／知見等級提升／發現白銀寶箱）。\n要另外安裝並啟用塔塔露誇獎、開著它的總開關，而且那三個情境要先按一次「合成」才有語音；沒裝時什麼都不做。\n同一個白銀寶箱只念一次（要寶箱模組啟用）；緊急遭遇戰沒參加、失敗或成敗不明都不念。每次呼叫都會在 Dalamud 記錄檔寫一行（[BOCCHI][塔塔露]）。\n不做任何遊戲操作。關閉（預設）＝不呼叫。"
+        }
+      },
+      "panel": {
+        "farm": {
+          "title": "跟團刷 CE",
+          "pick": "選擇緊急遭遇戰",
+          "target_tooltip": "要刷的緊急遭遇戰。改了從下一次武裝生效。",
+          "rounds": "輪數",
+          "rounds_tooltip": "打幾輪後自動解除（一輪＝這一場成功、退出副本）。0＝不限。\n改了從下一次武裝生效。",
+          "arm": "武裝",
+          "arm_tooltip": "在小隊裡（例如招募板一直重新排島的團）按一次武裝。之後每次進新月島都先停在待命，按「出發」才開始這一輪（在島上武裝＝這一輪直接開始）：\n等選的緊急遭遇戰開放報名 → 用那一場「跑過去」按鈕同一條路線跑過去 → 戰鬥照舊交給 BossMod／WrathCombo → 那一場成功後從副本選單退出（「退出任務」→ 確認框）。\n下一輪由團長排、YesAlready 接受；BOCCHI 不碰任務搜尋器。\n以下情況自動解除（聊天一行＋記錄檔 [BOCCHI][跟團刷CE]）：離開小隊、輪數到了、倒地、全部停止／急停、按出發後 {minutes} 分鐘還沒開放報名、這一場失敗／沒參加到／讀不到成敗、退出副本沒成功。\n只存在記憶體：重新載入插件或登出就解除。沒武裝時什麼都不變。",
+          "blocked": "現在不能武裝：{reason}",
+          "disarm": "解除",
+          "start": "出發",
+          "start_tooltip": "開始這一輪：等「{name}」開放報名（最多 {minutes} 分鐘）→ 跑過去 → 成功後退出副本。\n每次進新月島都要按一次；沒按就什麼都不做。",
+          "no_limit": "不限",
+          "status_tooltip": "跟團刷 CE 武裝中。離開小隊、輪數到了、倒地、全部停止、沒準時開放報名、這一場失敗或讀不到成敗、退出副本沒成功時會自己解除。按「解除」立刻停止。",
+          "status": {
+            "away": "完成 {done} 輪（共 {limit}）；等團長排下一個島",
+            "ready": "第 {round} 輪：已進島，按「出發」開始",
+            "waiting": "第 {round} 輪：等「{name}」開放報名（{waited}／{minutes} 分）",
+            "joined": "第 {round} 輪：參加「{name}」中",
+            "exiting": "第 {round} 輪：成功，退出副本中"
+          }
+        },
+        "title": "緊急遭遇戰",
+        "none": "目前沒有進行中的緊急遭遇戰。",
+        "register": "準備中",
+        "warmup": "即將開始",
+        "estimated": "預計",
+        "history": {
+          "title": "本次進島紀錄",
+          "empty": "本次進島還沒有看到緊急遭遇戰。",
+          "battle": "戰鬥中 ",
+          "completed": "完成",
+          "failed": "失敗，最後進度 ",
+          "ended": "結束，最後進度 ",
+          "no_battle": "沒有進入戰鬥就結束",
+          "unknown": "?（沒看到結束）",
+          "unobserved": "（結束前一刻沒在更新，成敗不明）",
+          "duration_prefix": "（戰鬥 ",
+          "duration_suffix": "）",
+          "tooltip": {
+            "first_seen": "第一次看到：",
+            "from_register": "（開放報名時）",
+            "joined_late": "（第一次看到時已過了報名）",
+            "battle_start": "開始戰鬥：",
+            "end": "結束：",
+            "last_progress": "最後讀到的進度：",
+            "seconds_left": "最後讀到的剩餘時間：",
+            "participants": "最多參戰人數：",
+            "participated": "你有參加這一場",
+            "not_participated": "你沒有參加這一場",
+            "unobserved": "這場結束的那一刻 BOCCHI 沒有在更新（例如死亡、過場、對話中、讀取中），判斷不出成功或失敗。",
+            "note": "成敗是推論（遊戲沒有直接給）：結束時還有剩餘時間記為完成、剩 0 秒記為失敗。成功時進度常停在 99% 以下，所以不看進度。"
+          }
+        },
+        "tower": {
+          "wip": "此功能仍在開發中。",
+          "wip_short": "開發中",
+          "spawn_estimate": "兩歧塔預計出現時間",
+          "register": "兩歧塔報名剩餘時間",
+          "critical_encounters_completed": "已完成的緊急遭遇戰",
+          "fates_completed": "已完成的 F.A.T.E.",
+          "players_on_platform": "平台上的玩家數",
+          "players_near_platform": "平台附近的玩家數",
+          "includes_you": "此數字包含你自己"
+        }
+      },
+      "farm": {
+        "messages": {
+          "armed": "[BOCCHI] 跟團刷 CE 已武裝：「{name}」，{rounds}。",
+          "stopped": "[BOCCHI] 跟團刷 CE 已解除：{reason}（完成 {done} 輪）。",
+          "ready": "[BOCCHI] 跟團刷 CE：已進新月島，第 {round} 輪待命中。按主視窗「跟團刷 CE」的「出發」才會開始等「{name}」開放報名。",
+          "cannot_arm": "[BOCCHI] 無法武裝跟團刷 CE：{reason}"
+        },
+        "rounds_limit": "共 {limit} 輪",
+        "rounds_unlimited": "輪數不限",
+        "reason": {
+          "manual": "你按了解除",
+          "error": "發生錯誤（{detail}）",
+          "stop_all": "全部停止（{detail}）",
+          "left_party": "你離開了小隊",
+          "rounds_done": "{done} 輪都打完了",
+          "dead": "你倒地了",
+          "wait_timeout": "按出發後 {minutes} 分鐘「{name}」都沒開放報名",
+          "ce_failed": "「{name}」失敗了",
+          "ce_unknown": "讀不到「{name}」這一場的成敗（結束那一刻在讀圖或過場）",
+          "not_participated": "這一場「{name}」沒有參加到（沒趕上報名）",
+          "joined_too_long": "「{name}」{minutes} 分鐘都沒結束",
+          "exit_timeout": "{seconds} 秒內沒有退出副本",
+          "exit_confirm": "退出確認框 {seconds} 秒內沒人按（YesAlready 暫停不了，BOCCHI 沒有代按）",
+          "exit_menu": "副本選單按了 3 次「退出任務」都沒有確認框",
+          "exit_menu_mismatch": "副本選單第 0 項是「{detail}」，不是「{expected}」，所以沒有按（不試別的項）",
+          "exit_busy": "這一場結束後 5 分鐘一直在戰鬥或詠唱中，沒辦法退出副本",
+          "logged_out": "你登出了",
+          "module_disabled": "緊急遭遇戰模組被關掉了"
+        },
+        "block": {
+          "no_target": "還沒選要刷的緊急遭遇戰",
+          "module_disabled": "緊急遭遇戰模組沒有啟用",
+          "not_in_party": "不在小隊裡（這是跟團用的）",
+          "movement_running": "有會自己移動的自動化在跑（非法模式、自動打怪或巡迴），先停下"
+        }
+      },
+      "messages": {
+        "tag": "緊急遭遇戰",
+        "spawned": "{name} 開放報名",
+        "despawned": "{name} 已結束"
+      }
+    }
+  }
+}

@@ -1,30 +1,68 @@
-<a href='https://ko-fi.com/I2I01E6IBC' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi5.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
-
 # BOCCHI
 
-[Repository for all my plugins](https://raw.githubusercontent.com/OhKannaDuh/plugins/refs/heads/master/manifest.json)
+[BOCCHI](https://github.com/OhKannaDuh/BOCCHI) 的台服移植版。蜃景幻界新月島輔助工具：F.A.T.E.／緊急遭遇戰面板與提醒、寶箱與幸運胡蘿蔔雷達，以及手動開始、可急停的島上自動化。
 
-## Features
+📌 插件只在「新月島南部」裡運作，離開該區域時所有模組都會暫停；下列功能都以此為前提。
 
-- Treasure radar & hunter
-    - Lists nearby treasure and draws a line to them
-    - Automatically make your way around the map looting chests
-- Carrot radar
-    - Lists nearby carrots and draws a line to them
-- Silver/Gold per hour tracker
-- Exp per hour tracker
-- Active Fate/CE tracker
-    - Displays demiatma, notes & soul shards dropped by Fate/CE
-    - Displays Fate/CE progress
-    - Displays estimated completion time
-    - Button to teleport, mount and pathfind to Fate/CE
-    - Automatic return after Fate/CE
-- Auto buffs (Bard/Knight/Monk)
+## 功能
 
-## Plans
+- **F.A.T.E.／緊急遭遇戰面板**：顯示進行中的活動與掉落的半魂晶、調查記錄、靈魂碎晶，可依掉落個別開關提醒；可顯示本次進島的緊急遭遇戰紀錄。
+- **魔法甕提醒**：推估下一個魔法甕 F.A.T.E. 的出現時間，快出現與出現時提醒。
+- **寶箱雷達**：列出附近寶箱並畫出方位線，發現白銀寶箱時響提示音；顯示施放魔尋寶後感知到的寶箱數。
+- **幸運胡蘿蔔雷達**：列出附近幸運胡蘿蔔地點並畫出方位線、響提示音。
+- **仇恨顯示**（預設關）：在地上畫出附近魔物的視覺、聽覺、範圍等感知範圍；開啟繞開選項後，BOCCHI 帶你移動時會繞開這些範圍。
+- **兩歧塔**：畫出可能的陷阱位置與爆炸範圍。
+- **貨幣與經驗值**：每小時十二城邦金幣／銀幣與輔助職業經驗值統計，以及輔助職業等級總覽。
+- **強化效果**：一鍵切換輔助職業並施放設定好的強化技能。
+- **傳送**：從城內乙太之晶傳送到離活動最近的乙太之晶，傳送後可自動上坐騎並前往活動地點。
+- **Windows 通知**（預設關）：緊急遭遇戰開放報名、魔法甕出現時發 Windows 通知。
+- **Mappy 地圖顯示**：在 Mappy 的地圖上畫出巡迴路線與寶箱生成點。
 
-- Carrot hunter
+## 自動化
 
-## Known issues
+以下每一項都**要你手動開始、手動停止**，預設都是關的；載入插件、進入新月島、登入都不會自動開始。
+換區、角色無法戰鬥、登出或斷線、插件卸載時自動全部停止；趕路途中你自己移動（方向鍵、WASD、滑鼠轉向）時會先讓位給你，停手後再接續（預設開，可關）。
+其他插件可透過 IPC `BOCCHI.StopAll` 要求全部停止（急停）。
 
-- Users who can't read
+- **非法模式**：自動前往並參加 F.A.T.E.／緊急遭遇戰，戰鬥交給 BossMod Reborn（或 Boss Mod）的 AI 與 WrathCombo；可選擇要參加的場次、魔法甕優先、兩個活動之間順路開白銀寶箱、耐久度低時用黑暗物質自己修理。
+- **自動打怪**：在附近找指定的魔物打。
+- **寶箱巡迴／幸運胡蘿蔔巡迴**：依路線巡過生成點撿取，可暫停與續跑、分段巡、選正向或逆向。
+- **打完自動返回**：F.A.T.E.／緊急遭遇戰結束後施放返回。
+- **輔助職業練等**：目前的輔助職業滿級後，自動切換到下一個還沒滿級的。
+- **常用組合**：一次開始在非法模式設定裡勾選的幾項。
+- **跟團刷 CE**：在小隊裡手動按「武裝」後，每次進島等選定的緊急遭遇戰開放報名就跑過去參加、成功後退出副本；離開小隊、輪數到了、倒地、全部停止時自動解除，重新載入插件或登出也會解除。
+
+## 指令
+
+- `/bocchi`（別名 `/och`、`/occultcrescenthelper`）：開關主視窗。
+- `/bocchi config` 或 `/bocchi cfg`（也可用 `/bocchicfg`）：開關設定視窗。
+- `/bocchi start <項目>`／`/bocchi stop [項目]`：開始一項／停止一項；`/bocchi stop` 不帶項目＝全部立刻停止。
+  項目：`illegal`（非法模式）、`farm`（自動打怪）、`treasure`（寶箱巡迴）、`carrot`（幸運胡蘿蔔巡迴）、`return`（打完自動返回）、`leveling`（輔助職業練等）。
+- `/bocchi pause [treasure|carrot]`／`/bocchi resume [treasure|carrot]`：暫停／續跑巡迴。
+- `/bocchi restore`：恢復倒地時停下的自動化（要先開「死亡後提示恢復自動化」）。
+- `/bocchi skip`：略過非法模式目前選定的那一場；`/bocchi skip clear` 清空略過清單。
+- `/bocchi combo`：開始（或停止）常用組合。
+- `/bocchi buff`（或 `/bocchibuff`）：施放強化技能。
+- `/bocchitp [fate|ce|pot]`：人在城內乙太之晶旁時，傳送到離進行中的 F.A.T.E.、緊急遭遇戰或魔法甕 F.A.T.E. 最近的城內乙太之晶（不帶參數時依緊急遭遇戰→F.A.T.E.→魔法甕 F.A.T.E. 的順序找）。
+- `/bocchiillegal [on|off|toggle]`（別名 `/ochillegal`）：不帶參數開關非法模式檢視器，帶參數開始／停止／切換非法模式。
+- `/bocchicmd flag-active-ce|flag-active-fate|flag-active-non-pot-fate`（別名 `/ochcmd`）：在地圖上標出目前的緊急遭遇戰／F.A.T.E.。
+
+## 台服版的修改
+
+- 介面繁體中文化，半魂晶、靈魂碎晶、調查記錄等改用台服官方譯名。
+- 自動化改成一律手動開始／停止，主視窗新增自動化控制區與 `BOCCHI.StopAll` 急停端點；島上不再自動按掉不是自己開的確認框。
+- 新增仇恨顯示與移動時繞開仇恨範圍，只靠聽覺感知的魔物可改用走路穿過。
+- 寶箱與幸運胡蘿蔔巡迴可暫停續跑、分段、選方向，記住看過的寶箱與巡過的生成點，並依魔尋寶感知數跳過已開完的生成點。
+- 非法模式新增魔法甕優先、換一場、順路開白銀寶箱、自己修理、快截止報名的緊急遭遇戰優先等選項，並可讓 EurekaHelper 去挖魔法甕的財寶。
+- 新增輔助職業練等與等級總覽、輔助職業技能清單（與 WrathCombo 的開關同步，只用勾選的技能）。
+- 新增跟團刷 CE、魔法甕出現推估、Windows 通知、Mappy 地圖顯示、本次進島紀錄。
+- 搭配 TataruPraise：新月島事件與發現幸運胡蘿蔔時請塔塔露說一句。
+- 戰鬥 AI 預設改成 BossMod Reborn，非法模式不再關掉你自己開著的 AI。
+- 多處降低記憶體用量。
+
+## 需要搭配的插件
+
+- 必要（自動化與傳送）：vnavmesh、Lifestream
+- 選用：BossMod Reborn 或 Boss Mod（戰鬥 AI）、WrathCombo（技能循環）、EurekaHelper（魔法甕財寶）、Mappy、YesAlready、TataruPraise
+
+原作者：[OhKannaDuh](https://github.com/OhKannaDuh)

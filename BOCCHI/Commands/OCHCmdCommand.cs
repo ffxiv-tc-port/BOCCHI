@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using BOCCHI.Enums;
 using BOCCHI.Modules.CriticalEncounters;
@@ -21,11 +22,11 @@ public class OCHCmdCommand(Plugin plugin) : OcelotCommand
     protected override string Description
     {
         get => @"
-Utility command.
- - Flag commands clear active flag before trying to place a new one
-   - /bocchicmd flag-active-ce (Place a flag marker on the current Critical Engagement)
-   - /bocchicmd flag-active-fate (Place a flag marker on a current Fate)
-   - /bocchicmd flag-active-non-pot-fate (Place a flag marker on a current fate that isn't a pot fate)
+工具指令。
+ - 標記地圖的指令會先清掉地圖上現有的標記再標新的
+   - /bocchicmd flag-active-ce：在地圖上標出目前的緊急遭遇戰
+   - /bocchicmd flag-active-fate：在地圖上標出一場進行中的 F.A.T.E.
+   - /bocchicmd flag-active-non-pot-fate：同上，但略過魔法甕 F.A.T.E.
 --------------------------------
 ".Trim();
     }
@@ -42,7 +43,27 @@ Utility command.
 
     public override unsafe void Execute(string command, string arguments)
     {
-        var map = AgentMap.Instance();
+        // AgentMap.Instance() 兩種失效並存：內部鏈 AgentModule -> UIModule -> Framework 任一層是 null 就回 null（登入前、切場景時是常態），
+        // 底層特徵碼失配時改為擲 InvalidOperationException；只擋一種等於假防護。
+        // 裸解參考 null 原生指標是 try/catch 攔不到的 AccessViolationException，所以事前判空。
+        // 聊天指令（低頻）：判空後寫 Information，要使用者回報的診斷。
+        AgentMap* map;
+        try
+        {
+            map = AgentMap.Instance();
+        }
+        catch (Exception ex)
+        {
+            Svc.Log.Information($"[OCHCmd] 取得 AgentMap 失敗(特徵碼可能失配),本次指令略過:{ex.Message}");
+            return;
+        }
+
+        if (map == null)
+        {
+            Svc.Log.Information("[OCHCmd] AgentMap 尚未就緒(通常是還沒進入場景),本次指令略過。");
+            return;
+        }
+
         map->FlagMarkerCount = 0;
 
         switch (arguments)
@@ -67,7 +88,7 @@ Utility command.
                 continue;
             }
 
-            map->SetFlagMapMarker(Svc.ClientState.TerritoryType, Svc.ClientState.MapId, encounter.MapMarker.Position);
+            map->SetFlagMapMarker(Svc.ClientState.TerritoryType, Svc.ClientState.MapId, encounter.Position);
             return;
         }
     }

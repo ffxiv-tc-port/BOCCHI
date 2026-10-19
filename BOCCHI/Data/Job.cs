@@ -1,4 +1,5 @@
 using BOCCHI.Enums;
+using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using Ocelot.Chain;
 using Ocelot.Chain.ChainEx;
@@ -21,11 +22,30 @@ public class Job
         get => (uint)status;
     }
 
-    public static unsafe Job Current
+    private static bool? lastStateAvailable;
+
+    /// <summary>目前的輔助職業；新月島狀態還沒載入（不在島上、讀取中）時回 null＝不知道。</summary>
+    /// <remarks>GetState 只在指揮器是新月島且狀態已載入時回非 null；每次重取，不保存指標。</remarks>
+    public static unsafe Job? Current
     {
         get
         {
-            var id = (JobId)PublicContentOccultCrescent.GetState()->CurrentSupportJob;
+            var state = PublicContentOccultCrescent.GetState();
+            var available = state != null;
+            if (lastStateAvailable != available)
+            {
+                lastStateAvailable = available;
+                Svc.Log.Information(available
+                    ? "[BOCCHI][Job] 已讀到新月島的輔助職業狀態。"
+                    : "[BOCCHI][Job] 新月島的輔助職業狀態還沒載入，需要目前輔助職業的動作先略過。");
+            }
+
+            if (state == null)
+            {
+                return null;
+            }
+
+            var id = (JobId)state->CurrentSupportJob;
             return id switch
             {
                 JobId.Freelancer => Freelancer,
@@ -60,7 +80,7 @@ public class Job
     public Chain ChangeToChain()
     {
         return Chain.Create()
-            .RunIf(() => Current.id != id)
+            .RunIf(() => Current is { } current && current.id != id)
             .Then(_ => ChangeTo())
             .WaitUntilStatus(UintStatus);
     }

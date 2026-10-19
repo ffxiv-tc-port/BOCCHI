@@ -1,0 +1,31 @@
+{
+  "modules": {
+    "buff": {
+      "config": {
+        "title": "強化效果設定",
+        "apply_romeos_ballad": {
+          "label": "附加{status:4244|愛之歌}",
+          "tooltip": "切換到{supportjob:6|輔助吟遊詩人}施放「{action:41609|愛之歌}」，附加「{status:4244|愛之歌}」效果"
+        },
+        "apply_enduring_fortitude": {
+          "label": "附加{status:4233|守護之祈禱}",
+          "tooltip": "切換到{supportjob:1|輔助騎士}施放「{action:41589|祈禱}」，附加「{status:4233|守護之祈禱}」效果"
+        },
+        "apply_fleetfooted": {
+          "label": "附加{status:4239|架招疾行}",
+          "tooltip": "切換到{supportjob:3|輔助武僧}施放「{action:41597|架招}」，附加「{status:4239|架招疾行}」效果"
+        },
+        "reapply_threshold": {
+          "label": "重新施放門檻",
+          "tooltip": "自動執行時，剩餘時間最短的強化效果低於幾分鐘就全部重新施放。"
+        }
+      },
+      "panel": {
+        "title": "強化效果",
+        "button": {
+          "tooltip": "依序切換到每個已啟用的輔助職業施放強化技能，最後切回原本的輔助職業。"
+        }
+      }
+    }
+  }
+}

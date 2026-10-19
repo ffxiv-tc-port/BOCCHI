@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using BOCCHI.Automation;
 using BOCCHI.Data;
 using BOCCHI.Modules.MobFarmer.States;
 using ECommons.GameHelpers;
@@ -14,11 +15,19 @@ namespace BOCCHI.Modules.MobFarmer;
 
 public class Farmer : IDisposable
 {
+    /// <summary>拉怪路徑用的動作鏈佇列名稱；停止時要一起中止。</summary>
+    public const string QueueName = "MobFarmer+Farmer";
+
     public bool Running { get; private set; } = false;
 
     public Vector3 StartingPoint { get; private set; } = Vector3.Zero;
 
-    public readonly IRotationPlugin RotationPlugin;
+    public IRotationPlugin RotationPlugin { get; private set; } = new BlankRotationPlugin();
+
+    /// <summary>拉怪與打怪改寫目標的入口；兩個階段共用，才分得出哪一隻是 BOCCHI 自己選的。</summary>
+    public readonly TargetKeeper Targets = new() { Source = "自動打怪" };
+
+    private readonly MobFarmerModule module;
 
     private readonly Dictionary<string, Func<IModule, IRotationPlugin>> rotationPlugins = new()
     {
@@ -29,19 +38,8 @@ public class Farmer : IDisposable
 
     public Farmer(MobFarmerModule module)
     {
+        this.module = module;
         StateMachine = new StateMachine<FarmerPhase, MobFarmerModule>(FarmerPhase.Waiting, module);
-
-        RotationPlugin = new BlankRotationPlugin();
-        foreach (var (plugin, factory) in rotationPlugins)
-        {
-            if (!DalamudReflector.TryGetDalamudPlugin(plugin, out _, false, true))
-            {
-                continue;
-            }
-
-            RotationPlugin = factory(module);
-            break;
-        }
     }
 
     public void Update(UpdateContext context)
@@ -52,7 +50,13 @@ public class Farmer : IDisposable
         }
 
 
-        if (!Running || !module.Scanner.Mobs.Any())
+        if (!Running)
+        {
+            return;
+        }
+
+        RotationPlugin.Tick();
+        if (!module.Scanner.Mobs.Any())
         {
             return;
         }
@@ -62,22 +66,19 @@ public class Farmer : IDisposable
 
     public void Draw(RenderContext context)
     {
-        if (!context.IsForModule<MobFarmerModule>(out var module))
-        {
-            return;
-        }
-
-        if (!module.Scanner.Mobs.Any())
-        {
-            return;
-        }
-
+        // 先看設定再看怪：Mobs 是延遲求值的查詢，每次 Any() 都重新走訪物件表（離開新月島後照樣每幀跑），
+        // 除錯線沒開時不必付這筆。三個條件都只決定要不要提早返回，順序不影響畫出來的東西。
         if (!Running && !module.Config.ShouldRenderDebugLinesWhileNotRunning)
         {
             return;
         }
 
         if (!module.Config.RenderDebugLines)
+        {
+            return;
+        }
+
+        if (!module.Scanner.Mobs.Any())
         {
             return;
         }
@@ -99,17 +100,38 @@ public class Farmer : IDisposable
         }
     }
 
-    public void Toggle(MobFarmerModule module)
+    /// <summary>由 AutomationControl 呼叫；循環插件在開始時才挑，WrathCombo 晚載入也用得到。</summary>
+    public void Start()
     {
-        Running = !Running;
+        Running = true;
         StateMachine.Reset();
-        if (!Running)
+        Targets.Reset();
+        StartingPoint = Player.Position;
+
+        RotationPlugin.Dispose();
+        RotationPlugin = CreateRotationPlugin();
+        RotationPlugin.PhantomJobOff();
+    }
+
+    /// <summary>只重設本身狀態並交還 WrathCombo 的租約（冪等）；動作鏈與導航由 AutomationControl 收。</summary>
+    public void ResetRun()
+    {
+        Running = false;
+        StateMachine.Reset();
+        RotationPlugin.Release();
+    }
+
+    private IRotationPlugin CreateRotationPlugin()
+    {
+        foreach (var (plugin, factory) in rotationPlugins)
         {
-            return;
+            if (DalamudReflector.TryGetDalamudPlugin(plugin, out _, false, true))
+            {
+                return factory(module);
+            }
         }
 
-        StartingPoint = Player.Position;
-        RotationPlugin.PhantomJobOff();
+        return new BlankRotationPlugin();
     }
 
     public void Dispose()

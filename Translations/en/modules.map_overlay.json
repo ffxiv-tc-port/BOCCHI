@@ -1,0 +1,53 @@
+{
+  "modules": {
+    "map_overlay": {
+      "config": {
+        "title": "Mappy map overlay",
+        "show_on_mappy": {
+          "label": "Show hunt routes and spawn points on Mappy",
+          "tooltip": "Draws on Mappy's map:\n- the planned treasure hunt order: faint straight lines with numbers, coloured by route segment, split at teleports\n- treasure spawn points: recorded coffers solid bronze/silver, unvisited points hollow in the segment colour, visited points without a coffer as small grey dots\n- carrot spawn points while the carrot hunt is running\n- where BOCCHI is heading, and the pot spawn and waiting spot while waiting for a pot\nHover a point for details. The actual path is read by Mappy from vnavmesh.\nNeeds a Mappy with the overlay feature; does nothing without it."
+        },
+        "show_visited_spawn_points": {
+          "label": "Show visited spawn points without a coffer",
+          "tooltip": "Treasure spawn points that were visited and had no coffer are drawn as small grey dots. Turn off to hide them."
+        }
+      },
+      "label": {
+        "plan_node": "{route} - {direction} - stop {n}: spawn point {node}",
+        "plan_shard": "walk to aethernet shard {name}",
+        "plan_teleport": "teleport to {name}",
+        "plan_return": "return to base camp",
+        "direction_alternate": "{direction} this round ({alternate})",
+        "spawn_open": "treasure spawn point {node} ({route}): not visited",
+        "spawn_visited": "treasure spawn point {node} ({route}): visited, no coffer",
+        "chest": "recorded {type}: spawn point {node} ({route})",
+        "chest_unmatched": "recorded {type} (no matching spawn point)",
+        "avoided_suffix": "; deliberately skipped",
+        "unreachable_suffix": "; could not reach it, skipped until cleared or zone change",
+        "carrot_open": "carrot spawn point {id}: not visited this round",
+        "carrot_done": "carrot spawn point {id}: visited this round",
+        "carrot_seen": "carrot spawn point {id}: carrot in sight",
+        "destination": "BOCCHI is heading here: {source}",
+        "pot_spawn": "spawn point of pot {pot}",
+        "pot_wait": "waiting spot for pot {pot}"
+      },
+      "source": {
+        "none": "other",
+        "illegal_mode_fate": "illegal mode, going to a F.A.T.E.",
+        "illegal_mode_critical_encounter": "illegal mode, going to a critical encounter",
+        "illegal_mode_shard": "illegal mode, walking to a shard to teleport",
+        "teleporter_walk": "teleporter panel, walk there",
+        "teleporter_after_teleport": "teleporter panel, teleport then walk",
+        "nearest_shard": "walking to the nearest shard before teleporting",
+        "aetheryte": "walking to the aetheryte after returning",
+        "knowledge_crystal": "refreshing buffs after returning",
+        "hunt_node": "hunt, walking to the next point",
+        "hunt_shard": "hunt, walking to a shard",
+        "critical_encounter_spot": "standing spot inside a critical encounter",
+        "silver_chest": "detour to open a silver coffer",
+        "pot_wait_spot": "walking to the pot waiting spot",
+        "eureka_pot_hunt": "EurekaHelper pot treasure auto-move"
+      }
+    }
+  }
+}

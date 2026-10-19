@@ -11,16 +11,44 @@
           "label": "Draw lines to silver coffers",
           "tooltip": "Render a line from your character's position to nearby silver coffers, while out of combat."
         },
+        "alert_silver_chests": {
+          "label": "Play a sound when a silver coffer is found",
+          "tooltip": "In the Occult Crescent, play a sound once when a new silver coffer comes into view. Each coffer sounds only once; the record resets when you change zones or re-enter the island.\nEach alert also writes an Information line to the Dalamud log ([BOCCHI][銀寶箱]).\nOff = no sound."
+        },
+        "silver_chest_alert_sound": {
+          "label": "Alert sound",
+          "tooltip": "Sound effect number 1-16, the same sounds as <se.1>-<se.16> in chat."
+        },
         "show_hunt_button": {
           "label": "Show Treasure Hunt Button"
         },
+        "hunt_chest_first_max_seconds": {
+          "label": "Open recorded chests first: time limit (seconds)",
+          "tooltip": "When a treasure hunt is planned, recorded chests (seen but not opened yet) are planned in one round together with the spawn points. Putting all recorded chests first is kept only when it costs no more than this many extra seconds compared to that single round.\nChests are personal and do not disappear, so opening them later does not lose them; putting them all first often means crossing the whole map twice.\n0 = put them first only when that is not slower; 600 = always put them first (old behaviour). Each comparison is written to the Dalamud log ([BOCCHI][寶箱記錄])."
+        },
+        "hunt_dig_carrots": {
+          "label": "Treasure hunt: dig up Fortune Carrots on the way",
+          "tooltip": "While the treasure hunt is walking (to a spawn point or an aethernet shard), if a Fortune Carrot spot comes into view within the distance below, go dig it first: walk there, dismount, use one Fortune Carrot, open the golden coffer that appears, then continue the hunt where it left off.\nNot while in combat or when you have no Fortune Carrots. Each carrot is tried once; walking gives up after 40 seconds within 100 yalms (longer for farther carrots), or when the carrot disappears first (someone else dug it).\nCan also be toggled in the treasure hunt section of the main window. Every decision is written to the Dalamud log ([BOCCHI][順路胡蘿蔔]).\nOff (default) = unchanged behaviour."
+        },
+        "hunt_carrot_max_distance": {
+          "label": "Max distance to the carrot (yalms)",
+          "tooltip": "Only go when the carrot is at most this far from you (straight line). Carrots usually come into view at about 90-150 yalms."
+        },
+        "hunt_skip_by_sense_count": {
+          "label": "Skip remaining spawn points once the Treasuresight count is opened",
+          "tooltip": "Treasuresight tells how many silver and bronze coffers are left in the whole area. Once the coffers opened afterwards (by the treasure hunt or by you) plus the recorded, still unopened coffers of that kind reach that count, every coffer of that kind is located: the treasure hunt skips the remaining spawn points of that kind (silver coffers only appear at silver spawn points, bronze likewise), and when both kinds are located it only opens the recorded coffers and then ends.\nSpawn points with a recorded coffer are still visited. The count is dropped after joining a FATE / critical encounter, clearing the records, changing zones or logging out, until the next Treasuresight; if the count is never reached (e.g. coffers beyond the zone level limit) the hunt runs as before.\nEvery count, skip and drop is written to the Dalamud log ([BOCCHI][寶箱巡迴]). Off = always visit every spawn point."
+        },
+        "hunt_cast_treasure_sight_if_unknown": {
+          "label": "Cast Treasuresight before the treasure hunt when there is no count",
+          "tooltip": "When you start or resume the treasure hunt and there is no usable Treasuresight count (e.g. it was dropped after a FATE / critical encounter), switch to Phantom Freelancer, cast Treasuresight, plan the route with the fresh count, then switch back to your phantom job; dismounts first if mounted.\nNot cast (the hunt visits every spawn point as before) when: in combat, casting, taking part in a FATE / critical encounter, Phantom Freelancer below level 10 or level unreadable, or unable to dismount. If Treasuresight is still on cooldown, the hunt waits for it and then casts (up to about 12 seconds; it is not cast if you enter combat, start casting or join a FATE / critical encounter while waiting); the hunt also starts as before if no result arrives within 10 seconds of casting.\nEvery result and how long it took is written to the Dalamud log ([BOCCHI][寶箱巡迴]). Off = never cast; only a count you already have is used."
+        },
         "cast_treasure_sight_upon_return": {
           "label": "Cast Treasuresight after returning",
-          "tooltip": "Cast Treasuresight to update the active chest count upon returning to basecamp after a fate/ce"
+          "tooltip": "Upon returning to basecamp after a fate/ce, switch to Phantom Freelancer, cast Treasuresight to update the active chest count, then switch back to your phantom job.\nNo phantom job change and no cast when: Phantom Freelancer is below level 10 (Treasuresight is learned at level 10) or its level can't be read; or less than the interval below has passed since the last cast."
         },
-        "show_percentage_active_treasure_count": {
-          "label": "Show active treasure as percentage",
-          "tooltip": "Show active treasure as percentage next to the total"
+        "treasure_sight_interval_minutes": {
+          "label": "Re-scan interval (minutes)",
+          "tooltip": "After Treasuresight was cast, returns within this many minutes skip it (no phantom job change): coffers only respawn after you fight monsters or join FATEs / critical encounters, and do not fill up right away.\n0 = cast on every return. Remembered only while the plugin is loaded: the first return after it reloads always casts."
         }
       },
       "panel": {
@@ -28,13 +56,54 @@
         "none": "No nearby Treasure.",
         "hunt": {
           "title": "Treasure Hunter",
-          "distance_node": "Distance to next chest"
+          "distance_node": "Distance to next chest",
+          "carrots": {
+            "label": "Dig Fortune Carrots on the way",
+            "tooltip": "While the treasure hunt is walking, go dig a Fortune Carrot that comes into view within {max} yalms (change the limit in the config window), then continue the hunt where it left off: walk there, dismount, use one Fortune Carrot, open the golden coffer.\nNot while in combat or with no Fortune Carrots; each carrot is tried once.\nSame as the config window option; no need to restart the hunt, carrots seen from now on follow the new setting. Off (default) = unchanged."
+          },
+          "sense": {
+            "label": "Treasuresight",
+            "bronze": "bronze {count}/{cap}",
+            "silver": "silver {count}/{cap}",
+            "stale_events": "last: {bronze}  {silver} ({events} FATE/CE joined since)",
+            "stale_dropped": "last: {bronze}  {silver} (dropped)",
+            "tooltip": "The Treasuresight count minus the coffers opened since = how many coffers are in the whole area right now.\nSensed {minutes} min ago: bronze {bronze_sensed}, silver {silver_sensed}; opened since: bronze {bronze_opened}, silver {silver_opened}.\nAt most {bronze_cap} bronze and {silver_cap} silver coffers exist at once: a count at the cap is shown in green, waiting longer adds nothing.\nThe count is dropped after you join a FATE / critical encounter, clear the records or change zones, and is then shown dimmed as \"last\"; cast Treasuresight again to refresh it.",
+            "stale_tooltip": "This is the previous Treasuresight count. It has been dropped: for reference only, the treasure hunt does not use it to skip spawn points.\nSensed {minutes} min ago: bronze {bronze_sensed}, silver {silver_sensed}; opened since: bronze {bronze_opened}, silver {silver_opened}; FATEs / critical encounters joined since: {events}.\nCoffers do not despawn and may spawn again after a FATE / critical encounter: there are at least this many now, possibly more (cap: bronze {bronze_cap}, silver {silver_cap}).\nDropped because you joined a FATE / critical encounter, cleared the records, changed zones or left the island, or opened plus recorded coffers exceeded the count. Cast Treasuresight again to refresh it; with \"Cast Treasuresight before the treasure hunt when there is no count\" on, pressing Start casts it for you.",
+            "unknown_tooltip": "No Treasuresight count yet: cast it to learn how many coffers are in the whole area (at most {bronze_cap} bronze and {silver_cap} silver exist at once).\nWith \"Cast Treasuresight before the treasure hunt when there is no count\" on, pressing Start casts it for you."
+          },
+          "memory": {
+            "chests": "Recorded coffers",
+            "chests_value": "{total} (bronze {bronze} / silver {silver})",
+            "visited": "Checked spawn points",
+            "visited_value": "{count}",
+            "tooltip": "The treasure hunt remembers coffers it has seen but not opened, and the coffer spawn points it has checked (got close and saw no coffer, or the coffer was opened).\n- A hunt (start or resume) goes to recorded coffers first and skips checked spawn points; coffers seen during a hunt are also opened first.\n- Coffers are personal (only you can see and open yours) and do not despawn: a coffer is dropped from the record only when you get close and it is gone.\n- Joining a FATE / critical encounter does not clear recorded coffers or checked spawn points (press Clear to check everything again); spawn points are not marked as checked while you are in one, and passing through a FATE area during a treasure hunt does not count as joining.\n- Changing zones, leaving the island or changing instances clears only the checked spawn points; recorded coffers are kept (they are still opened when you come back, and dropped only when you get close and they are gone). Logging out clears everything.",
+            "participating_tooltip": "You are in a FATE / critical encounter: spawn points are not marked as checked during it, because they may spawn coffers again afterwards.",
+            "unknown_tooltip": "Coffer spawn points have not been read yet: they are read the first time a treasure hunt is started or resumed after entering the island. Until then checked spawn points are not recorded; seen coffers are still recorded and matched to spawn points afterwards.",
+            "clear_tooltip": "Clear recorded coffers and checked spawn points; the next hunt visits everything again.\nChecked spawn points are also cleared automatically when you change zones, leave the island or change instances, while recorded coffers are kept; logging out clears the whole record (joining a FATE / critical encounter does not clear it)."
+          },
+          "range": {
+            "tooltip": "Left = coffer spawn points within the max area level when this run was planned (checked and already visited ones included); right = all spawn points the hunt ever visits.\n1 spawn point's coffer sits on a low ledge that automatic pathing cannot climb: the hunt jumps onto it first, and skips that spot if 3 jumps all fail.\nWith \"Follow knowledge level\" on, the max is your real knowledge level - 1; once your knowledge level is maxed (level {cap}) the \"Max area level\" setting is used instead.\nTo cover more spots, raise \"Max area level\" (up to {ceiling}) or turn off following the knowledge level.\nWhen only some routes are selected, both numbers count only the selected routes."
+          },
+          "routes": {
+            "label": "Routes",
+            "all": "All",
+            "value": "{count} spots · {left} left · ~{time} per round",
+            "route_tooltip": "{name}: {count} coffer spawn points within max area level {max}, {left} not checked yet (about {left_time} for those).\nA round of about {time} = estimated time to cover this route starting from its aethernet shard, using the cost table (cost / {speed} m/s, including opening coffers; not including getting to that shard, or combat).\nSpawn points: {nodes}",
+            "last_tooltip": "At least one route must stay selected: to switch, tick the other route first, then untick this one.",
+            "tooltip": "Routes for this run: {routes}.\nAll spawn points are split into five routes, each named after the aethernet shard it starts from; only ticked routes are planned (the max area level still applies). Open the menu to see each route's spot count, how many are left and roughly how long a round takes.\nWhen only some routes are ticked, the first leg still compares walking, walking to an aethernet shard and teleporting, and returning then teleporting.\nA change takes effect the next time you press Start; resuming a paused run keeps the routes it started with.",
+            "all_tooltip": "Hunt every route (default, same as before this option).\nTo hunt only some routes, untick the ones you don't want (at least one must stay).",
+            "chests_only": "Only open recorded coffers on selected routes",
+            "chests_only_tooltip": "Off (default): recorded coffers are opened first no matter which route they are on (same as before routes existed).\nOn: only recorded coffers on the selected routes are opened first; coffers on other routes are still recorded but not opened this run, and are not detoured to when seen.\nHas no effect when every route is selected. A change takes effect the next time you press Start.",
+            "other_chests": "{count} recorded coffers on other routes",
+            "other_chests_open_tooltip": "These coffers are on routes you did not select. \"Only open recorded coffers on selected routes\" is off, so the hunt still opens them first.",
+            "other_chests_skip_tooltip": "These coffers are on routes you did not select. \"Only open recorded coffers on selected routes\" is on, so they are not opened this run (they stay recorded).",
+            "range_suffix": "; routes {count}/{total}"
+          }
         },
-        "active_bronze": {
-          "label": "Active Bronze"
-        },
-        "active_silver": {
-          "label": "Active Silver"
+        "coffer": {
+          "bronze": "Bronze Treasure Coffer",
+          "silver": "Silver Treasure Coffer",
+          "unknown": "Unknown Treasure Coffer"
         }
       }
     }

@@ -23,6 +23,15 @@
           "label": "Approach aetheryte after returning",
           "tooltip": "Walk to the aetheryte after returning to base camp.\n* Only works when returning via the plugin after a FATE or Critical Encounter."
         }
+      },
+      "tooltip": {
+        "pathfind_to": "Pathfind to {name}",
+        "must_be_near_aetheryte": "You must be near an aetheryte to teleport",
+        "already_at_aetheryte": "You're already at this aetheryte",
+        "teleport_to": "Teleport to {name}"
+      },
+      "messages": {
+        "return_yield": "[BOCCHI] Return was interrupted by your movement or mount, so it is not recast for now: it continues once you stop (not mounted, still for about {quiet} seconds); if you stay mounted or keep moving for {limit} seconds, this return is skipped."
       }
     }
   }

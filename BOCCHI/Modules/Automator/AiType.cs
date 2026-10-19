@@ -1,5 +1,4 @@
 using System;
-using ECommons.Automation;
 
 namespace BOCCHI.Modules.Automator;
 
@@ -21,33 +20,15 @@ public static class AiProviderExtensions
         };
     }
 
-    public static void On(this AiType provider)
+    /// <summary>開／關該 AI 的完整聊天指令；由 <see cref="AutomatorModule.SetAi"/> 以 Dalamud 指令處理送出。</summary>
+    public static string Command(this AiType provider, bool on)
     {
-        switch (provider)
+        var state = on ? "on" : "off";
+        return provider switch
         {
-            case AiType.VBM:
-                Chat.ExecuteCommand("/vbmai on");
-                break;
-            case AiType.BMR:
-                Chat.ExecuteCommand("/bmrai on");
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(provider), provider, null);
-        }
-    }
-
-    public static void Off(this AiType provider)
-    {
-        switch (provider)
-        {
-            case AiType.VBM:
-                Chat.ExecuteCommand("/vbmai off");
-                break;
-            case AiType.BMR:
-                Chat.ExecuteCommand("/bmrai off");
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(provider), provider, null);
-        }
+            AiType.VBM => $"/vbmai {state}",
+            AiType.BMR => $"/bmrai {state}",
+            _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null),
+        };
     }
 }

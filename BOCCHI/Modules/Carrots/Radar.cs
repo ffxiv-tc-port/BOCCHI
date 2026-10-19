@@ -7,14 +7,9 @@ namespace BOCCHI.Modules.Carrots;
 
 public class Radar
 {
-    public void Draw(RenderContext context)
+    public void Draw(RenderContext context, CarrotsModule module)
     {
         if (!ZoneData.IsInOccultCrescent() || Svc.Condition[ConditionFlag.InCombat])
-        {
-            return;
-        }
-
-        if (!context.IsForModule<CarrotsModule>(out var module))
         {
             return;
         }
@@ -24,7 +19,7 @@ public class Radar
             return;
         }
 
-        if (Svc.ClientState.LocalPlayer == null || Svc.Condition[ConditionFlag.InCombat])
+        if (Svc.Objects.LocalPlayer == null || Svc.Condition[ConditionFlag.InCombat])
         {
             return;
         }

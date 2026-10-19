@@ -1,63 +1,70 @@
 using System;
-using System.Linq;
 using BOCCHI.Data;
-using BOCCHI.Modules.Teleporter;
+using BOCCHI.Windows;
 using Dalamud.Bindings.ImGui;
 using Ocelot.Ui;
 
 namespace BOCCHI.Modules.Fates;
 
+/// <summary>每場兩列：名稱與進度一列，尋路／傳送按鈕與掉落圖示一列。</summary>
 public class Panel
 {
     public void Draw(FatesModule module)
     {
-        OcelotUi.Title($"{module.T("panel.title")}:");
-        OcelotUi.Indent(() =>
+        MainPanelUi.Title(module.T("panel.title"));
+        var none = module.tracker.Fates.Count <= 0;
+        if (none)
         {
-            if (module.tracker.Fates.Count <= 0)
+            ImGui.SameLine();
+            ImGui.TextUnformatted(module.T("panel.none"));
+        }
+
+        if (module.Config.ShowPotTimer)
+        {
+            PotTimerUi.Draw(module);
+        }
+
+        if (none)
+        {
+            return;
+        }
+
+        ImGui.Indent(16);
+        var count = module.fates.Count;
+        var index = 0;
+        foreach (var fate in module.fates.Values)
+        {
+            index++;
+            if (!ZoneData.IsInOccultCrescent())
             {
-                ImGui.TextUnformatted(module.T("panel.none"));
-                return;
+                module.fates.Clear();
+                break;
             }
 
-            foreach (var fate in module.fates.Values)
+            try
             {
-                if (!ZoneData.IsInOccultCrescent())
-                {
-                    module.fates.Clear();
-                    return;
-                }
-
-                try
-                {
-                    ImGui.TextUnformatted($"{fate.Name} ({fate.CurrentProgress}%)");
-                }
-                catch (AccessViolationException)
-                {
-                    continue;
-                }
-
-
-                var estimate = fate.Progress.EstimateTimeToCompletion();
-                if (estimate != null)
-                {
-                    ImGui.SameLine();
-                    ImGui.TextUnformatted($"({module.T("panel.estimated")} {estimate.Value:mm\\:ss})");
-                }
-
-
-                if (module.TryGetModule<TeleporterModule>(out var teleporter) && teleporter!.IsReady())
-                {
-                    teleporter.teleporter.Button(fate.Data.Aethernet, fate.StartPosition, fate.Name, $"fate_{fate.Id}", fate.Data);
-                }
-
-                OcelotUi.Indent(() => EventIconRenderer.Drops(fate.Data, module.PluginConfig.EventDropConfig));
-
-                if (!fate.Equals(module.fates.Values.Last()))
-                {
-                    OcelotUi.VSpace();
-                }
+                ImGui.TextUnformatted($"{fate.Name} ({fate.CurrentProgress}%)");
             }
-        });
+            catch (AccessViolationException)
+            {
+                continue;
+            }
+
+            var estimate = fate.Progress.EstimateTimeToCompletion();
+            if (estimate != null)
+            {
+                ImGui.SameLine();
+                ImGui.TextUnformatted($"({module.T("panel.estimated")} {estimate.Value:mm\\:ss})");
+            }
+
+            MainPanelUi.EventActions(module, true, fate.Data.Aethernet, fate.StartPosition, fate.Name, $"fate_{fate.Id}", fate.Data);
+
+            if (index < count)
+            {
+                OcelotUi.VSpace(4);
+            }
+        }
+
+        ImGui.Unindent(16);
     }
 }

@@ -1,0 +1,127 @@
+{
+  "automation": {
+    "panel": {
+      "title": "Automation",
+      "running": "Running",
+      "stopped": "Stopped",
+      "stop_all_tooltip": "Stop all: stops every automation and cancels any movement, teleport or action in progress.",
+      "paused": "Paused",
+      "progress_invalid": "Expired",
+      "progress_tooltip": "{progress} spots visited",
+      "pause_tooltip": "Pause: stops moving and acting but keeps the progress. Resume later to continue with the spots not visited yet (the route is re-planned from where you are).",
+      "resume_tooltip": "Resume: re-plan from where you are and continue with the spots not visited yet ({progress} visited). To start over instead, press Stop first to discard the progress.",
+      "start_fresh_tooltip": "Press to start from the beginning (discards the kept progress, {progress} visited).",
+      "stop_discard_tooltip": "Stop and discard the progress. To continue later, use Pause instead.",
+      "abandon_tooltip": "Discard the paused progress ({progress} visited).",
+      "death_restore": "Stopped when KO'd: {names}",
+      "death_restore_tooltip": "Restore the automation that stopped when you were KO'd: each one starts with the usual checks; treasure and carrot hunts resume from the kept progress. Anything that cannot start says why in chat.",
+      "combo_start": "Start combo",
+      "combo_stop": "Stop combo",
+      "combo_start_tooltip": "Start your usual combo in one go: {names}.\nAnything already running is left alone; each one can still be started / stopped on its own, and Stop All and the emergency stop still stop everything.\nPick what the combo contains in the Illegal Mode settings.",
+      "combo_stop_tooltip": "Stop what is in your usual combo: {names}.\nOnly these stop; other automation keeps running."
+    },
+    "kind": {
+      "illegal_mode": "Illegal Mode (auto F.A.T.E. / Critical Engagements)",
+      "mob_farmer": "Mob Farmer",
+      "treasure_hunt": "Treasure Hunt",
+      "carrot_hunt": "Carrot Hunt",
+      "return_after_events": "Return after F.A.T.E. / Critical Engagement",
+      "phantom_job_leveling": "Phantom job leveling (switch to the next unmaxed phantom job once the current one is maxed)"
+    },
+    "kind_short": {
+      "illegal_mode": "Illegal Mode",
+      "mob_farmer": "Mob Farmer",
+      "treasure_hunt": "Treasure Hunt",
+      "carrot_hunt": "Carrot Hunt",
+      "return_after_events": "Auto return",
+      "phantom_job_leveling": "Phantom job leveling"
+    },
+    "blocked": {
+      "already_running": "Already running.",
+      "not_in_zone": "Only available inside Occult Crescent.",
+      "dead": "Cannot start while KO'd.",
+      "other_running": "Stop \"{name}\" first.",
+      "module_disabled": "This module is disabled in the config.",
+      "module_unavailable": "This feature failed to load; see the log for details.",
+      "option_off": "Enable \"{option}\" in the config first.",
+      "return_not_configured": "Enable \"{fate}\" or \"{ce}\" in the teleporter config first.",
+      "missing_plugins": "Missing required plugins: {plugins}."
+    },
+    "source": {
+      "main_window": "main window",
+      "module_panel": "module panel",
+      "title_button": "title bar button",
+      "command": "command",
+      "config_window": "config window",
+      "start_fresh": "start from the beginning",
+      "death_restore": "restore after KO ({source})",
+      "combo": "usual combo ({source})"
+    },
+    "reason": {
+      "left_zone": "left Occult Crescent",
+      "zone_changed": "zone changed",
+      "dead": "character was KO'd",
+      "logged_out": "logged out or disconnected",
+      "external": "requested by another plugin: {source}",
+      "stalled": "step {step} made no progress for {seconds} seconds",
+      "no_path": "step {step} did not start moving within {seconds} seconds (vnavmesh found no path)",
+      "manual_start": "started {name} manually",
+      "data_load_failed": "could not load the pathfinding cost table (see the log)"
+    },
+    "resume_blocked": {
+      "none": "There is no paused progress to resume.",
+      "zone_changed": "You changed zones or left Occult Crescent since pausing, so the chests and carrots are not the same set any more. Press Start to run from the beginning.",
+      "logged_out": "You logged out or disconnected since pausing. Press Start to run from the beginning.",
+      "expired": "Paused for more than {minutes} minutes (the resume window in the pathfinder config); visited spots may have new chests or carrots by now. Press Start to run from the beginning."
+    },
+    "messages": {
+      "started": "[BOCCHI] Started: {name}",
+      "stopped": "[BOCCHI] Stopped: {names} ({reason})",
+      "cannot_start": "[BOCCHI] Cannot start \"{name}\": {reason}",
+      "not_running": "[BOCCHI] \"{name}\" is not running.",
+      "nothing_running": "[BOCCHI] Nothing was running; any action in progress was cancelled anyway.",
+      "command_usage": "[BOCCHI] Usage: /bocchi start|stop [illegal|farm|treasure|carrot|return|leveling]; /bocchi pause|resume [treasure|carrot]; /bocchi restore; /bocchi skip [clear]; /bocchi combo",
+      "paused": "[BOCCHI] Paused: {name} ({progress} visited). Use Resume or /bocchi resume to continue.",
+      "resumed": "[BOCCHI] Resumed: {name} ({progress} visited; re-planning the rest from where you are).",
+      "cannot_resume": "[BOCCHI] Cannot resume \"{name}\": {reason}",
+      "progress_abandoned": "[BOCCHI] Discarded the progress of \"{name}\" ({progress} visited).",
+      "progress_kept": "[BOCCHI] Kept the progress of \"{name}\" ({progress} visited). It will not continue by itself; use Resume or /bocchi resume {key}.",
+      "not_pausable": "[BOCCHI] \"{name}\" cannot be paused or resumed.",
+      "nothing_to_pause": "[BOCCHI] No hunt is running, nothing to pause.",
+      "nothing_to_resume": "[BOCCHI] No paused hunt to resume.",
+      "death_restore_prompt": "[BOCCHI] Revived. Automation stopped when you were KO'd: {names}. To restore it, press the restore button under Automation Control in the main window, or type /bocchi restore (it never restores by itself).",
+      "death_restore_notification_title": "BOCCHI: automation can be restored",
+      "death_restore_notification": "Stopped when KO'd: {names}\nPress the restore button under Automation Control in the main window, or type /bocchi restore.",
+      "nothing_to_restore": "[BOCCHI] Nothing to restore (the list is dropped after a zone change, logout, starting any automation manually, or Stop All).",
+      "restore_option_off": "[BOCCHI] Turn on \"{option}\" in the Illegal Mode settings first.",
+      "cannot_restore": "[BOCCHI] Cannot restore the automation stopped when you were KO'd: {reason}",
+      "skip_done": "[BOCCHI] Switch: skipped {name}, picking the next one (Illegal Mode keeps running).",
+      "skip_done_in_fate": "[BOCCHI] Switch: skipped {name}. You are still inside its area and BOCCHI will not take you out: it picks the next one once you leave the area or it ends.",
+      "skip_done_in_ce": "[BOCCHI] Switch: skipped {name}. You are already inside this Critical Engagement: it picks the next one once it ends.",
+      "skip_done_in_combat": "[BOCCHI] Switch: skipped {name}. You are in combat: it picks the next one once combat ends.",
+      "skip_quick_restart": "[BOCCHI] Started again {seconds} seconds after stopping, taken as a switch: skipped {name}, picking another one (clear it under Skipped in the main window; this can be turned off in the Illegal Mode settings).",
+      "skip_nothing": "[BOCCHI] Switch: {reason}",
+      "skips_cleared": "[BOCCHI] Cleared the skipped list ({count}).",
+      "combo_started": "[BOCCHI] Combo started: {names}",
+      "combo_stopped": "[BOCCHI] Combo stopped: {names}",
+      "combo_cannot_start": "[BOCCHI] Cannot start the combo: {reason}",
+      "combo_nothing_running": "[BOCCHI] Nothing in the combo is running."
+    },
+    "skip": {
+      "label": "Skipped",
+      "tooltip": "Switch: skip the event Illegal Mode has currently picked. Illegal Mode keeps running and picks the next one right away; with nothing else to join it idles as usual.\nIf you are already inside its area, inside the Critical Engagement or in combat, BOCCHI does not take you out: it picks the next one once you leave the area, it ends, or combat ends.\nSkipped events are listed below under Skipped and can be cleared; an entry drops off by itself when that event ends, on a zone change or on logout.",
+      "list_tooltip": "These will not be picked again this time:\n{names}\nEach drops off by itself when that event ends, on a zone change or on logout.",
+      "clear_tooltip": "Clear the skipped list: these events can be picked again.",
+      "blocked_not_running": "Illegal Mode is not running.",
+      "blocked_no_activity": "No event is picked right now (idle).",
+      "blocked_pot_wait": "Currently waiting at a pot spawn point for it to appear; that is not an event, so there is nothing to skip.",
+      "cleared_by": "you cleared it ({source})"
+    },
+    "combo": {
+      "empty": "Nothing is ticked in the usual combo: tick some in the Illegal Mode settings.",
+      "conflict": "{names} in the combo all move the character and cannot run together: keep only one ticked in the Illegal Mode settings.",
+      "blocked_item": "{name}: {reason}",
+      "all_running": "Everything in the combo is already running."
+    }
+  }
+}

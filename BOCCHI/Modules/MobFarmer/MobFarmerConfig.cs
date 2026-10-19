@@ -50,4 +50,7 @@ public class MobFarmerConfig : ModuleConfig
     [IntRange(0, 20)] public int MinimumMobsToStartLoop { get; set; } = 0;
 
     [IntRange(1, 20)] public int MinimumMobsToStartFight { get; set; } = 5;
+
+    /// <summary>別的插件或你自己選的合法目標至少保留這麼多秒才換回；0＝舊行為（每次照舊改寫）。</summary>
+    [IntRange(0, 10)] public int TargetMinHoldSeconds { get; set; } = 3;
 }

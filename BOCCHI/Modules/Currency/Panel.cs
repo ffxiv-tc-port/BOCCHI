@@ -1,7 +1,8 @@
+using BOCCHI.Windows;
 using Dalamud.Interface;
 using ECommons.ImGuiMethods;
 using Dalamud.Bindings.ImGui;
-using Ocelot.Ui;
+using Ocelot;
 
 namespace BOCCHI.Modules.Currency;
 
@@ -9,43 +10,47 @@ public class Panel
 {
     public void Draw(CurrencyModule module)
     {
-        OcelotUi.Title($"{module.T("panel.title")}:");
-        OcelotUi.Indent(() =>
+        // 標題放在表格第一欄，與銀幣那一列同列。
+        if (!ImGui.BeginTable("CurrencyData##OCH", 4, ImGuiTableFlags.SizingFixedFit))
         {
-            if (ImGui.BeginTable("CurrencyData##OCH", 3, ImGuiTableFlags.SizingFixedFit))
-            {
-                // Silver
-                ImGui.TableNextRow();
+            return;
+        }
 
-                ImGui.TableNextColumn();
-                if (ImGuiEx.IconButton(FontAwesomeIcon.Redo, "Reset##Silver"))
-                {
-                    module.Tracker.ResetSilver();
-                }
+        // Silver
+        ImGui.TableNextRow();
 
-                ImGui.TableNextColumn();
-                OcelotUi.Title(module.T("panel.silver.label"));
+        ImGui.TableNextColumn();
+        MainPanelUi.Title(module.T("panel.title"), true);
 
-                ImGui.TableNextColumn();
-                ImGui.TextUnformatted(module.Tracker.GetSilverPerHour().ToString("F2"));
+        ImGui.TableNextColumn();
+        if (ImGuiEx.IconButton(FontAwesomeIcon.Redo, "Reset##Silver"))
+        {
+            module.Tracker.ResetSilver();
+        }
 
-                // Gold
-                ImGui.TableNextRow();
+        ImGui.TableNextColumn();
+        ImGui.TextColored(OcelotColor.Yellow, module.T("panel.silver.label"));
 
-                ImGui.TableNextColumn();
-                if (ImGuiEx.IconButton(FontAwesomeIcon.Redo, "Reset##Gold"))
-                {
-                    module.Tracker.ResetGold();
-                }
+        ImGui.TableNextColumn();
+        ImGui.TextUnformatted($"{module.Tracker.GetSilverPerHour():F2}");
 
-                ImGui.TableNextColumn();
-                OcelotUi.Title(module.T("panel.gold.label"));
+        // Gold
+        ImGui.TableNextRow();
 
-                ImGui.TableNextColumn();
-                ImGui.TextUnformatted(module.Tracker.GetGoldPerHour().ToString("F2"));
+        ImGui.TableNextColumn();
 
-                ImGui.EndTable();
-            }
-        });
+        ImGui.TableNextColumn();
+        if (ImGuiEx.IconButton(FontAwesomeIcon.Redo, "Reset##Gold"))
+        {
+            module.Tracker.ResetGold();
+        }
+
+        ImGui.TableNextColumn();
+        ImGui.TextColored(OcelotColor.Yellow, module.T("panel.gold.label"));
+
+        ImGui.TableNextColumn();
+        ImGui.TextUnformatted($"{module.Tracker.GetGoldPerHour():F2}");
+
+        ImGui.EndTable();
     }
 }

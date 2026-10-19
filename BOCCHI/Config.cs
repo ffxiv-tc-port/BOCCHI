@@ -1,17 +1,20 @@
 ﻿using System;
+using BOCCHI.Modules.Aggro;
 using BOCCHI.Modules.Automator;
 using BOCCHI.Modules.Buff;
 using BOCCHI.Modules.Carrots;
 using BOCCHI.Modules.CriticalEncounters;
 using BOCCHI.Modules.Currency;
-using BOCCHI.Modules.Data;
 using BOCCHI.Modules.EventDrop;
 using BOCCHI.Modules.Exp;
 using BOCCHI.Modules.Fates;
 using BOCCHI.Modules.ForkedTower;
+using BOCCHI.Modules.MapOverlay;
 using BOCCHI.Modules.MobFarmer;
 using BOCCHI.Modules.Mount;
+using BOCCHI.Modules.Notifications;
 using BOCCHI.Modules.Pathfinder;
+using BOCCHI.Modules.PhantomJobs;
 using BOCCHI.Modules.StateManager;
 using BOCCHI.Modules.Teleporter;
 using BOCCHI.Modules.Treasure;
@@ -63,8 +66,13 @@ public class Config : IOcelotConfig
 
     public AutomatorConfig AutomatorConfig { get; set; } = new();
 
-    public DataConfig DataConfig { get; set; } = new();
+    public AggroConfig AggroConfig { get; set; } = new();
 
+    public NotificationsConfig NotificationsConfig { get; set; } = new();
+
+    public PhantomJobsConfig PhantomJobsConfig { get; set; } = new();
+
+    public MapOverlayConfig MapOverlayConfig { get; set; } = new();
 
     public void Save()
     {

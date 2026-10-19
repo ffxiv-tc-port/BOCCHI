@@ -12,7 +12,8 @@ public class Pathfinder : BasePathfinder
 {
     private readonly List<Data_TreasureData.TreasureDatum> treasure;
 
-    public Pathfinder(List<Data_TreasureData.TreasureDatum> treasure, float returnCost = 300f, float teleportCost = 50f) : base(returnCost, teleportCost)
+    public Pathfinder(List<Data_TreasureData.TreasureDatum> treasure, float returnCost = 300f, float teleportCost = 50f, float chestFirstMaxSeconds = float.PositiveInfinity)
+        : base(returnCost, teleportCost, chestFirstMaxSeconds)
     {
         this.treasure = treasure;
 

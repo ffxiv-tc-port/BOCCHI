@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using BOCCHI.Automation;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using ECommons.Throttlers;
@@ -17,7 +18,7 @@ public class GatheringHandler(MobFarmerModule module) : FarmerPhaseHandler(modul
 {
     private ChainQueue ChainQueue
     {
-        get => ChainManager.Get("MobFarmer+Farmer");
+        get => ChainManager.Get(Farmer.QueueName);
     }
 
     public override FarmerPhase? Handle()
@@ -40,7 +41,8 @@ public class GatheringHandler(MobFarmerModule module) : FarmerPhaseHandler(modul
             ChainQueue.Abort();
         }
 
-        Svc.Targets.Target = NotInCombat.First();
+        // 拉到的怪轉頭打你就換下一隻（上面清掉）；還沒拉到的那一隻留著，不因為走動改變遠近順序就換。
+        Module.Farmer.Targets.Apply(NotInCombat, TargetPickMode.Closest, Module.Config.TargetMinHoldSeconds, "拉怪");
 
         if (ChainQueue.IsRunning || Svc.Targets.Target == null)
         {
@@ -53,11 +55,13 @@ public class GatheringHandler(MobFarmerModule module) : FarmerPhaseHandler(modul
             return null;
         }
 
+        // 動作鏈晚幾幀才跑：這一幀先抄走位置，不讓目標包裝跨幀。
+        var targetPosition = target.Position;
         Task<List<Vector3>>? task = null;
         List<Vector3> path = [];
         ChainQueue.Submit(() =>
             Chain.Create()
-                .Then(_ => task = vnav.Pathfind(Player.Position, target.Position, false))
+                .Then(_ => task = vnav.Pathfind(Player.Position, targetPosition, false))
                 .Then(_ => task!.IsCompleted)
                 .Then(_ => path = task!.Result)
                 .BreakIf(() => path.Count <= 1)
