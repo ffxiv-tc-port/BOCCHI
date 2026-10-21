@@ -458,7 +458,7 @@ public abstract class Activity
     private void StopRouteMove()
     {
         routeSentTo = null;
-        vnav.CancelAllPathfinds();
+        OwnPathfind.CancelIfOnlyOwn(vnav, OwnMoveDestinations.HasCurrent(TravelIntent.State));
         vnav.Stop();
     }
 
@@ -762,6 +762,12 @@ public abstract class Activity
         // 不經建構子建出的物件第一次用時才建（同 Record）。按鍵每拍都讀：短按可能落在兩次取樣之間。
         handsOn ??= new HandsOnProbe();
         var input = handsOn.ReadInput(now);
+        if (guard.Manual.External && navigating && vnav.IsRunning())
+        {
+            vnav.Stop();
+            Svc.Log.Debug($"[BOCCHI][趕路讓位] kind={KindLabel} id={data.Id} 為 Lifestream 讓位中 vnavmesh 開始走（BOCCHI 先前送的路算完了）：停下");
+        }
+
         var player = Svc.Objects.LocalPlayer;
         if (!guard.ShouldSample(now) || player == null)
         {
@@ -858,16 +864,11 @@ public abstract class Activity
                             + $"其中讓位 {credit / 1000f:F1} 秒不算：時限往後延 {credit / 1000f:F1} 秒 {TravelStateFields()}");
     }
 
-    // 同 Hunter：PathfindCancelAll 也會取消 Lifestream 自己在算的路，只在 BOCCHI 自己的路還在算時才叫；回傳有沒有停下東西。
+    // 同 Hunter：讓位時絕不取消算路（全域的，會連 Lifestream 在算的一起取消），只停已經在走的路；
+    // BOCCHI 還在算的路算完開走時，讓位期間每拍再停（ObserveTravel）。回傳有沒有停下東西。
     private bool StopNavigationForLifestream()
     {
         var stopped = false;
-        if (vnav.IsSimpleMoveInProgress())
-        {
-            vnav.CancelAllPathfinds();
-            stopped = true;
-        }
-
         if (vnav.IsRunning())
         {
             vnav.Stop();

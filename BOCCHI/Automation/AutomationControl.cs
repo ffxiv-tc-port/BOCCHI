@@ -535,12 +535,12 @@ public sealed class AutomationControl : IDisposable
     }
 
     /// <summary>
-    /// 非法模式自己換目標時用：中止正在跑的動作鏈（含 ##watcher 佇列）並停下導航，與停止非法模式時收的範圍相同，
+    /// 非法模式自己換目標時用：中止正在跑的動作鏈（含 ##watcher 佇列）並停下導航，與停止非法模式時收的範圍相同（只差不中止 Lifestream），
     /// 但不改任何自動化的執行狀態。只在 framework 執行緒呼叫；回傳給 log 用的導航處理結果。
     /// </summary>
     public string AbortIllegalModeTravel()
     {
-        return AbortForMovementKind(AutomationKind.IllegalMode);
+        return AbortForMovementKind(AutomationKind.IllegalMode, false);
     }
 
     /// <summary>換一場時用：收的範圍與停止非法模式相同（含 BOCCHI 自己詠唱中的「返回」），但不改任何自動化的執行狀態。只在 framework 執行緒呼叫。</summary>
@@ -1181,7 +1181,8 @@ public sealed class AutomationControl : IDisposable
         }
     }
 
-    private string AbortForMovementKind(AutomationKind kind)
+    // abortLifestream＝false：非法模式自己換目標，Lifestream 忙的話是使用者的（在地圖上點了目的地），不中止它。
+    private string AbortForMovementKind(AutomationKind kind, bool abortLifestream = true)
     {
         var own = kind switch
         {
@@ -1193,7 +1194,7 @@ public sealed class AutomationControl : IDisposable
 
         AbortQueues(id => id == MainQueue || id == own || id.EndsWith(WatcherSuffix, StringComparison.Ordinal));
         teleporter?.CancelReturnPrompt();
-        return StopNavigation();
+        return StopNavigation(abortLifestream);
     }
 
     // 打完自動返回：只在主佇列正在跑它送出的返回時才中止，不動使用者自己按的傳送。
@@ -1267,7 +1268,7 @@ public sealed class AutomationControl : IDisposable
     }
 
     // vnavmesh 先取消還在背景計算的尋路（算完才會開走），再清掉已經在走的路徑；Lifestream 只在忙碌時叫它中止。
-    private string StopNavigation()
+    private string StopNavigation(bool abortLifestream = true)
     {
         // 停下導航就作廢趕路登記：之後算完的迴避路徑不可以再讓角色動起來。作廢前先記下守衛要認的目的地。
         var vnavReady = vnav != null && vnav.IsReady();
@@ -1286,14 +1287,23 @@ public sealed class AutomationControl : IDisposable
         }
         else
         {
-            parts.Add(TryInvoke("Nav.PathfindCancelAll", () => vnav!.CancelAllPathfinds()));
+            // 取消算路是全域的：只在 vnavmesh 裡只有 BOCCHI 自己那筆時才叫（停止後的導航守衛會再停算完開走的自己的路）。
+            try
+            {
+                parts.Add(OwnPathfind.Describe(OwnPathfind.CancelIfOnlyOwn(vnav!, guardDestinations.Count > 0)));
+            }
+            catch (Exception ex)
+            {
+                parts.Add($"Nav.PathfindCancelAll 失敗（{ex.GetType().Name}）");
+            }
+
             parts.Add(TryInvoke("Path.Stop", () => vnav!.Stop()));
             navigationGuardUntil = Environment.TickCount64 + NavigationGuardMs;
             navigationGuardFired = false;
             guardForPotHunt = false;
         }
 
-        if (lifestream != null && lifestream.IsReady())
+        if (abortLifestream && lifestream != null && lifestream.IsReady())
         {
             try
             {

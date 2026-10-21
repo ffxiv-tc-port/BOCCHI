@@ -59,6 +59,9 @@ public abstract class Hunter
     // 這一拍 RequestMove 因手動移動沒送：也不叫坐騎。
     private bool holdingForManual;
 
+    // 換目的地時舊的 SimpleMove 沒取消掉（vnavmesh 還有別筆尋路）：它算完開走就停下、改送新的目的地。
+    private bool staleMovePending;
+
     private readonly HuntCombatWait combatWait = new();
 
     // 最後一次看到戰鬥旗標的時刻（0＝沒看過）：「回營地」那一步要脫戰滿 HuntCombatWait.SettleMs 才停下改施放返回。
@@ -811,22 +814,16 @@ public abstract class Hunter
     // 換目的地：先取消還在算的尋路再停下（算完的舊路會把角色帶回原本的目標），守衛重新計時。
     private void StopNavigationForNewTarget()
     {
-        vnav.CancelAllPathfinds();
+        staleMovePending = OwnPathfind.CancelIfOnlyOwn(vnav, OwnMoveDestinations.HasCurrent(TravelIntent.State)) is OwnPathfindCancel.OthersQueued or OwnPathfindCancel.Unreadable;
         vnav.Stop();
         moveGuard.Reset();
     }
 
-    // Lifestream 帶角色走時看到 vnavmesh 在走就中止全部任務。PathfindCancelAll 也會取消 Lifestream 自己在算的路，
-    // 所以只在 BOCCHI 自己的路還在算時才叫；回傳有沒有停下東西。
+    // Lifestream 帶角色走時看到 vnavmesh 在走就中止全部任務。讓位時絕不取消算路（全域的，會連 Lifestream 在算的一起取消）：
+    // 只停已經在走的路；BOCCHI 還在算的路算完開走時，讓位期間每拍再停（ObserveManualMovement）。回傳有沒有停下東西。
     private bool StopNavigationForLifestream()
     {
         var stopped = false;
-        if (vnav.IsSimpleMoveInProgress())
-        {
-            vnav.CancelAllPathfinds();
-            stopped = true;
-        }
-
         if (vnav.IsRunning())
         {
             vnav.Stop();
@@ -1076,6 +1073,12 @@ public abstract class Hunter
         // 按鍵每拍都讀：短按可能落在兩次取樣之間。不經建構子建出的物件第一次用時才建。
         handsOn ??= new HandsOnProbe();
         var input = handsOn.ReadInput(now);
+        if (yieldGate.Manual.External && vnav.IsRunning())
+        {
+            vnav.Stop();
+            Svc.Log.Debug($"[BOCCHI][巡迴讓位] 「{AutomationControl.GetName(Kind)}」為 Lifestream 讓位中 vnavmesh 開始走（BOCCHI 先前送的路算完了）：停下");
+        }
+
         var player = Svc.Objects.LocalPlayer;
         if (!yieldGate.ShouldSample(now) || player == null)
         {
@@ -1446,6 +1449,18 @@ public abstract class Hunter
     {
         var moving = vnav.IsRunning();
         var computing = vnav.IsSimpleMoveInProgress();
+        if (staleMovePending && (moving || !computing))
+        {
+            staleMovePending = false;
+            if (moving)
+            {
+                vnav.Stop();
+                moving = false;
+                moveGuard.Reset();
+                Svc.Log.Debug($"[BOCCHI][尋路] 「{AutomationControl.GetName(Kind)}」換目的地前沒取消掉的舊算路算完開走了：停下，改送 {destination:F1}");
+            }
+        }
+
         holdingForManual = false;
         switch (yieldGate.Next(moving || computing))
         {

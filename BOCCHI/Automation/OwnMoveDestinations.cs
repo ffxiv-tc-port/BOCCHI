@@ -102,6 +102,12 @@ public sealed class OwnMoveDestinations
         return NearestXZ(end) <= MatchRadiusM ? OwnPathVerdict.Own : OwnPathVerdict.Foreign;
     }
 
+    /// <summary>等同 <c>CaptureCurrent(intent)</c> 之後 <see cref="Count"/> &gt; 0，但不改任何實例。</summary>
+    public static bool HasCurrent(TravelIntentState intent)
+    {
+        return Recent.Count > 0 || (intent.HasIntent && intent.Current.Source != TravelSource.EurekaPotHunt);
+    }
+
     /// <summary>換成「現在算 BOCCHI 自己的」目的地：最近送出的，加上還沒作廢的趕路登記（替 EurekaHelper 登記的不算：那是它的路，停下導航時不可以再停它）。</summary>
     public void CaptureCurrent(TravelIntentState intent)
     {

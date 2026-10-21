@@ -249,7 +249,7 @@ public sealed class CarrotDetour
 
     private void StartDig(ChainQueue processor, VNavmesh vnav, float distance, long now)
     {
-        vnav.CancelAllPathfinds();
+        OwnPathfind.CancelIfOnlyOwn(vnav, OwnMoveDestinations.HasCurrent(TravelIntent.State));
         vnav.Stop();
         var carrots = Items.FortuneCarrot.Count();
         var progress = new DigProgress(carrots);
