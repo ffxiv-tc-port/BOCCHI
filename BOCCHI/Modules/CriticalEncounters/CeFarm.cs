@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using BOCCHI.Data;
 using BOCCHI.Modules.Teleporter;
 using Dalamud.Game.Addon.Lifecycle;
@@ -14,13 +15,14 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Ocelot;
 using AddonSheet = Lumina.Excel.Sheets.Addon;
+using AtkValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace BOCCHI.Modules.CriticalEncounters;
 
 // 本檔契約：跟團刷 CE 的狀態只在框架執行緒讀寫（自己的 Framework.Update、換區／登出事件、AddonLifecycle、主視窗）。
 // 武裝只在記憶體：重載插件、登出就解除；沒武裝時每幀第一行就返回，行為與沒有這個功能時相同。
 // 不變式：進入 Waiting 只有兩條路（在島上按武裝、Ready 時按出發），進島一律停在 Ready ⇒ 移動與退出副本都要使用者在這次進島按過。
-// 退出副本只走介面（副本選單「退出任務」→ 確認框），不呼叫任何原生的放棄任務函式。
+// 退出副本只走介面（副本選單「退出」→ 確認框），不呼叫任何原生的放棄任務函式。
 // 確認框照 TeleporterModule 的規則：在 PreSetup 比中句子才請 YesAlready 暫停並記下那一扇，延到下一幀只按同一位址、同一句；暫停失敗就不按。
 // 視窗位址只做等值比較、永不解參；每次要碰視窗都當幀重新以名稱取。
 
@@ -39,8 +41,10 @@ public sealed class CeFarm : IDisposable
     /// <summary>Addon#2545＝「確定要退出任務嗎？」。</summary>
     private const uint LeavePromptRow = 2545;
 
-    /// <summary>Addon#3792＝副本選單的「退出任務」。</summary>
-    private const uint LeaveEntryRow = 3792;
+    // 副本選單的 callback 值是遊戲寫死的動作編號，0＝「退出」，與按鈕位置、AtkValues 索引無關；改版日要重驗。
+    private const int LeaveCallbackValue = 0;
+
+    private const int MenuDumpSlots = 24;
 
     private const int YesAlreadyPauseMs = 3_000;
 
@@ -48,7 +52,7 @@ public sealed class CeFarm : IDisposable
 
     private const long MenuRetryMs = 1_000;
 
-    // 按了「退出任務」之後這麼久都沒有確認框，才回頭關選單重來；關閉中的選單只有幾幀，遠小於這個值。
+    // 按了「退出」之後這麼久都沒有確認框，才回頭關選單重來；關閉中的選單只有幾幀，遠小於這個值。
     private const long MenuSettleMs = 3_000;
 
     // 關掉選單之後這麼久內不再碰它（關閉中的視窗仍取得到、也判得成就緒）。
@@ -113,12 +117,6 @@ public sealed class CeFarm : IDisposable
     private string? leavePrompt;
 
     private bool leavePromptLoaded;
-
-    private string? leaveEntry;
-
-    private bool leaveEntryLoaded;
-
-    private static bool menuDumped;
 
     public CeFarm(CriticalEncountersModule module)
     {
@@ -499,14 +497,14 @@ public sealed class CeFarm : IDisposable
 
         ResetExitUi();
         SetPhase(CeFarmPhase.Exiting, now);
-        Svc.Log.Information($"{Tag} 第 {roundsDone + 1} 輪：退出副本（副本選單「退出任務」→ 確認框；{CeFarmRules.ExitTimeLimitMs / 1000} 秒內沒離開新月島就停止）");
+        Svc.Log.Information($"{Tag} 第 {roundsDone + 1} 輪：退出副本（副本選單「退出」→ 確認框；{CeFarmRules.ExitTimeLimitMs / 1000} 秒內沒離開新月島就停止）");
     }
 
     private unsafe void TickExiting(long now)
     {
         if (now - phaseSince > CeFarmRules.ExitTimeLimitMs)
         {
-            Svc.Log.Information($"{Tag} 退出逾時：叫出副本選單 {menuShows} 次、按「退出任務」{menuPresses} 次、退出確認框{(confirmSeen ? "看到了" : "沒看到")}");
+            Svc.Log.Information($"{Tag} 退出逾時：叫出副本選單 {menuShows} 次、按「退出」{menuPresses} 次、退出確認框{(confirmSeen ? "看到了" : "沒看到")}");
             Disarm(CeFarmStop.ExitTimeout, confirmSeen ? "confirm" : null);
             return;
         }
@@ -532,7 +530,7 @@ public sealed class CeFarm : IDisposable
 
             if (ready && (nint)menu == pressedMenu)
             {
-                Svc.Log.Information($"{Tag} 按了「退出任務」{MenuSettleMs / 1000} 秒都沒有確認框、選單還開著：關掉選單重來（第 {menuPresses}/{MaxMenuPresses} 次）");
+                Svc.Log.Information($"{Tag} 按了「退出」{MenuSettleMs / 1000} 秒都沒有確認框、選單還開著：關掉選單重來（第 {menuPresses}/{MaxMenuPresses} 次）");
                 Callback.Fire(menu, false, -2);
             }
 
@@ -585,61 +583,78 @@ public sealed class CeFarm : IDisposable
             return;
         }
 
-        var entries = ReadMenuStrings(menu);
-        DumpMenuOnce(entries);
-        var first = CeFarmRules.FirstMenuEntry(entries);
-        var leave = LeaveEntry();
-        if (!CeFarmRules.IsLeaveEntry(first, leave))
+        var verdict = JudgeMenu(menu, out var badSlot);
+        if (verdict != CeFarmMenuVerdict.Press)
         {
-            Svc.Log.Information($"{Tag} 副本選單第 0 項是「{first ?? "（沒有字串）"}」，不是 Addon#{LeaveEntryRow}「{leave ?? "（讀不到）"}」：不按、不試別的項；選單字串 {MenuText(entries)}");
-            Disarm(CeFarmStop.ExitMenuMismatch, first ?? "-");
+            DumpMenu(menu, verdict, badSlot);
+            Disarm(CeFarmStop.ExitMenuMismatch, verdict == CeFarmMenuVerdict.LeaveDisabled ? "disabled" : null);
             return;
         }
 
-        Callback.Fire(menu, true, 0);
+        menuPresses++;
+        DumpMenu(menu, verdict, badSlot);
+        Callback.Fire(menu, true, LeaveCallbackValue);
         pressedMenu = (nint)menu;
         pressedAt = now;
-        menuPresses++;
-        Svc.Log.Information($"{Tag} 副本選單按「退出任務」（第 {menuPresses} 次）");
     }
 
-    // 當幀讀完：GetAtkValueTextOrNull 有界、驗型別，而且只取文字 payload（不會帶出物品連結之類的控制碼）。
-    private static unsafe List<string?> ReadMenuStrings(AtkUnitBase* menu)
+    // 同一幀讀完：格數不足時不碰 [0]／[1]。
+    private static unsafe CeFarmMenuVerdict JudgeMenu(AtkUnitBase* menu, out int badSlot)
     {
-        var count = Math.Min((int)menu->AtkValuesCount, 32);
-        var values = new List<string?>(count);
-        for (var i = 0; i < count; i++)
+        var values = menu->AtkValues;
+        var count = values == null ? 0 : (int)menu->AtkValuesCount;
+        Span<AtkValueType> types = stackalloc AtkValueType[CeFarmRules.MenuFingerprintLength];
+        var n = Math.Min(count, types.Length);
+        for (var i = 0; i < n; i++)
         {
-            values.Add(GenericHelpers.GetAtkValueTextOrNull(menu, i));
+            types[i] = values[i].Type;
         }
 
-        return values;
+        var mode = n > 0 ? values[0].UInt : 0;
+        var leaveEnabled = n > 1 && values[1].Byte != 0;
+        return CeFarmRules.JudgeMenu(count, types[..n], mode, leaveEnabled, out badSlot);
     }
 
-    private static string MenuText(List<string?> values)
+    // 診斷：每次決定（按或不按）寫一行，不是每幀；排法、[1] 的值、實際格數都靠這行定案。
+    private unsafe void DumpMenu(AtkUnitBase* menu, CeFarmMenuVerdict verdict, int badSlot)
     {
-        var texts = new List<string>();
-        for (var i = 0; i < values.Count; i++)
+        var values = menu->AtkValues;
+        var count = values == null ? 0 : (int)menu->AtkValuesCount;
+        var slots = new StringBuilder();
+        for (var i = 0; i < Math.Min(count, MenuDumpSlots); i++)
         {
-            if (!string.IsNullOrEmpty(values[i]))
+            var type = values[i].Type;
+            slots.Append(i == 0 ? "[" : " [").Append(i).Append(']').Append(((int)type).ToString("X")).Append(':');
+            switch ((AtkValueType)((int)type & (int)AtkValueType.TypeMask))
             {
-                texts.Add($"[{i}]{values[i]}");
+                case AtkValueType.Bool:
+                    slots.Append(values[i].Byte != 0 ? '1' : '0');
+                    break;
+                case AtkValueType.Int:
+                    slots.Append(values[i].Int);
+                    break;
+                case AtkValueType.UInt:
+                    slots.Append(values[i].UInt);
+                    break;
+                case AtkValueType.String:
+                    var text = GenericHelpers.GetAtkValueTextOrNull(menu, i);
+                    slots.Append(text == null ? "-" : "「" + text.ReplaceLineEndings("⏎") + "」");
+                    break;
+                default:
+                    slots.Append('-');
+                    break;
             }
         }
 
-        return texts.Count == 0 ? "（沒有字串）" : string.Join(" ", texts);
-    }
-
-    // 診斷：第一次按之前把選單的字串寫一行，改版後選項順序變了查得到。
-    private static void DumpMenuOnce(List<string?> values)
-    {
-        if (menuDumped)
+        var decision = verdict switch
         {
-            return;
-        }
-
-        menuDumped = true;
-        Svc.Log.Information($"{Tag} 副本選單的字串（診斷，載入後只記一次）：{MenuText(values)}");
+            CeFarmMenuVerdict.Press => $"按「退出」（callback {LeaveCallbackValue}，第 {menuPresses}/{MaxMenuPresses} 次）",
+            CeFarmMenuVerdict.TooFewValues => $"不按：AtkValues 不足 {CeFarmRules.MenuFingerprintLength} 格",
+            CeFarmMenuVerdict.WrongType => $"不按：第 [{badSlot}] 格型別 0x{(int)values[badSlot].Type:X} 不是 {CeFarmRules.ExpectedMenuType(badSlot)}（選單排法和台服 7.25 不同）",
+            CeFarmMenuVerdict.NotNormalMode => $"不按：選單不在一般模式（[0]={values[0].UInt}）",
+            _ => "不按：遊戲判定現在不能退出（「退出」按鈕是灰的）",
+        };
+        Svc.Log.Information($"{Tag} 副本選單 count={count} 區域={Svc.ClientState.TerritoryType} 前 {MenuDumpSlots} 格 {(slots.Length == 0 ? "（沒有）" : slots.ToString())}；決定：{decision}");
     }
 
     private void OnYesnoPreSetup(AddonEvent type, AddonArgs args)
@@ -677,7 +692,7 @@ public sealed class CeFarm : IDisposable
 
         if (prompt.ReplaceLineEndings(string.Empty) != expected)
         {
-            Svc.Log.Information($"{Tag} 退出中跳出的確認框不是退出任務，不代按：{prompt}");
+            Svc.Log.Information($"{Tag} 退出中跳出的確認框不是 Addon#{LeavePromptRow}「{expected}」，不代按（留給你或 YesAlready）：{prompt}");
             return;
         }
 
@@ -741,19 +756,6 @@ public sealed class CeFarm : IDisposable
         var text = Svc.Data.GetExcelSheet<AddonSheet>().GetRowOrDefault(LeavePromptRow)?.Text.ExtractText();
         leavePrompt = string.IsNullOrEmpty(text) ? null : text.ReplaceLineEndings(string.Empty);
         return leavePrompt;
-    }
-
-    private string? LeaveEntry()
-    {
-        if (leaveEntryLoaded)
-        {
-            return leaveEntry;
-        }
-
-        leaveEntryLoaded = true;
-        var text = Svc.Data.GetExcelSheet<AddonSheet>().GetRowOrDefault(LeaveEntryRow)?.Text.ExtractText();
-        leaveEntry = string.IsNullOrEmpty(text) ? null : text.ReplaceLineEndings(string.Empty);
-        return leaveEntry;
     }
 
     private void OnTerritoryChanged(ushort id)
@@ -833,7 +835,6 @@ public sealed class CeFarm : IDisposable
             ["minutes"] = stop == CeFarmStop.WaitTimeout ? detail ?? string.Empty : (CeFarmRules.JoinedTimeLimitMs / 60_000).ToString(),
             ["seconds"] = (CeFarmRules.ExitTimeLimitMs / 1000).ToString(),
             ["done"] = roundsDone.ToString(),
-            ["expected"] = leaveEntry ?? "?",
         };
         var key = stop switch
         {
@@ -853,7 +854,7 @@ public sealed class CeFarm : IDisposable
                 "busy" => "exit_busy",
                 _ => "exit_timeout",
             },
-            CeFarmStop.ExitMenuMismatch => "exit_menu_mismatch",
+            CeFarmStop.ExitMenuMismatch => detail == "disabled" ? "exit_menu_disabled" : "exit_menu_mismatch",
             CeFarmStop.LoggedOut => "logged_out",
             CeFarmStop.ModuleDisabled => "module_disabled",
             _ => detail == null ? "manual" : "error",

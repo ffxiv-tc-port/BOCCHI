@@ -159,7 +159,8 @@
           "exit_timeout": "did not leave the duty within {seconds} seconds",
           "exit_confirm": "the leave confirmation was not pressed within {seconds} seconds (YesAlready could not be paused, so BOCCHI did not press it)",
           "exit_menu": "pressed Leave in the duty menu 3 times without a confirmation",
-          "exit_menu_mismatch": "the first entry of the duty menu was “{detail}”, not “{expected}”, so nothing was pressed (no other entry was tried)",
+          "exit_menu_mismatch": "the duty menu did not have the layout this version expects, so Leave was not pressed (details in the [BOCCHI][跟團刷CE] log line)",
+          "exit_menu_disabled": "the game says you cannot leave right now (Leave is greyed out in the duty menu), so nothing was pressed",
           "exit_busy": "could not leave the duty for 5 minutes after the encounter (in combat or casting)",
           "logged_out": "you logged out",
           "module_disabled": "the critical encounter module was disabled"

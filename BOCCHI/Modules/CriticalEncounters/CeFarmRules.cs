@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
+using AtkValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace BOCCHI.Modules.CriticalEncounters;
 
@@ -22,7 +22,7 @@ public enum CeFarmPhase : byte
     /// <summary>這一場成功結束：等幾秒再退出副本。</summary>
     ExitDelay,
 
-    /// <summary>正在走介面退出副本（副本選單「退出任務」→ 確認框）。</summary>
+    /// <summary>正在走介面退出副本（副本選單「退出」→ 確認框）。</summary>
     Exiting,
 
     /// <summary>武裝中、人在新月島，但這一輪還沒按「出發」：什麼都不做（進島不自動開始）。</summary>
@@ -56,7 +56,7 @@ public enum CeFarmStop : byte
 
     ExitTimeout,
 
-    /// <summary>副本選單第 0 項不是「退出任務」：不按。</summary>
+    /// <summary>副本選單的排法和預期不同，或「退出」現在不能按：不按。</summary>
     ExitMenuMismatch,
 
     LoggedOut,
@@ -131,29 +131,57 @@ public static class CeFarmRules
         return absentMs >= PartyGraceMs;
     }
 
-    /// <summary>副本選單的第 0 項＝AtkValue 字串裡第一個非空的；沒有回 null。</summary>
-    public static string? FirstMenuEntry(IReadOnlyList<string?> values)
+    // 遊戲開副本選單與刷新時填的前 17 格型別（台服 7.25）；加一顆按鈕幾乎一定多一格，對不上＝排法變了、不按。
+    private static readonly AtkValueType[] MenuFingerprint =
+    [
+        AtkValueType.UInt,
+        AtkValueType.Bool, AtkValueType.Bool, AtkValueType.Bool, AtkValueType.Bool, AtkValueType.Bool, AtkValueType.Bool, AtkValueType.Bool,
+        AtkValueType.String,
+        AtkValueType.Bool, AtkValueType.Bool, AtkValueType.Bool, AtkValueType.Bool, AtkValueType.Bool, AtkValueType.Bool,
+        AtkValueType.UInt, AtkValueType.UInt,
+    ];
+
+    /// <summary>判斷要看的格數（型別指紋的長度）。</summary>
+    public static int MenuFingerprintLength
     {
-        foreach (var value in values)
+        get => MenuFingerprint.Length;
+    }
+
+    /// <summary>同一幀讀到的副本選單 AtkValues 能不能送「退出」；只有 <see cref="CeFarmMenuVerdict.Press"/> 會按。</summary>
+    /// <param name="count">AtkValuesCount；AtkValues 是 null 時傳 0。</param>
+    /// <param name="types">前 min(count, 17) 格的原始型別（比對時才遮 TypeMask，[8] 實際是 ManagedString）。</param>
+    /// <param name="mode">[0]：0＝一般模式，1＝正在開「詳細資訊」子窗。</param>
+    /// <param name="leaveEnabled">[1]：「退出」按鈕可不可按。callback 會繞過按鈕灰掉的狀態，所以一定要看。</param>
+    /// <param name="badSlot">型別不符時是第幾格，其餘是 -1。</param>
+    public static CeFarmMenuVerdict JudgeMenu(int count, ReadOnlySpan<AtkValueType> types, uint mode, bool leaveEnabled, out int badSlot)
+    {
+        badSlot = -1;
+        if (count < MenuFingerprint.Length || types.Length < MenuFingerprint.Length)
         {
-            if (!string.IsNullOrEmpty(value))
+            return CeFarmMenuVerdict.TooFewValues;
+        }
+
+        for (var i = 0; i < MenuFingerprint.Length; i++)
+        {
+            if ((AtkValueType)((int)types[i] & (int)AtkValueType.TypeMask) != MenuFingerprint[i])
             {
-                return value;
+                badSlot = i;
+                return CeFarmMenuVerdict.WrongType;
             }
         }
 
-        return null;
-    }
-
-    /// <summary>第 0 項與表上的「退出任務」逐字相同（兩邊去換行）才按；任一邊讀不到一律不按，也不試別的項。</summary>
-    public static bool IsLeaveEntry(string? firstEntry, string? leaveText)
-    {
-        if (string.IsNullOrEmpty(firstEntry) || string.IsNullOrEmpty(leaveText))
+        if (mode != 0)
         {
-            return false;
+            return CeFarmMenuVerdict.NotNormalMode;
         }
 
-        return string.Equals(firstEntry.ReplaceLineEndings(string.Empty), leaveText.ReplaceLineEndings(string.Empty), StringComparison.Ordinal);
+        return leaveEnabled ? CeFarmMenuVerdict.Press : CeFarmMenuVerdict.LeaveDisabled;
+    }
+
+    /// <summary>指紋第 <paramref name="slot"/> 格該是的型別（診斷用）。</summary>
+    public static AtkValueType ExpectedMenuType(int slot)
+    {
+        return MenuFingerprint[slot];
     }
 
     /// <summary>能不能武裝；不能時回原因（沒有目標、模組關著、不在小隊、有會自己移動的自動化在跑）。</summary>
@@ -176,6 +204,20 @@ public static class CeFarmRules
 
         return movementRunning ? CeFarmArmBlock.MovementRunning : CeFarmArmBlock.None;
     }
+}
+
+/// <summary>副本選單能不能按「退出」。</summary>
+public enum CeFarmMenuVerdict : byte
+{
+    Press,
+
+    TooFewValues,
+
+    WrongType,
+
+    NotNormalMode,
+
+    LeaveDisabled,
 }
 
 public enum CeFarmArmBlock : byte
