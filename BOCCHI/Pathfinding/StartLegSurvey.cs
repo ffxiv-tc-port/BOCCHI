@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using BOCCHI.Enums;
 using Ocelot.IPC;
@@ -11,6 +12,7 @@ namespace BOCCHI.Pathfinding;
 /// <summary>
 /// 規劃第一段之前，向 vnavmesh 量角色目前位置到候選點與最近幾個乙太之晶的步行路長（Nav.Pathfind：只算路、不移動）。
 /// 只在 framework 執行緒建立、輪詢與 <see cref="Build"/>；量不到（失敗、逾時、網格沒好、超過查詢上限）的改用直線距離。
+/// 到時限或 <see cref="Build"/> 時取消還沒算完的查詢（只取消自己的，不用全域的 Nav.PathfindCancelAll），不佔住 vnavmesh 的尋路佇列。
 /// </summary>
 public sealed class StartLegSurvey
 {
@@ -30,6 +32,8 @@ public sealed class StartLegSurvey
     private readonly List<(Aethernet Shard, Query Query)> shards = [];
 
     private readonly long deadline;
+
+    private readonly CancellationTokenSource cancel = new();
 
     private StartLegSurvey(Vector3 start, long deadline)
     {
@@ -61,22 +65,32 @@ public sealed class StartLegSurvey
         for (var i = 0; i < ordered.Count; i++)
         {
             var (node, position) = ordered[i];
-            survey.nodes.Add((node, new Query(position, NodeReachM, ready && i < MaxNodeQueries ? TryPathfind(vnav, start, position) : null)));
+            survey.nodes.Add((node, new Query(position, NodeReachM, ready && i < MaxNodeQueries ? TryPathfind(vnav, start, position, survey.cancel.Token) : null)));
         }
 
         foreach (var shard in AethernetData.AllByDistance(start).Take(ShardQueries))
         {
-            survey.shards.Add((shard.Aethernet, new Query(shard.Position, AethernetData.DISTANCE, ready ? TryPathfind(vnav, start, shard.Position) : null)));
+            survey.shards.Add((shard.Aethernet, new Query(shard.Position, AethernetData.DISTANCE, ready ? TryPathfind(vnav, start, shard.Position, survey.cancel.Token) : null)));
         }
 
         return survey;
     }
 
-    private static Task<List<Vector3>>? TryPathfind(VNavmesh vnav, Vector3 from, Vector3 to)
+    private static Task<List<Vector3>>? TryPathfind(VNavmesh vnav, Vector3 from, Vector3 to, CancellationToken token)
     {
         try
         {
-            var task = vnav.Pathfind(from, to, false);
+            Task<List<Vector3>>? task;
+            try
+            {
+                task = vnav.PathfindCancelable(from, to, false, token);
+            }
+            catch (Exception)
+            {
+                // 拿不到可取消的端點時照舊用不能取消的那支。
+                task = vnav.Pathfind(from, to, false);
+            }
+
             // 逾時後才失敗的查詢沒有人等：先掛上觀察，例外不會變成未觀察的例外。
             task?.ContinueWith(static t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
             return task;
@@ -91,6 +105,7 @@ public sealed class StartLegSurvey
     {
         if (now >= deadline)
         {
+            CancelPending();
             return true;
         }
 
@@ -116,6 +131,7 @@ public sealed class StartLegSurvey
     /// <param name="answered">vnavmesh 有回答（量到或走不到）的筆數；0＝全部是直線。</param>
     public StartLegCosts Build(out int answered)
     {
+        CancelPending();
         var costs = new StartLegCosts();
         answered = 0;
         foreach (var (node, query) in nodes)
@@ -133,6 +149,15 @@ public sealed class StartLegSurvey
         }
 
         return costs;
+    }
+
+    // 不 Dispose：vnavmesh 的連結取消來源還掛著它的註冊，交給 GC。
+    private void CancelPending()
+    {
+        if (!cancel.IsCancellationRequested)
+        {
+            cancel.Cancel();
+        }
     }
 
     private static List<Vector3>? Completed(Task<List<Vector3>>? task)
