@@ -322,7 +322,7 @@ public class ReturnChain(TeleporterModule module, ReturnChainConfig config) : Re
         }
 
         /// <returns>給記錄用的前綴；BOCCHI 自己送的（或讀不到是誰的）路線才停，別人或 Lifestream 的不停。</returns>
-        /// <remarks>還在算的尋路一起取消：只停路徑的話，背景算完的路會在詠唱途中把角色帶走。</remarks>
+        /// <remarks>BOCCHI 有還沒作廢的目的地時，還在算的尋路一起取消：只停路徑的話，背景算完的路會在詠唱途中把角色帶走。</remarks>
         public string StopOwnNavigation()
         {
             var running = QueryVnavRunning();
@@ -335,6 +335,12 @@ public class ReturnChain(TeleporterModule module, ReturnChainConfig config) : Re
             if (running && JudgeVnavOwner() == OwnPathVerdict.Foreign)
             {
                 return "vnavmesh 在走的不是 BOCCHI 的路線，不停它；";
+            }
+
+            // 取消算路是全域的（別的插件在算的也一起取消）：只在算路中、BOCCHI 也有還沒作廢的目的地時才叫。
+            if (!running && !HasOwnDestination())
+            {
+                return "vnavmesh 在算路，但 BOCCHI 沒有還在走的目的地，不取消（可能是別的插件的）；";
             }
 
             try
@@ -703,6 +709,13 @@ public class ReturnChain(TeleporterModule module, ReturnChainConfig config) : Re
             {
                 Svc.Log.Information($"[BOCCHI][返回] 第 {number} 次嘗試：施放返回前 vnavmesh 還在走或還在算路：{stopped}角色位置 {Player.Position:F1}");
             }
+        }
+
+        // 與 JudgeVnavOwner 認同一組目的地：最近送出的（停止時清空）加上還沒作廢的趕路登記。
+        private bool HasOwnDestination()
+        {
+            own.CaptureCurrent(TravelIntent.State);
+            return own.Count > 0;
         }
 
         private OwnPathVerdict JudgeVnavOwner()
