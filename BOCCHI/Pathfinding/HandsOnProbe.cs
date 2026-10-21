@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using BOCCHI.Automation;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
 using ECommons.DalamudServices;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace BOCCHI.Pathfinding;
 
@@ -73,6 +76,7 @@ public static class HandsOnRecent
 
 /// <summary>
 /// 讓位用的「使用者在操作」訊號：鍵盤移動鍵（WASD、QE、方向鍵）、滑鼠左右鍵同按、手把左搖桿，以及不是 BOCCHI 自己發起的互動事件。
+/// 打字中（遊戲或插件視窗的文字框；判斷同 Aggro.WalkThrough）鍵盤不算，滑鼠與手把照算。
 /// 只在 framework 執行緒用。讀不到（服務不在、擲例外）就當成沒按，之後不再讀＝與沒有這個判斷時相同。
 /// 自訂按鍵綁定讀不到：那時只剩原本「持續移動才讓位」的判斷。
 /// </summary>
@@ -135,6 +139,23 @@ public sealed class HandsOnProbe
         return occupied && !OwnInteraction.Recent(now, OwnInteractionMs);
     }
 
+    /// <param name="gameTyping">遊戲的文字輸入框在用；null＝解不出遊戲函式，當成打字中。</param>
+    public static bool IgnoreKeyboard(bool imguiTyping, bool? gameTyping)
+    {
+        return imguiTyping || gameTyping != false;
+    }
+
+    private static unsafe bool? GameTextInputActive()
+    {
+        if (AtkModule.MemberFunctionPointers.IsTextInputActive == null)
+        {
+            return null;
+        }
+
+        var module = RaptureAtkModule.Instance();
+        return module == null ? null : module->AtkModule.IsTextInputActive();
+    }
+
     private bool Pressed()
     {
         var state = Svc.KeyState;
@@ -153,11 +174,14 @@ public sealed class HandsOnProbe
             mouseValid = state.IsVirtualKeyValid(VirtualKey.LBUTTON) && state.IsVirtualKeyValid(VirtualKey.RBUTTON);
         }
 
-        foreach (var key in keys)
+        if (keys.Length > 0 && !IgnoreKeyboard(ImGui.GetIO().WantTextInput, GameTextInputActive()))
         {
-            if (state[key])
+            foreach (var key in keys)
             {
-                return true;
+                if (state[key])
+                {
+                    return true;
+                }
             }
         }
 
