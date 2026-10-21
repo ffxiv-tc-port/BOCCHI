@@ -44,6 +44,9 @@ public sealed class CeFarm : IDisposable
     // 副本選單的 callback 值是遊戲寫死的動作編號，0＝「退出」，與按鈕位置、AtkValues 索引無關；改版日要重驗。
     private const int LeaveCallbackValue = 0;
 
+    // 關閉選單（agent Hide），不經確認框。
+    private const int CloseCallbackValue = -2;
+
     private const int MenuDumpSlots = 24;
 
     private const int YesAlreadyPauseMs = 3_000;
@@ -109,6 +112,16 @@ public sealed class CeFarm : IDisposable
 
     // 選單可見但一直沒就緒的起點；0＝沒在等。
     private long notReadySince;
+
+    // 自己叫出來的那一扇選單（只做等值比較）；0＝目前沒有。
+    private nint ownMenu;
+
+    private bool awaitingOwnMenu;
+
+    private int menuRefusals;
+
+    // 上一次暫時不能按的原因；Press＝這一輪還沒有。
+    private CeFarmMenuVerdict lastRefusal;
 
     private bool confirmSeen;
 
@@ -252,6 +265,10 @@ public sealed class CeFarm : IDisposable
         menuPresses = 0;
         menuShows = 0;
         notReadySince = 0;
+        ownMenu = 0;
+        awaitingOwnMenu = false;
+        menuRefusals = 0;
+        lastRefusal = CeFarmMenuVerdict.Press;
         confirmSeen = false;
         claim.Clear();
     }
@@ -504,8 +521,19 @@ public sealed class CeFarm : IDisposable
     {
         if (now - phaseSince > CeFarmRules.ExitTimeLimitMs)
         {
-            Svc.Log.Information($"{Tag} 退出逾時：叫出副本選單 {menuShows} 次、按「退出」{menuPresses} 次、退出確認框{(confirmSeen ? "看到了" : "沒看到")}");
-            Disarm(CeFarmStop.ExitTimeout, confirmSeen ? "confirm" : null);
+            Svc.Log.Information($"{Tag} 退出逾時：叫出副本選單 {menuShows} 次、按「退出」{menuPresses} 次、暫時不能按 {menuRefusals} 次（最後：{lastRefusal}）、退出確認框{(confirmSeen ? "看到了" : "沒看到")}");
+            CloseOwnMenu(now);
+            string? detail = null;
+            if (confirmSeen)
+            {
+                detail = "confirm";
+            }
+            else if (pressedMenu == 0 && lastRefusal != CeFarmMenuVerdict.Press)
+            {
+                detail = lastRefusal == CeFarmMenuVerdict.LeaveDisabled ? "disabled" : "detail";
+            }
+
+            Disarm(CeFarmStop.ExitTimeout, detail);
             return;
         }
 
@@ -521,6 +549,12 @@ public sealed class CeFarm : IDisposable
 
         var found = GenericHelpers.TryGetAddonByName<AtkUnitBase>(MenuAddon, out var menu);
         var ready = found && GenericHelpers.IsAddonReady(menu);
+        if (ready && awaitingOwnMenu)
+        {
+            ownMenu = (nint)menu;
+            awaitingOwnMenu = false;
+        }
+
         if (pressedMenu != 0)
         {
             if (now - pressedAt < MenuSettleMs)
@@ -531,7 +565,11 @@ public sealed class CeFarm : IDisposable
             if (ready && (nint)menu == pressedMenu)
             {
                 Svc.Log.Information($"{Tag} 按了「退出」{MenuSettleMs / 1000} 秒都沒有確認框、選單還開著：關掉選單重來（第 {menuPresses}/{MaxMenuPresses} 次）");
-                Callback.Fire(menu, false, -2);
+                Callback.Fire(menu, false, CloseCallbackValue);
+                if ((nint)menu == ownMenu)
+                {
+                    ownMenu = 0;
+                }
             }
 
             pressedMenu = 0;
@@ -577,6 +615,7 @@ public sealed class CeFarm : IDisposable
             if (agent != null)
             {
                 menuShows++;
+                awaitingOwnMenu = true;
                 agent->Show();
             }
 
@@ -586,16 +625,52 @@ public sealed class CeFarm : IDisposable
         var verdict = JudgeMenu(menu, out var badSlot);
         if (verdict != CeFarmMenuVerdict.Press)
         {
-            DumpMenu(menu, verdict, badSlot);
-            Disarm(CeFarmStop.ExitMenuMismatch, verdict == CeFarmMenuVerdict.LeaveDisabled ? "disabled" : null);
+            if (!CeFarmRules.MenuRetryable(verdict))
+            {
+                DumpMenu(menu, verdict, badSlot);
+                CloseOwnMenu(now);
+                Disarm(CeFarmStop.ExitMenuMismatch);
+                return;
+            }
+
+            // 暫時不能按：關掉自己叫出來的那扇、冷卻後重叫；別人開的不關，冷卻後重讀。總時限在上面。
+            menuRefusals++;
+            if (verdict != lastRefusal)
+            {
+                lastRefusal = verdict;
+                DumpMenu(menu, verdict, badSlot, $"；{((nint)menu == ownMenu ? "關掉選單、" : string.Empty)}{MenuCooldownMs / 1000} 秒後再看（第 {menuRefusals} 次）");
+            }
+
+            CloseOwnMenu(now);
+            nextPressAt = now + MenuCooldownMs;
             return;
         }
 
         menuPresses++;
+        lastRefusal = CeFarmMenuVerdict.Press;
         DumpMenu(menu, verdict, badSlot);
         Callback.Fire(menu, true, LeaveCallbackValue);
         pressedMenu = (nint)menu;
         pressedAt = now;
+    }
+
+    // 只關自己叫出來、當幀照名字重找到而且就緒的那一扇；關過就忘掉位址，不對關閉中的窗送第二次。
+    // 剛按了「退出」還在等確認框、或確認框已出現時不碰（那扇選單已經在走退出流程）。
+    private unsafe void CloseOwnMenu(long now)
+    {
+        if (ownMenu == 0 || confirmSeen || claim.IsActive || (pressedMenu != 0 && now - pressedAt < MenuSettleMs))
+        {
+            return;
+        }
+
+        if (!GenericHelpers.TryGetAddonByName<AtkUnitBase>(MenuAddon, out var menu) || (nint)menu != ownMenu || !GenericHelpers.IsAddonReady(menu))
+        {
+            return;
+        }
+
+        ownMenu = 0;
+        Svc.Log.Information($"{Tag} 關掉自己叫出來的副本選單");
+        Callback.Fire(menu, false, CloseCallbackValue);
     }
 
     // 同一幀讀完：格數不足時不碰 [0]／[1]。
@@ -616,7 +691,7 @@ public sealed class CeFarm : IDisposable
     }
 
     // 診斷：每次決定（按或不按）寫一行，不是每幀；排法、[1] 的值、實際格數都靠這行定案。
-    private unsafe void DumpMenu(AtkUnitBase* menu, CeFarmMenuVerdict verdict, int badSlot)
+    private unsafe void DumpMenu(AtkUnitBase* menu, CeFarmMenuVerdict verdict, int badSlot, string? note = null)
     {
         var values = menu->AtkValues;
         var count = values == null ? 0 : (int)menu->AtkValuesCount;
@@ -651,10 +726,10 @@ public sealed class CeFarm : IDisposable
             CeFarmMenuVerdict.Press => $"按「退出」（callback {LeaveCallbackValue}，第 {menuPresses}/{MaxMenuPresses} 次）",
             CeFarmMenuVerdict.TooFewValues => $"不按：AtkValues 不足 {CeFarmRules.MenuFingerprintLength} 格",
             CeFarmMenuVerdict.WrongType => $"不按：第 [{badSlot}] 格型別 0x{(int)values[badSlot].Type:X} 不是 {CeFarmRules.ExpectedMenuType(badSlot)}（選單排法和台服 7.25 不同）",
-            CeFarmMenuVerdict.NotNormalMode => $"不按：選單不在一般模式（[0]={values[0].UInt}）",
-            _ => "不按：遊戲判定現在不能退出（「退出」按鈕是灰的）",
+            CeFarmMenuVerdict.NotNormalMode => $"暫時不按：副本選單正在顯示詳細資訊（[0]={values[0].UInt}）",
+            _ => "暫時不按：遊戲判定現在不能退出（「退出」按鈕是灰的）",
         };
-        Svc.Log.Information($"{Tag} 副本選單 count={count} 區域={Svc.ClientState.TerritoryType} 前 {MenuDumpSlots} 格 {(slots.Length == 0 ? "（沒有）" : slots.ToString())}；決定：{decision}");
+        Svc.Log.Information($"{Tag} 副本選單 count={count} 區域={Svc.ClientState.TerritoryType} 前 {MenuDumpSlots} 格 {(slots.Length == 0 ? "（沒有）" : slots.ToString())}；決定：{decision}{note}");
     }
 
     private void OnYesnoPreSetup(AddonEvent type, AddonArgs args)
@@ -852,9 +927,11 @@ public sealed class CeFarm : IDisposable
                 "confirm" => "exit_confirm",
                 "menu" => "exit_menu",
                 "busy" => "exit_busy",
+                "disabled" => "exit_menu_disabled",
+                "detail" => "exit_menu_detail",
                 _ => "exit_timeout",
             },
-            CeFarmStop.ExitMenuMismatch => detail == "disabled" ? "exit_menu_disabled" : "exit_menu_mismatch",
+            CeFarmStop.ExitMenuMismatch => "exit_menu_mismatch",
             CeFarmStop.LoggedOut => "logged_out",
             CeFarmStop.ModuleDisabled => "module_disabled",
             _ => detail == null ? "manual" : "error",

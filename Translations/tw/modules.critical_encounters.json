@@ -160,7 +160,8 @@
           "exit_confirm": "退出確認框 {seconds} 秒內沒人按（YesAlready 暫停不了，BOCCHI 沒有代按）",
           "exit_menu": "副本選單按了 3 次「退出」都沒有確認框",
           "exit_menu_mismatch": "副本選單的內容和這一版預期的排法不同，所以沒有按「退出」（詳情在記錄檔 [BOCCHI][跟團刷CE]）",
-          "exit_menu_disabled": "遊戲判定現在不能退出（副本選單的「退出」是灰的），所以沒有按",
+          "exit_menu_disabled": "{seconds} 秒內遊戲一直判定不能退出（副本選單的「退出」是灰的），所以沒有按",
+          "exit_menu_detail": "{seconds} 秒內副本選單一直在顯示詳細資訊，所以沒有按「退出」",
           "exit_busy": "這一場結束後 5 分鐘一直在戰鬥或詠唱中，沒辦法退出副本",
           "logged_out": "你登出了",
           "module_disabled": "緊急遭遇戰模組被關掉了"

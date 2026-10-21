@@ -56,7 +56,7 @@ public enum CeFarmStop : byte
 
     ExitTimeout,
 
-    /// <summary>副本選單的排法和預期不同，或「退出」現在不能按：不按。</summary>
+    /// <summary>副本選單的排法和預期不同：不按。</summary>
     ExitMenuMismatch,
 
     LoggedOut,
@@ -176,6 +176,15 @@ public static class CeFarmRules
         }
 
         return leaveEnabled ? CeFarmMenuVerdict.Press : CeFarmMenuVerdict.LeaveDisabled;
+    }
+
+    /// <summary>
+    /// 暫時性的不按（「詳細資訊」子窗開著、「退出」是灰的）：關掉自己叫出來的選單、冷卻後重叫，到 <see cref="ExitTimeLimitMs"/> 才停止。
+    /// 排法不對（格數、型別）一律立即停止。
+    /// </summary>
+    public static bool MenuRetryable(CeFarmMenuVerdict verdict)
+    {
+        return verdict is CeFarmMenuVerdict.NotNormalMode or CeFarmMenuVerdict.LeaveDisabled;
     }
 
     /// <summary>指紋第 <paramref name="slot"/> 格該是的型別（診斷用）。</summary>
