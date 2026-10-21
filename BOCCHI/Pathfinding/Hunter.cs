@@ -62,6 +62,11 @@ public abstract class Hunter
     // 換目的地時舊的 SimpleMove 沒取消掉（vnavmesh 還有別筆尋路）：它算完開走就停下、改送新的目的地。
     private bool staleMovePending;
 
+    // 步驟處理器擲例外時每 150 毫秒重試：同一步、同一種例外只寫一次帶堆疊的 Error，之後寫 Debug（換一趟巡迴重算）。
+    private int stepErrorIndex = -1;
+
+    private Type? stepErrorType;
+
     private readonly HuntCombatWait combatWait = new();
 
     // 最後一次看到戰鬥旗標的時刻（0＝沒看過）：「回營地」那一步要脫戰滿 HuntCombatWait.SettleMs 才停下改施放返回。
@@ -499,6 +504,7 @@ public abstract class Hunter
         stepIndex = 0;
         Steps.Clear();
         pathfinder = null;
+        stepErrorIndex = -1;
         ledgeClimb.Reset();
         ResetShardStairs();
         watchedStep = -1;
@@ -699,7 +705,16 @@ public abstract class Hunter
         }
         catch (Exception ex)
         {
-            Svc.Log.Error(ex, $"[BOCCHI][自動化] 「{AutomationControl.GetName(Kind)}」第 {stepIndex + 1} 步處理時擲出例外，下一輪再試。");
+            if (stepErrorIndex == stepIndex && stepErrorType == ex.GetType())
+            {
+                Svc.Log.Debug($"[BOCCHI][自動化] 「{AutomationControl.GetName(Kind)}」第 {stepIndex + 1} 步又擲出 {ex.GetType().Name}：{ex.Message}");
+            }
+            else
+            {
+                stepErrorIndex = stepIndex;
+                stepErrorType = ex.GetType();
+                Svc.Log.Error(ex, $"[BOCCHI][自動化] 「{AutomationControl.GetName(Kind)}」第 {stepIndex + 1} 步處理時擲出例外，下一輪再試（同一步同一種例外之後只寫 Debug）。");
+            }
         }
     }
 
