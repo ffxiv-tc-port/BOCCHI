@@ -854,11 +854,10 @@ public sealed class IslandLedger : IDisposable
         }
     }
 
-    // 玩家打的字（說話、隊伍、通訊貝、跨服通訊貝…）不算：別人打出「獲得了…點知見。」不可以灌進帳，也不寫進 log。
+    // 玩家打的字（說話、隊伍、通訊貝、跨服通訊貝、/echo…）不算：別人打出「獲得了…點知見。」不可以灌進帳，也不寫進 log。
     private static bool IsPlayerChat(XivChatType type)
     {
-        var channel = (int)type & 0x7F;
-        return channel is >= 10 and <= 37 or >= 101 and <= 107;
+        return PlayerChat.IsPlayerChannel(type);
     }
 
     private static int SafeProgress(Activity activity)

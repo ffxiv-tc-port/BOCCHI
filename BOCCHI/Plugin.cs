@@ -118,16 +118,38 @@ public sealed class Plugin : OcelotPlugin
     }
 
     // 先記再分派：分派給模組的那一段只送給這一幀有更新的模組（開箱時整個插件不更新）。
+    // 玩家頻道不收：別人把系統訊息原句貼出來，不可以被當成自己的魔尋寶結果或第二處財寶提示。
     protected override void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
     {
-        if (ZoneData.IsInOccultCrescent())
+        if (ZoneData.IsInOccultCrescent() && !PlayerChat.IsPlayerChannel(type))
         {
             var text = message.TextValue;
+            var senseBefore = global::BOCCHI.Modules.Treasure.TreasureSenseNotice.Sequence;
             SecondTreasureNotice.Observe(text, Environment.TickCount64);
             global::BOCCHI.Modules.Treasure.TreasureSenseNotice.Observe(text);
+            if (!secondTreasureTypeLogged && text.Contains(SecondTreasureNotice.Needle, StringComparison.Ordinal))
+            {
+                secondTreasureTypeLogged = true;
+                LogNoticeType("第二處財寶提示", type);
+            }
+
+            if (!senseTypeLogged && global::BOCCHI.Modules.Treasure.TreasureSenseNotice.Sequence != senseBefore)
+            {
+                senseTypeLogged = true;
+                LogNoticeType("魔尋寶結果", type);
+            }
         }
 
         base.OnChatMessage(type, timestamp, ref sender, ref message, ref isHandled);
+    }
+
+    private static bool secondTreasureTypeLogged;
+
+    private static bool senseTypeLogged;
+
+    private static void LogNoticeType(string what, XivChatType type)
+    {
+        Svc.Log.Information($"[BOCCHI][聊天] 第一次收到{what}：訊息類型 {(int)type}（0x{(int)type:X4}，頻道 {(int)type & 0x7F}）；玩家頻道裡的同一句不收（之後不再記）");
     }
 
     protected override bool ShouldUpdate()
