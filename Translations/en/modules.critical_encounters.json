@@ -53,7 +53,7 @@
         },
         "show_history": {
           "label": "Show Critical Encounter history",
-          "tooltip": "Below the Critical Encounter list, show every Critical Encounter seen since entering this island: when it was first seen, and how it ended (success or failure, last progress read, battle duration).\nSuccess or failure is inferred: time left when it ended means completed, 0 seconds left means failed; if BOCCHI was not updating when it ended, it is shown as unknown."
+          "tooltip": "Below the Critical Encounter list, show every Critical Encounter seen since entering this island: when it was first seen, and how it ended (success or failure, last progress read, battle duration).\nSuccess or failure is inferred: more than 5 seconds left when it ended means completed, 0 seconds left means failed; 1–5 seconds left, or BOCCHI not updating when it ended, is shown as unknown."
         },
         "random_registration_spot": {
           "label": "Stand at a random free spot when registering for a Critical Encounter",
@@ -106,6 +106,7 @@
           "no_battle": "Ended without a battle",
           "unknown": "? (end not seen)",
           "unobserved": " (not observed when it ended, result unknown)",
+          "near_zero": " (ended with only a few seconds left, result unknown)",
           "duration_prefix": " (battle ",
           "duration_suffix": ")",
           "tooltip": {
@@ -120,7 +121,7 @@
             "participated": "You took part in this one",
             "not_participated": "You did not take part in this one",
             "unobserved": "BOCCHI was not updating at the moment this encounter ended (e.g. dead, in a cutscene, a dialogue or a loading screen), so success or failure cannot be told.",
-            "note": "Success or failure is inferred (the game does not expose it): time left when it ended means completed, 0 seconds left means failed. Progress often stops at 99% or below on success, so it is not used."
+            "note": "Success or failure is inferred (the game does not expose it): more than 5 seconds left when it ended means completed, 0 seconds left means failed, 1–5 seconds left is unknown (on a timeout the game may wrap up before the countdown reaches 0). Progress often stops at 99% or below on success, so it is not used."
           }
         },
         "tower": {

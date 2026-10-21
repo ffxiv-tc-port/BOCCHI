@@ -14,12 +14,16 @@ public enum CriticalEncounterOutcome
 /// <summary>
 /// 本次進島看到的緊急遭遇戰紀錄。只在 framework 執行緒用；輸入是追蹤器每幀抄好的受管快照，不碰原生記憶體。
 /// 自己逐幀判斷狀態轉換、不靠追蹤器的事件：進島時已在進行的場次也記得到。
-/// 成敗是推論（遊戲不直接給）：看到結束、而且結束前一刻有在更新時，最後讀到的剩餘秒數 &gt; 0 記成功、＝0 記失敗；其餘不明。
+/// 成敗是推論（遊戲不直接給）：看到結束、而且結束前一刻有在更新時，最後讀到的剩餘秒數 &gt; <see cref="UnclearSecondsLeftMax"/> 記成功、
+/// ＝0 記失敗、介於中間不明（逾時失敗時遊戲可能在倒數歸零前就收場）；其餘不明。
 /// 成功時進度常停在 99% 或更低（遊戲在進度到 100 之前就收場），所以不看進度。
 /// </summary>
 public sealed class CriticalEncounterHistory
 {
     public const int Capacity = 64;
+
+    /// <summary>最後讀到的剩餘秒數在 1～這個值之間結束：成敗不明（不算成功、不誇獎）。實機成功樣本剩的秒數都大得多。</summary>
+    public const uint UnclearSecondsLeftMax = 5;
 
     public sealed class Entry
     {
@@ -67,6 +71,12 @@ public sealed class CriticalEncounterHistory
         {
             get => Outcome == CriticalEncounterOutcome.Success;
         }
+
+        /// <summary>有看到結束、結束前一刻有在更新，但只剩 1～<see cref="UnclearSecondsLeftMax"/> 秒：不明的原因是剩的秒數，不是沒在更新。</summary>
+        public bool EndedNearZero
+        {
+            get => SawBattle && EndUtc != null && !Unobserved && LastSecondsLeft is > 0 and <= UnclearSecondsLeftMax;
+        }
     }
 
     // 舊→新。
@@ -108,7 +118,12 @@ public sealed class CriticalEncounterHistory
             return CriticalEncounterOutcome.Unknown;
         }
 
-        return lastSecondsLeft > 0 ? CriticalEncounterOutcome.Success : CriticalEncounterOutcome.Failure;
+        if (lastSecondsLeft == 0)
+        {
+            return CriticalEncounterOutcome.Failure;
+        }
+
+        return lastSecondsLeft > UnclearSecondsLeftMax ? CriticalEncounterOutcome.Success : CriticalEncounterOutcome.Unknown;
     }
 
     /// <summary>結束的這一場要不要請塔塔露誇一句：角色有參加、而且推論成功（失敗與不明都不叫）；純函式。</summary>

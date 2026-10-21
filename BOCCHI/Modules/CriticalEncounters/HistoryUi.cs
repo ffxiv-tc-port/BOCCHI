@@ -105,8 +105,8 @@ public static class HistoryUi
                 return;
 
             default:
-                // 結束前一刻沒在更新：最後讀到的數字不一定是結束時的，成敗不明。
-                ImGui.TextDisabled($"{module.T("panel.history.ended")}{entry.LastProgress}%{module.T("panel.history.unobserved")}");
+                // 結束前一刻沒在更新（最後讀到的數字不一定是結束時的），或結束時只剩幾秒：成敗不明。
+                ImGui.TextDisabled($"{module.T("panel.history.ended")}{entry.LastProgress}%{module.T(entry.EndedNearZero ? "panel.history.near_zero" : "panel.history.unobserved")}");
                 return;
         }
     }
