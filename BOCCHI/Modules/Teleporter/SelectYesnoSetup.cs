@@ -36,8 +36,8 @@ public static unsafe class SelectYesnoSetup
     public static string? ReadPrompt(AddonSetupArgs setup)
     {
         if (TryGetSetupValue(setup, 0, out var value)
-            && (value.Type is ValueType.String or ValueType.String8 or ValueType.ManagedString)
-            &&value.String.Value != null)
+            && BaseType(value) is ValueType.String or ValueType.String8
+            && value.String.Value != null)
         {
             return MemoryHelper.ReadSeStringNullTerminated((nint)value.String.Value)?.GetText();
         }
@@ -48,7 +48,13 @@ public static unsafe class SelectYesnoSetup
     /// <summary>舊版會自動按的那種確認框（AtkValues[7] 是整數 -1）；只用來寫紀錄。</summary>
     public static bool IsLegacyAutoYes(AddonSetupArgs setup)
     {
-        return TryGetSetupValue(setup, 7, out var value) && value.Type == ValueType.Int && value.Int == -1;
+        return TryGetSetupValue(setup, 7, out var value) && BaseType(value) == ValueType.Int && value.Int == -1;
+    }
+
+    // 型別高位是 Managed 等旗標，比對前先遮掉。
+    private static ValueType BaseType(in AtkValue value)
+    {
+        return (ValueType)((int)value.Type & (int)ValueType.TypeMask);
     }
 
     /// <summary>找出位址等於 <paramref name="address"/>、而且就緒的那一扇確認框。位址只做等值比較，從不解參。</summary>
