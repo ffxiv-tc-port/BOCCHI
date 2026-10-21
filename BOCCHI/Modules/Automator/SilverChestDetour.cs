@@ -382,12 +382,11 @@ public sealed class SilverChestDetour
             return null;
         }
 
-        var enabled = config.CriticalEncountersMap;
         var nowUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         long? soonest = null;
         foreach (var encounter in criticalEncounters.CriticalEncounters.Values)
         {
-            if (encounter.State != DynamicEventState.Register || !enabled.TryGetValue(encounter.DynamicEventId, out var on) || !on)
+            if (encounter.State != DynamicEventState.Register || !config.TryGetCriticalEncounterEnabled(encounter.DynamicEventId, out var on) || !on)
             {
                 continue;
             }
