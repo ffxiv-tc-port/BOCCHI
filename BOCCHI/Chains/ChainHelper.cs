@@ -104,20 +104,29 @@ public class ChainHelper
         return PathfindToAndWait(destination, distance, source, onFinished, null);
     }
 
-    /// <param name="yieldToUser">每拍問一次要不要讓位給使用者自己的操作（<see cref="ArrivalYieldGate"/>）；null 或回 false 時與沒有這個參數時相同。</param>
     public static Func<Chain> PathfindToAndWait(Vector3 destination, float distance, TravelSource source, Action<ArrivalGuard>? onFinished, Func<bool>? yieldToUser)
+    {
+        return PathfindToAndWait(destination, distance, source, onFinished, yieldToUser, null);
+    }
+
+    /// <param name="yieldToUser">每拍問一次要不要讓位給使用者自己的操作（<see cref="ArrivalYieldGate"/>）；null 或回 false 時與沒有這個參數時相同。</param>
+    /// <param name="ledger">讓位時間記在這裡（外層時限用 <see cref="WalkYieldLedger.TimeLimit"/> 補回）；null＝每次走自己記一份。到達時限一律補回讓位時間。</param>
+    public static Func<Chain> PathfindToAndWait(Vector3 destination, float distance, TravelSource source, Action<ArrivalGuard>? onFinished, Func<bool>? yieldToUser,
+        WalkYieldLedger? ledger)
     {
         var vnav = IPC.GetSubscriber<VNavmesh>();
         return () =>
         {
             var guard = new ArrivalGuard();
-            var walk = yieldToUser == null ? null : new WalkYield(yieldToUser);
+            var walk = yieldToUser == null ? null : new WalkYield(yieldToUser, ledger ?? new WalkYieldLedger());
+            var arriveLimit = walk == null
+                ? new TaskManagerConfiguration { TimeLimitMS = ArriveTimeLimitMs }
+                : walk.Ledger.TimeLimit(ArriveTimeLimitMs, $"走向 {destination:F1}（{source}）");
             var chain = Chain.Create()
                 .ConditionalThen(_ => Player.DistanceTo(destination) > distance, () =>
                     Chain.Create()
                         .Then(new PathfindAndMoveToChain(vnav, destination, source))
-                        .Then(new TaskManagerTask(() => WaitUntilArrived(vnav, guard, walk, destination, distance, source), "ChainHelper.WaitUntilArrived",
-                            new TaskManagerConfiguration { TimeLimitMS = ArriveTimeLimitMs }))
+                        .Then(new TaskManagerTask(() => WaitUntilArrived(vnav, guard, walk, destination, distance, source), "ChainHelper.WaitUntilArrived", arriveLimit))
                         .Then(_ => vnav.Stop())
                 );
 
@@ -126,9 +135,11 @@ public class ChainHelper
     }
 
     // 一段走路的讓位狀態；只在 framework 執行緒用。
-    private sealed class WalkYield(Func<bool> enabled)
+    private sealed class WalkYield(Func<bool> enabled, WalkYieldLedger ledger)
     {
         public readonly Func<bool> Enabled = enabled;
+
+        public readonly WalkYieldLedger Ledger = ledger;
 
         public readonly ArrivalYieldGate Gate = new();
 
@@ -209,6 +220,7 @@ public class ChainHelper
 
         var interacting = !input && HandsOnProbe.Interacting(now);
         var step = walk.Gate.Observe(player, navigating, !navigating && Activity.IsMovementPaused(), input || interacting, now);
+        walk.Ledger.Add(step.YieldedMs);
         if (walk.Gate.Manual.Yielding)
         {
             HandsOnRecent.Note(now, "走路段正在讓位給你操作");

@@ -79,6 +79,9 @@ public sealed class SilverChestDetour
     // 這一趟走路的重走次數；走路那段沒跑完時是 -1。
     private int rewalks;
 
+    // 這一趟走路讓位給使用者操作的累計：走路段與兜底時限都補回這段時間。
+    private WalkYieldLedger walkYield = new();
+
     /// <summary>冪等：放棄進行中的開箱（動作鏈與導航由呼叫端收），清掉「試過」的紀錄。</summary>
     public void Reset(string reason)
     {
@@ -102,7 +105,7 @@ public sealed class SilverChestDetour
             return false;
         }
 
-        if (Environment.TickCount64 - startedAt <= overallTimeLimitMs)
+        if (Environment.TickCount64 - startedAt <= overallTimeLimitMs + walkYield.TotalMs)
         {
             return true;
         }
@@ -110,7 +113,7 @@ public sealed class SilverChestDetour
         running = false;
         generation++;
         var navigation = module.Plugin.Automation.AbortIllegalModeTravel();
-        Svc.Log.Information($"{Tag} 開白銀寶箱超過 {overallTimeLimitMs / 1000} 秒還沒結束：放棄這個寶箱（位置 {Format(targetPosition)}），回到原本的下一步；導航：{navigation}");
+        Svc.Log.Information($"{Tag} 開白銀寶箱超過 {overallTimeLimitMs / 1000} 秒（另補回讓位 {walkYield.TotalMs / 1000f:F1} 秒）還沒結束：放棄這個寶箱（位置 {Format(targetPosition)}），回到原本的下一步；導航：{navigation}");
         return false;
     }
 
@@ -257,11 +260,14 @@ public sealed class SilverChestDetour
         targetId = id;
         targetPosition = position;
         rewalks = -1;
+        var ledger = new WalkYieldLedger();
+        walkYield = ledger;
 
         var token = generation;
         Plugin.Chain.Submit(() => Chain.Create(ChainName)
             .ConditionalThen(_ => module.Config.ShouldToggleAiProvider && !Svc.Condition[ConditionFlag.InCombat], _ => module.SetAi(false, "順路去開白銀寶箱"))
-            .Then(ChainHelper.PathfindToAndWait(position, ArriveDistance, TravelSource.SilverChest, guard => NoteWalk(token, guard), () => module.Config.YieldToManualMovement), new TaskManagerConfiguration { TimeLimitMS = walkLimitMs })
+            .Then(ChainHelper.PathfindToAndWait(position, ArriveDistance, TravelSource.SilverChest, guard => NoteWalk(token, guard), () => module.Config.YieldToManualMovement, ledger),
+                ledger.TimeLimit(walkLimitMs, $"順路開白銀寶箱走向 {Format(position)}"))
             .Then(TreasureHunt.CreateOpenChain(id, position), new TaskManagerConfiguration { TimeLimitMS = OpenTimeLimitMs })
             .OnComplete(() => Finish(token, true))
             .OnCancel(() => Finish(token, false)));

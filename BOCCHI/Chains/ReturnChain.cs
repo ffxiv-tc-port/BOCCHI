@@ -124,7 +124,9 @@ public class ReturnChain(TeleporterModule module, ReturnChainConfig config) : Re
 
         // 走到水晶旁才換得了職業：停下卻不夠近時重走（有上限），見 ChainHelper.PathfindToAndWait。
         var crystalPosition = closestKnowledgeCrystal.Position;
-        chain.Then(ChainHelper.PathfindToAndWait(crystalPosition, AethernetData.DISTANCE, TravelSource.KnowledgeCrystal, null, YieldEnabled), new TaskManagerConfiguration { TimeLimitMS = 40000 });
+        var walkYield = new WalkYieldLedger();
+        chain.Then(ChainHelper.PathfindToAndWait(crystalPosition, AethernetData.DISTANCE, TravelSource.KnowledgeCrystal, null, YieldEnabled, walkYield),
+            walkYield.TimeLimit(40000, $"走到知見水晶 {crystalPosition:F1}"));
         chain.Then(_ => vnav.Stop());
 
         chain.Then(new AllBuffsChain(buffs));
