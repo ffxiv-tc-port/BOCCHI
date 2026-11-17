@@ -28,6 +28,12 @@ public enum ActivityEnd
 
     /// <summary>使用者按「換一場」略過這一場（非法模式沒有停）。</summary>
     Skipped,
+
+    /// <summary>兩歧塔開放報名，放下還沒開始參加的活動改去登記台。</summary>
+    SwitchedToForkedTower,
+
+    /// <summary>進了兩歧塔，自動化全部停止。</summary>
+    EnteredForkedTower,
 }
 
 /// <summary>活動是怎麼來的；活動帳與選活動記錄的「來源=」欄位。</summary>
@@ -65,6 +71,8 @@ public static class LedgerRules
             ActivityEnd.LoggedOut => "登出",
             ActivityEnd.SwitchedToPot => "改去魔法甕",
             ActivityEnd.Skipped => "略過",
+            ActivityEnd.SwitchedToForkedTower => "改去兩歧塔",
+            ActivityEnd.EnteredForkedTower => "進兩歧塔",
             _ => "手動停",
         };
     }

@@ -26,7 +26,7 @@ using Ocelot.Modules;
 namespace BOCCHI.Automation;
 
 // 本檔契約：開始／停止只在 framework 執行緒執行；其他執行緒（IPC 呼叫端）只能 RequestStopAll 排隊，下一幀停。開始一律手動（按鈕、指令、設定視窗勾選）；載入插件、進島、登入都不會開始。
-// 自動停止：任何區域切換、角色無法戰鬥、登出／斷線、插件卸載；停止時一併中止動作鏈、導航與自己開的戰鬥 AI。
+// 自動停止：任何區域切換、角色無法戰鬥、登出／斷線、插件卸載、開著「兩歧塔開放時到傳送魔紋等候」時非法模式中進塔；停止時一併中止動作鏈、導航與自己開的戰鬥 AI。
 // 輔助職業技能清單跟著非法模式／自動打怪的執行狀態每幀同步：不論從哪條路徑停下，下一幀就交還 WrathCombo 的租約。
 // 寶箱／幸運胡蘿蔔巡迴的進度：暫停、全部停止（含 IPC 急停）、自動停止都保留成「暫停」，但一律不會自己續跑；單項停止、從頭開始、放棄才丟掉；換區與登出讓保留的進度失效。暫停中不算在跑，不佔移動自動化的互斥。
 // 停止、全部停止、暫停、非法模式讓 EurekaHelper 尋寶中止了 BOCCHI 自己詠唱中的「返回」時，詠唱一起取消（只取消返回，不碰別的詠唱）。
@@ -78,6 +78,9 @@ public sealed class AutomationControl : IDisposable
     private string? pendingExternalStop;
 
     private bool illegalSeenEnabled;
+
+    // 上一幀是否在兩歧塔裡；非法模式關著也追蹤，所以在塔裡手動開始的不會被停。
+    private bool insideForkedTower;
 
     private long navigationGuardUntil;
 
@@ -1361,6 +1364,12 @@ public sealed class AutomationControl : IDisposable
 
         var farming = runningLastFrame[(int)AutomationKind.MobFarmer];
         PhantomActions.Sync(runningLastFrame[(int)AutomationKind.IllegalMode] || farming, farming);
+        if (EnteredForkedTower())
+        {
+            Svc.Log.Information("[BOCCHI][兩歧塔] 非法模式中進了兩歧塔（設定：兩歧塔開放時到傳送魔紋等候）：全部停止，塔內交給你自己的戰鬥 AI");
+            StopAll(I18N.T("automation.reason.entered_forked_tower"), true, true, ActivityEnd.EnteredForkedTower);
+            return;
+        }
 
         if (!anyRunning)
         {
@@ -1380,6 +1389,16 @@ public sealed class AutomationControl : IDisposable
             CaptureDeathRestore();
             StopAll(I18N.T("automation.reason.dead"), true, true, ActivityEnd.Downed);
         }
+    }
+
+    // 剛從塔外進到塔裡、設定開著、非法模式在跑時回 true。每幀呼叫；不配置。
+    private bool EnteredForkedTower()
+    {
+        var player = Svc.Objects.LocalPlayer;
+        var inside = player != null && ForkedTowerPad.IsInsideTower(player);
+        var entered = inside && !insideForkedTower;
+        insideForkedTower = inside;
+        return entered && runningLastFrame[(int)AutomationKind.IllegalMode] && automator?.Config.ShouldWaitAtForkedTowerPad == true;
     }
 
     // 停止之前記下在跑的項目；只記不恢復。

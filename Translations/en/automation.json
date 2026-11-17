@@ -66,6 +66,7 @@
       "stalled": "step {step} made no progress for {seconds} seconds",
       "no_path": "step {step} did not start moving within {seconds} seconds (vnavmesh found no path)",
       "manual_start": "started {name} manually",
+      "entered_forked_tower": "entered the Forked Tower",
       "data_load_failed": "could not load the pathfinding cost table (see the log)"
     },
     "resume_blocked": {

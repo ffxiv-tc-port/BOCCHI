@@ -12,6 +12,9 @@ public enum ActivityState
 
     /// <summary>魔法甕快出現時在出生點附近等它出現（<see cref="PotWaitActivity" />）。</summary>
     WaitingForPot,
+
+    /// <summary>在兩歧塔登記台等被傳送進塔（<see cref="ForkedTowerWaitActivity" />）。</summary>
+    WaitingForForkedTower,
 }
 
 public static class ActivityStateExtensions
@@ -26,6 +29,7 @@ public static class ActivityStateExtensions
             ActivityState.Participating => "modules.automator.panel.activity_state.participating",
             ActivityState.Done => "modules.automator.panel.activity_state.done",
             ActivityState.WaitingForPot => "modules.automator.panel.activity_state.waiting_for_pot",
+            ActivityState.WaitingForForkedTower => "modules.automator.panel.activity_state.waiting_for_forked_tower",
             _ => "modules.automator.panel.activity_state.unknown",
         });
     }

@@ -69,6 +69,11 @@ public class Automator
 
     private bool fatesResolved;
 
+    private long nextForkedTowerCheckAt;
+
+    // 「兩歧塔開放報名、但正在參加別的活動」已寫過記錄的那一輪（報名截止的 Unix 秒）；0＝沒有。
+    private int forkedTowerBusyReportedFor;
+
     // 「魔法甕快出現、不接這一場緊急遭遇戰」已寫過記錄的場次：(id, 報名截止的 Unix 秒)。
     private readonly HashSet<(ushort, int)> potSkipReported = [];
 
@@ -201,6 +206,7 @@ public class Automator
             Plugin.Chain.Abort();
             vnav.Stop();
             (Activity as PotWaitActivity)?.ReportEnded();
+            (Activity as ForkedTowerWaitActivity)?.ReportEnded();
             Activity.LogTargetSummary(ActivityEnd.Vanished);
             Ledger?.Ended(Activity, ActivityEnd.Vanished);
             ArmPotHuntGrace(Activity);
@@ -208,6 +214,11 @@ public class Automator
         }
 
         if ((Activity == null || Activity.state is ActivityState.Idle or ActivityState.Pathfinding or ActivityState.WaitingForPot) && HoldForPotHunt(module, states))
+        {
+            return;
+        }
+
+        if (TrySwitchToForkedTower(module, states, lifestream, vnav))
         {
             return;
         }
@@ -686,6 +697,7 @@ public class Automator
     private bool TryLeaveTravelForPot(AutomatorModule module, StateManagerModule states, Activity current, Lifestream lifestream, VNavmesh vnav)
     {
         if (!module.Config.ShouldPrioritizePots
+            || current is ForkedTowerWaitActivity
             || (current is FateActivity && PotCycle.IsPot(current.data.Id))
             || current.state is not (ActivityState.Idle or ActivityState.Pathfinding)
             || states.GetState() != State.Idle)
@@ -718,6 +730,79 @@ public class Automator
         Ledger?.Selected(pot, ActivitySource.SwitchedToPot);
         var kind = current is CriticalEncounter ? "緊急遭遇戰" : "F.A.T.E.";
         Svc.Log.Information($"[BOCCHI][非法模式] 前往{kind}「{current.GetName()}」途中出現魔法甕「{pot.GetName()}」（設定：魔法甕優先）：中止趕路，改去魔法甕；導航：{navigation}");
+        return true;
+    }
+
+    /// <summary>
+    /// 設定「兩歧塔開放時到傳送魔紋等候」：還能報名、沒被略過時，放下還沒開始參加的活動（待命、趕路、等魔法甕）改去傳送魔紋；
+    /// 正在參加的 F.A.T.E.／緊急遭遇戰不拋下（結束後選活動時才去）。戰鬥中、詠唱或傳送中不打斷。回 true＝這一幀換過去了。只在框架執行緒呼叫。
+    /// </summary>
+    private bool TrySwitchToForkedTower(AutomatorModule module, StateManagerModule states, Lifestream lifestream, VNavmesh vnav)
+    {
+        if (!module.Config.ShouldWaitAtForkedTowerPad || Activity is ForkedTowerWaitActivity)
+        {
+            return false;
+        }
+
+        var now = Environment.TickCount64;
+        if (now < nextForkedTowerCheckAt)
+        {
+            return false;
+        }
+
+        nextForkedTowerCheckAt = now + LeaveFateTravelCheckIntervalMs;
+        if (!criticalEncountersResolved)
+        {
+            criticalEncountersResolved = true;
+            module.TryGetModule(out criticalEncounters);
+        }
+
+        if (criticalEncounters == null
+            || !criticalEncounters.CriticalEncounters.TryGetValue(ForkedTowerPad.BloodEventId, out var tower)
+            || !ForkedTowerPad.IsRegistrationOpen(tower.State)
+            || IsSkipped(tower)
+            || !ForkedTowerPad.TryGetPad(tower.DynamicEventId, out var pad)
+            || !EventData.CriticalEncounters.TryGetValue(tower.DynamicEventId, out var data))
+        {
+            return false;
+        }
+
+        if (Svc.Objects.LocalPlayer is not { } player || ForkedTowerPad.IsInsideTower(player))
+        {
+            return false;
+        }
+
+        var current = Activity;
+        if (current != null && current is not PotWaitActivity && current.state is not (ActivityState.Idle or ActivityState.Pathfinding))
+        {
+            if (forkedTowerBusyReportedFor != tower.StartTimestamp)
+            {
+                forkedTowerBusyReportedFor = tower.StartTimestamp;
+                Svc.Log.Information($"[BOCCHI][兩歧塔] 開放報名，但正在參加{current.KindLabel}「{current.GetName()}」（{current.state}）：不拋下，這一場結束後再前往傳送魔紋");
+            }
+
+            return false;
+        }
+
+        if (states.GetState() != State.Idle || IsCastingOrBusy() || IsLifestreamBusy(lifestream))
+        {
+            return false;
+        }
+
+        var navigation = current != null || IsChainActive ? module.Plugin.Automation.AbortIllegalModeTravel() : "沒有要停的";
+        var next = new ForkedTowerWaitActivity(data, lifestream, vnav, module, criticalEncounters, pad);
+        if (current is PotWaitActivity wait)
+        {
+            wait.ReportLeft(next, navigation);
+        }
+        else if (current != null)
+        {
+            current.LogTargetSummary(ActivityEnd.SwitchedToForkedTower);
+            Ledger?.Ended(current, ActivityEnd.SwitchedToForkedTower);
+        }
+
+        Activity = next;
+        next.ReportDeparted(current, navigation);
         return true;
     }
 
@@ -1056,6 +1141,9 @@ public class Automator
             case CriticalEncounter encounter:
                 instance = new EventInstance(SkipKind.CriticalEncounter, encounter.data.Id, encounter.StartTimestamp);
                 return true;
+            case ForkedTowerWaitActivity tower:
+                instance = new EventInstance(SkipKind.CriticalEncounter, tower.data.Id, tower.StartTimestamp);
+                return true;
             default:
                 instance = default;
                 return false;
@@ -1297,6 +1385,7 @@ public class Automator
         if (Activity != null)
         {
             (Activity as PotWaitActivity)?.ReportStopped(end);
+            (Activity as ForkedTowerWaitActivity)?.ReportStopped(end);
             Activity.LogTargetSummary(end);
             Ledger?.Ended(Activity, end);
         }
@@ -1309,6 +1398,8 @@ public class Automator
         nextLeaveFateTravelCheckAt = 0;
         nextPotTravelCheckAt = 0;
         nextLeaveWaitCheckAt = 0;
+        nextForkedTowerCheckAt = 0;
+        forkedTowerBusyReportedFor = 0;
         resumeNoteKey = 0;
         ceSkipNoteKey = 0;
         potKeptReportedFor = null;

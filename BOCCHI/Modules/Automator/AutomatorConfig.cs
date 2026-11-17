@@ -163,6 +163,14 @@ public class AutomatorConfig : ModuleConfig
     [Indent]
     public int SilverChestMaxDetour { get; set; } = 40;
 
+    /// <summary>兩歧塔開放報名時放下還沒開始參加的活動，走到傳送魔紋等；進塔後自動化全部停止。不報名、不使用魔紋啟動憑證。false＝照舊不管兩歧塔。</summary>
+    [Checkbox] public bool WaitAtForkedTowerPad { get; set; } = false;
+
+    public bool ShouldWaitAtForkedTowerPad
+    {
+        get => IsPropertyEnabled(nameof(WaitAtForkedTowerPad));
+    }
+
     // Critical Encounters
     [Checkbox] public bool DoCriticalEncounters { get; set; } = true;
 

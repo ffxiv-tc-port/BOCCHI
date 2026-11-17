@@ -66,6 +66,7 @@
       "stalled": "第 {step} 步超過 {seconds} 秒沒有進展，判定卡住",
       "no_path": "第 {step} 步 {seconds} 秒內都沒開始移動（vnavmesh 算不出路）",
       "manual_start": "手動開始「{name}」",
+      "entered_forked_tower": "進了兩歧塔",
       "data_load_failed": "讀不到尋路成本表（原因見記錄檔）"
     },
     "resume_blocked": {

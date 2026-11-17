@@ -127,6 +127,10 @@
           "label": "Max extra distance (yalms)",
           "tooltip": "When already heading to an activity, only go when stopping at the coffer adds at most this much distance compared with going straight there (straight-line estimate)."
         },
+        "wait_at_forked_tower_pad": {
+          "label": "Wait on the Forked Tower pad when it opens",
+          "tooltip": "While Illegal Mode is running and The Forked Tower: Blood can be joined (registration open, or closed but not started yet), drop any activity you have not started yet (idle, travelling, waiting for a pot) and walk to the centre of the teleport pad in front of the tower; a FATE or critical encounter you are already in is not abandoned — it goes after that one ends. It does not interrupt combat, casting or teleporting.\nBOCCHI never registers for you, never uses ciphers and never interacts with anything there: whether to join and whether to use ciphers is up to you. While waiting it walks back if you end up more than 25 m from the pad centre; press Skip on the Illegal Mode row to pass on this round.\nOnce you are teleported in, all automation stops (including Return After Events and Phantom Job Leveling) and your own combat AI takes over inside; Illegal Mode started by hand inside the tower is not stopped. If you are still outside 20 seconds after the tower starts, it goes back to picking activities as usual.\nOnly works inside an Illegal Mode you started yourself: loading the plugin, entering the island or logging in never starts it, and Stop All and the emergency stop stop it as usual. Departure, arrival and the end each write one line to the Dalamud log ([BOCCHI][兩歧塔]).\nOff (default) = as before, the tower is ignored."
+        },
         "do_critical_encounters": {
           "label": "Do Critical Encounters",
           "tooltip": "Should consider critical encounters when choosing an activity"
@@ -290,9 +294,11 @@
           "waiting_to_start": "Waiting to Start (CE)",
           "participating": "Participating",
           "done": "Done",
+          "waiting_for_forked_tower": "Waiting on the tower pad",
           "waiting_for_pot": "Waiting for the pot",
           "unknown": "Unknown"
         },
+        "forked_tower_wait": "Waiting on the Forked Tower pad ({name})",
         "pot_wait": "Waiting at the pot spawn ({pot})",
         "lens": {
           "title": "BOCCHI Illegal Lens"
@@ -301,6 +307,7 @@
       },
       "messages": {
         "on": "[BOCCHI] Illegal Mode On",
+        "forked_tower_on_pad": "[BOCCHI] On the Forked Tower pad. BOCCHI will not register or use ciphers for you — do that yourself if you want to join, and stay on the pad until you are teleported in (all automation stops once you are inside).",
         "off": "[BOCCHI] Illegal Mode Off"
       },
       "buttons": {
