@@ -1,12 +1,6 @@
 using System.Collections.Generic;
 using BOCCHI.Automation;
-using BOCCHI.Enums;
 using BOCCHI.Modules.Automator;
-using BOCCHI.Modules.CriticalEncounters;
-using BOCCHI.Modules.Fates;
-using ECommons.DalamudServices;
-using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Ocelot;
 using Ocelot.Commands;
 using Ocelot.Modules;
@@ -66,43 +60,5 @@ public class OCHIllegalCommand(Plugin plugin) : OcelotCommand
         }
 
         plugin.Config.Save();
-    }
-
-    private unsafe void FlagActiveCe(AgentMap* map)
-    {
-        if (!plugin.Modules.TryGetModule<CriticalEncountersModule>(out var source) || source == null)
-        {
-            return;
-        }
-
-        foreach (var encounter in source.CriticalEncounters.Values)
-        {
-            if (encounter.EventType >= 4 || encounter.State != DynamicEventState.Register)
-            {
-                continue;
-            }
-
-            map->SetFlagMapMarker(Svc.ClientState.TerritoryType, Svc.ClientState.MapId, encounter.Position);
-            return;
-        }
-    }
-
-    private unsafe void FlagActiveFate(AgentMap* map, bool ignorePots)
-    {
-        if (!plugin.Modules.TryGetModule<FatesModule>(out var source) || source == null)
-        {
-            return;
-        }
-
-        foreach (var fate in source.fates.Values)
-        {
-            if (ignorePots && fate.Data.Note == MonsterNote.PersistentPots)
-            {
-                continue;
-            }
-
-            map->SetFlagMapMarker(Svc.ClientState.TerritoryType, Svc.ClientState.MapId, fate.StartPosition);
-            return;
-        }
     }
 }
