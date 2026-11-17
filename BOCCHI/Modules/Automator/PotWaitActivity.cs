@@ -59,6 +59,9 @@ public sealed class PotWaitActivity : Activity
 
     private readonly long departedAt;
 
+    // 只有出生點一個點：趕路送的終點是它投到地面的位置，只比 X/Z，半徑沿用 OwnMoveDestinations.MatchRadiusM。
+    private readonly OwnMoveDestinations spawnDestination = new();
+
     private AggroModule? aggro;
 
     private bool aggroResolved;
@@ -108,6 +111,7 @@ public sealed class PotWaitActivity : Activity
         potName = fates.potCycle.GetName(data.Id);
         name = module.T("panel.pot_wait").Replace("{pot}", potName);
         departedAt = Environment.TickCount64;
+        spawnDestination.Add(spawn);
         state = ActivityState.Idle;
         handlers[ActivityState.WaitingForPot] = GetWaitChain;
     }
@@ -187,9 +191,9 @@ public sealed class PotWaitActivity : Activity
             ObserveTravel(stops, !stopped);
             if (Svc.Objects.LocalPlayer is { } player && PotWaitRules.DistanceXZ(player.Position, spawn) <= PotWaitRules.ArriveM)
             {
-                if (!stopped)
+                if (!stopped && OwnPathStop.StopIfOwn(vnav, spawnDestination, out var end) == OwnPathVerdict.Foreign)
                 {
-                    vnav.Stop();
+                    Svc.Log.Information($"{Tag} 到達出生點附近時 vnavmesh 正在走別人的路線（終點離出生點 {PotWaitRules.DistanceXZ(end!.Value, spawn):F1} 米）：不停，交給送出它的插件或你自己");
                 }
 
                 return true;

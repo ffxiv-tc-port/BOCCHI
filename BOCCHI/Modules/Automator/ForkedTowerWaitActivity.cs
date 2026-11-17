@@ -190,7 +190,7 @@ public sealed class ForkedTowerWaitActivity : Activity
             {
                 if (!stopped)
                 {
-                    StopOwnPath();
+                    OwnPathStop.StopIfOwn(vnav, padDestination, out _);
                 }
 
                 return true;
@@ -215,27 +215,6 @@ public sealed class ForkedTowerWaitActivity : Activity
             ReportTravelInterrupt("vnav停下");
             throw new VnavmeshStoppedException();
         }, TravelWatcherConfig(stops));
-    }
-
-    // 只停自己送的路：正在走的路線終點不在魔紋附近（別的插件或使用者送的）就不停；讀不到終點照 AutomationControl 的慣例當自己的。
-    private void StopOwnPath()
-    {
-        OwnPathVerdict verdict;
-        try
-        {
-            var running = vnav.IsRunning();
-            var waypoints = running ? vnav.GetWaypoints() : null;
-            verdict = padDestination.Judge(running, waypoints is { Count: > 0 } list ? list[^1] : null);
-        }
-        catch (Exception)
-        {
-            verdict = OwnPathVerdict.Unknown;
-        }
-
-        if (verdict is OwnPathVerdict.Own or OwnPathVerdict.Unknown)
-        {
-            vnav.Stop();
-        }
     }
 
     // 回 true＝離平台太遠，回到趕路（逾時後也是重建這條鏈，不算離開）。

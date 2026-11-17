@@ -920,27 +920,13 @@ public sealed class AutomationControl : IDisposable
     /// <summary>vnavmesh 現在走的路線是不是 <paramref name="own"/> 裡的目的地；<paramref name="end"/>＝路線終點（讀不到是 null）。</summary>
     private OwnPathVerdict JudgeCurrentPath(OwnMoveDestinations own, out System.Numerics.Vector3? end)
     {
-        end = null;
-        try
-        {
-            if (vnav == null || !vnav.IsRunning())
-            {
-                return OwnPathVerdict.Idle;
-            }
-
-            var waypoints = vnav.GetWaypoints();
-            if (waypoints is { Count: > 0 })
-            {
-                end = waypoints[^1];
-            }
-        }
-        catch (Exception)
+        if (vnav == null)
         {
             end = null;
-            return OwnPathVerdict.Unknown;
+            return OwnPathVerdict.Idle;
         }
 
-        return own.Judge(true, end);
+        return OwnPathStop.Judge(vnav, own, out end);
     }
 
     private static string FormatPoint(System.Numerics.Vector3? point)
