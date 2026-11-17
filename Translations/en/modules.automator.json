@@ -302,6 +302,9 @@
       "messages": {
         "on": "[BOCCHI] Illegal Mode On",
         "off": "[BOCCHI] Illegal Mode Off"
+      },
+      "buttons": {
+        "toggle_illegal_mode": "Toggle Illegal Mode"
       }
     }
   }
