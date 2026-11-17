@@ -324,7 +324,7 @@ public class ReturnChain(TeleporterModule module, ReturnChainConfig config) : Re
         }
 
         /// <returns>給記錄用的前綴；BOCCHI 自己送的（或讀不到是誰的）路線才停，別人或 Lifestream 的不停。</returns>
-        /// <remarks>BOCCHI 有還沒作廢的目的地時，還在算的尋路一起取消：只停路徑的話，背景算完的路會在詠唱途中把角色帶走。</remarks>
+        /// <remarks>BOCCHI 有還沒作廢的目的地、且 vnavmesh 只剩這一筆尋路時，還在算的尋路一起取消：只停路徑的話，背景算完的路會在詠唱途中把角色帶走。</remarks>
         public string StopOwnNavigation()
         {
             var running = QueryVnavRunning();
@@ -339,19 +339,11 @@ public class ReturnChain(TeleporterModule module, ReturnChainConfig config) : Re
                 return "vnavmesh 在走的不是 BOCCHI 的路線，不停它；";
             }
 
-            // 取消算路是全域的（別的插件在算的也一起取消）：只在算路中、BOCCHI 也有還沒作廢的目的地時才叫。
-            if (!running && !HasOwnDestination())
-            {
-                return "vnavmesh 在算路，但 BOCCHI 沒有還在走的目的地，不取消（可能是別的插件的）；";
-            }
-
+            // 取消算路是全域的：路線在走時也一樣只在「只剩 BOCCHI 那一筆」時才取消（同 OwnPathfind 的 L3 閘）。
+            OwnPathfindCancel cancel;
             try
             {
-                if (computing)
-                {
-                    vnav!.CancelAllPathfinds();
-                }
-
+                cancel = computing ? OwnPathfind.CancelIfOnlyOwn(vnav!, HasOwnDestination()) : OwnPathfindCancel.Idle;
                 if (running)
                 {
                     vnav!.Stop();
@@ -362,7 +354,16 @@ public class ReturnChain(TeleporterModule module, ReturnChainConfig config) : Re
                 return "停不了 vnavmesh（IPC 沒回應），";
             }
 
-            return "停下 BOCCHI 自己的導航，";
+            if (!running && cancel != OwnPathfindCancel.Cancelled)
+            {
+                return cancel == OwnPathfindCancel.NotOwn
+                    ? "vnavmesh 在算路，但 BOCCHI 沒有還在走的目的地，不取消（可能是別的插件的）；"
+                    : $"vnavmesh 在算路，{OwnPathfind.Describe(cancel)}；";
+            }
+
+            return cancel is OwnPathfindCancel.Idle or OwnPathfindCancel.Cancelled
+                ? "停下 BOCCHI 自己的導航，"
+                : $"停下 BOCCHI 自己的路線，{OwnPathfind.Describe(cancel)}，";
         }
 
         /// <summary>
