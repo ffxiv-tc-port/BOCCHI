@@ -223,7 +223,14 @@ public class TreasureHunt(TreasureModule module) : Hunter(module)
                     }
 
                     var current = Svc.Objects.SearchById(objectId);
-                    if (current == null || current.ObjectKind != ObjectKind.Treasure || Player.DistanceTo(current) > DISTANCE_TO_NODE_TO_USE)
+                    if (current == null || current.ObjectKind != ObjectKind.Treasure)
+                    {
+                        return true;
+                    }
+
+                    var distance = Player.DistanceTo(current);
+                    InteractRangeDiag.CompareChest(current, distance, DISTANCE_TO_NODE_TO_USE);
+                    if (distance > DISTANCE_TO_NODE_TO_USE)
                     {
                         return true;
                     }
