@@ -989,7 +989,7 @@ public class Automator
 
     private static bool IsIdleReturnRunning()
     {
-        return ChainManager.Queues.TryGetValue("OCH##main", out var main) && main.CurrentChain?.Name == nameof(ReturnChain);
+        return ChainManager.Queues.TryGetValue(Plugin.MainChainQueue, out var main) && main.CurrentChain?.Name == nameof(ReturnChain);
     }
 
     private void ReportPotHunt(PotHuntEvent ev, long heldMs)

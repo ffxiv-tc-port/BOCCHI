@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BOCCHI.Automation;
+using BOCCHI.Data;
 using BOCCHI.Ledger;
 using Dalamud.Plugin.Ipc;
 using Dalamud.Plugin.Ipc.Exceptions;
@@ -28,7 +29,7 @@ public class AutomatorModule : Module
 
     public readonly Panel panel = new();
 
-    private readonly List<uint> occultCrescentTerritoryIds = [1252];
+    private readonly List<uint> occultCrescentTerritoryIds = [ZoneData.SOUTHHORN];
 
     // 戰鬥 AI 是不是這個模組打開的：趕路與停止時只關自己打開的，不動使用者（或 BMR 載入時自動）開的。
     private bool aiEnabledByAutomator;

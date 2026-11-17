@@ -31,9 +31,12 @@ public sealed class Plugin : OcelotPlugin
         get => Config;
     }
 
+    /// <summary>主鏈佇列的 id；停止、返回判斷都比對這個字串。</summary>
+    public const string MainChainQueue = "OCH##main";
+
     public static ChainQueue Chain
     {
-        get => ChainManager.Get("OCH##main");
+        get => ChainManager.Get(MainChainQueue);
     }
 
     /// <summary>所有自動化的開始／停止入口；模組建構期間還是 null。</summary>

@@ -32,7 +32,7 @@ namespace BOCCHI.Automation;
 // 停止、全部停止、暫停、非法模式讓 EurekaHelper 尋寶中止了 BOCCHI 自己詠唱中的「返回」時，詠唱一起取消（只取消返回，不碰別的詠唱）。
 public sealed class AutomationControl : IDisposable
 {
-    private const string MainQueue = "OCH##main";
+    private const string MainQueue = Plugin.MainChainQueue;
 
     private const string WatcherSuffix = "##watcher";
 

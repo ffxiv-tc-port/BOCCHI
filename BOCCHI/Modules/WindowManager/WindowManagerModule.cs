@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using BOCCHI.Data;
 using BOCCHI.Modules.Automator;
 using BOCCHI.Modules.StateManager;
 using Dalamud.Bindings.ImGui;
@@ -25,7 +26,7 @@ public class WindowManagerModule(Plugin _plugin, Config _config) : Module(_plugi
     }
 
 
-    private readonly List<uint> occultCrescentTerritoryIds = [1252];
+    private readonly List<uint> occultCrescentTerritoryIds = [ZoneData.SOUTHHORN];
 
     private bool mainClosed = false;
 
