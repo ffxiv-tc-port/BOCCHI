@@ -46,7 +46,7 @@ public class MainCommand(Plugin plugin) : OcelotCommand
 
     private readonly IReadOnlyList<string> languageCodes =
     [
-        "en", "de", "fr", "jp", "uwu",
+        "en", "de", "fr", "jp", "tw", "uwu",
     ];
 
     public override void Execute(string command, string arguments)
