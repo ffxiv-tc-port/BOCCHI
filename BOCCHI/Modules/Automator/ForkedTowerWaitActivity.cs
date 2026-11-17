@@ -35,6 +35,9 @@ public sealed class ForkedTowerWaitActivity : Activity
 
     private readonly long departedAt;
 
+    // 只有魔紋中央一個點：判斷 vnavmesh 正在走的是不是走向魔紋的路。
+    private readonly OwnMoveDestinations padDestination = new();
+
     // 當幀清單裡沒有這一場（讀取中清單被清空）時用最後一次看到的值。
     private CriticalEncounterSnapshot lastSeen;
 
@@ -53,6 +56,7 @@ public sealed class ForkedTowerWaitActivity : Activity
         source.CriticalEncounters.TryGetValue(data.Id, out lastSeen);
         name = module.T("panel.forked_tower_wait").Replace("{name}", string.IsNullOrEmpty(lastSeen.Name) ? data.InternalName : lastSeen.Name);
         departedAt = Environment.TickCount64;
+        padDestination.Add(pad);
         // 在平台上報名後遊戲可能已把角色算進這一場（基底會當成參加中）：這裡一律從趕路開始。
         state = ActivityState.Idle;
         handlers[ActivityState.WaitingForForkedTower] = GetWaitChain;
@@ -186,7 +190,7 @@ public sealed class ForkedTowerWaitActivity : Activity
             {
                 if (!stopped)
                 {
-                    vnav.Stop();
+                    StopOwnPath();
                 }
 
                 return true;
@@ -211,6 +215,27 @@ public sealed class ForkedTowerWaitActivity : Activity
             ReportTravelInterrupt("vnav停下");
             throw new VnavmeshStoppedException();
         }, TravelWatcherConfig(stops));
+    }
+
+    // 只停自己送的路：正在走的路線終點不在魔紋附近（別的插件或使用者送的）就不停；讀不到終點照 AutomationControl 的慣例當自己的。
+    private void StopOwnPath()
+    {
+        OwnPathVerdict verdict;
+        try
+        {
+            var running = vnav.IsRunning();
+            var waypoints = running ? vnav.GetWaypoints() : null;
+            verdict = padDestination.Judge(running, waypoints is { Count: > 0 } list ? list[^1] : null);
+        }
+        catch (Exception)
+        {
+            verdict = OwnPathVerdict.Unknown;
+        }
+
+        if (verdict is OwnPathVerdict.Own or OwnPathVerdict.Unknown)
+        {
+            vnav.Stop();
+        }
     }
 
     // 回 true＝離平台太遠，回到趕路（逾時後也是重建這條鏈，不算離開）。
