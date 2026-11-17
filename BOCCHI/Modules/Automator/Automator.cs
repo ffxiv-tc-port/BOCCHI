@@ -204,7 +204,8 @@ public class Automator
         if (Activity != null && !Activity.IsValid())
         {
             Plugin.Chain.Abort();
-            vnav.Stop();
+            // 活動消失是自動化自己的結束：只停 BOCCHI 為它送的路線，別的插件或你自己送的不停。
+            Activity.StopOwnMove("[BOCCHI][非法模式]", "活動消失、停下前往", null);
             (Activity as PotWaitActivity)?.ReportEnded();
             (Activity as ForkedTowerWaitActivity)?.ReportEnded();
             Activity.LogTargetSummary(ActivityEnd.Vanished);

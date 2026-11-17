@@ -119,6 +119,11 @@ public sealed class BunnyChestOpener
 
     private long nextMoveAt;
 
+    // 只在框架執行緒用；每次停止前重新抓，不跨呼叫保存內容。
+    private readonly OwnMoveDestinations stopDestinations = new();
+
+    private readonly ForeignPathNotice foreignNotice = new();
+
     public ulong ChestId { get; private set; }
 
     /// <summary>找到過寶箱。</summary>
@@ -206,9 +211,9 @@ public sealed class BunnyChestOpener
 
                 return false;
             case BunnyChestAction.Interact:
-                if (vnav?.IsRunning() == true)
+                if (vnav != null)
                 {
-                    vnav.Stop();
+                    StopOwnMove(vnav, chest!.Position, now);
                 }
 
                 Svc.Targets.Target = chest;
@@ -217,6 +222,17 @@ public sealed class BunnyChestOpener
                 return false;
             default:
                 return false;
+        }
+    }
+
+    // 互動前只停 BOCCHI 自己的路線：自己的目的地＝最近送出的、還沒作廢的趕路登記，再加上這個寶箱；別人的路線不停。
+    private void StopOwnMove(VNavmesh vnav, Vector3 chestPosition, long now)
+    {
+        stopDestinations.CaptureCurrent(TravelIntent.State);
+        stopDestinations.Add(chestPosition);
+        if (OwnPathStop.StopIfOwn(vnav, stopDestinations, out var end) == OwnPathVerdict.Foreign && foreignNotice.Due(now))
+        {
+            Svc.Log.Information($"[BOCCHI][黃金財寶箱] 互動前 vnavmesh 正在走別人的路線（終點離 BOCCHI 送過的目的地 {stopDestinations.NearestXZ(end!.Value):F1} 米）：不停，交給送出它的插件或你自己");
         }
     }
 

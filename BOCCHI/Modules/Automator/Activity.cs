@@ -459,7 +459,7 @@ public abstract class Activity
     {
         routeSentTo = null;
         OwnPathfind.CancelIfOnlyOwn(vnav, OwnMoveDestinations.HasCurrent(TravelIntent.State));
-        vnav.Stop();
+        StopOwnMove("[BOCCHI][路線]", "路線停下、前往", routeStopNotice ??= new ForeignPathNotice());
     }
 
     // 結束路線、改送往活動：與原本最後一段（PathfindingChain）相同，抬高後投影到地面上再送。
@@ -612,18 +612,33 @@ public abstract class Activity
     // 只在框架執行緒用；每次停止前重新抓，不跨呼叫保存內容。
     private readonly OwnMoveDestinations travelDestinations = new();
 
-    /// <summary>
-    /// 趕路到達時只停 BOCCHI 自己的路線：自己的目的地＝最近送出的、還沒作廢的趕路登記，再加上這個活動的目的地
-    /// （趕路登記被作廢時也認得出走向活動的路）。Own／Unknown 停；別人的路線不停並寫一行 Information。
-    /// </summary>
+    // 每拍都可能進來的停止點各一個（Foreign 那一行的節流）；不經建構子建出的物件第一次用時才建。
+    private ForeignPathNotice? routeStopNotice;
+
+    private ForeignPathNotice? yieldStopNotice;
+
+    /// <summary>趕路到達時只停 BOCCHI 自己的路線（判法見 <see cref="StopOwnMove"/>）。</summary>
     protected void StopOwnTravel(string tag)
+    {
+        StopOwnMove(tag, "到達", null);
+    }
+
+    /// <summary>
+    /// 只停 BOCCHI 為這個活動送的路線：自己的目的地＝最近送出的、還沒作廢的趕路登記，再加上這個活動的目的地
+    /// （趕路登記被作廢時也認得出走向活動的路）。Own／Unknown 停；別人的路線不停並寫一行 Information，
+    /// <paramref name="notice"/> 不是 null 時同一處 <see cref="ForeignPathNotice.IntervalMs"/> 內只寫一行。只在 framework 執行緒呼叫。
+    /// </summary>
+    internal OwnPathVerdict StopOwnMove(string tag, string when, ForeignPathNotice? notice)
     {
         travelDestinations.CaptureCurrent(TravelIntent.State);
         travelDestinations.Add(GetPosition());
-        if (OwnPathStop.StopIfOwn(vnav, travelDestinations, out var end) == OwnPathVerdict.Foreign)
+        var verdict = OwnPathStop.StopIfOwn(vnav, travelDestinations, out var end);
+        if (verdict == OwnPathVerdict.Foreign && (notice == null || notice.Due(Environment.TickCount64)))
         {
-            Svc.Log.Information($"{tag} 到達「{GetName()}」時 vnavmesh 正在走別人的路線（終點離 BOCCHI 送過的目的地 {travelDestinations.NearestXZ(end!.Value):F1} 米）：不停，交給送出它的插件或你自己");
+            Svc.Log.Information($"{tag} {when}「{GetName()}」時 vnavmesh 正在走別人的路線（終點離 BOCCHI 送過的目的地 {travelDestinations.NearestXZ(end!.Value):F1} 米）：不停，交給送出它的插件或你自己");
         }
+
+        return verdict;
     }
 
     private bool combatPauseReported;
@@ -779,9 +794,8 @@ public abstract class Activity
         // 不經建構子建出的物件第一次用時才建（同 Record）。按鍵每拍都讀：短按可能落在兩次取樣之間。
         handsOn ??= new HandsOnProbe();
         var input = handsOn.ReadInput(now);
-        if (guard.Manual.External && navigating && vnav.IsRunning())
+        if (guard.Manual.External && navigating && OwnPathStop.Stops(StopOwnMove("[BOCCHI][趕路讓位]", "為 Lifestream 讓位中、前往", yieldStopNotice ??= new ForeignPathNotice())))
         {
-            vnav.Stop();
             Svc.Log.Debug($"[BOCCHI][趕路讓位] kind={KindLabel} id={data.Id} 為 Lifestream 讓位中 vnavmesh 開始走（BOCCHI 先前送的路算完了）：停下");
         }
 
@@ -881,18 +895,11 @@ public abstract class Activity
                             + $"其中讓位 {credit / 1000f:F1} 秒不算：時限往後延 {credit / 1000f:F1} 秒 {TravelStateFields()}");
     }
 
-    // 同 Hunter：讓位時絕不取消算路（全域的，會連 Lifestream 在算的一起取消），只停已經在走的路；
+    // 同 Hunter：讓位時絕不取消算路（全域的，會連 Lifestream 在算的一起取消），只停已經在走的 BOCCHI 自己的路；
     // BOCCHI 還在算的路算完開走時，讓位期間每拍再停（ObserveTravel）。回傳有沒有停下東西。
     private bool StopNavigationForLifestream()
     {
-        var stopped = false;
-        if (vnav.IsRunning())
-        {
-            vnav.Stop();
-            stopped = true;
-        }
-
-        return stopped;
+        return OwnPathStop.Stops(StopOwnMove("[BOCCHI][趕路讓位]", "為 Lifestream 讓位、前往", yieldStopNotice ??= new ForeignPathNotice()));
     }
 
     // 同一個活動第一次寫 Information，之後寫 Debug。

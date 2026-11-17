@@ -56,6 +56,11 @@ public sealed class CarrotDetour
 
     private DigProgress? dig;
 
+    // 只在框架執行緒用；每次停止前重新抓，不跨呼叫保存內容。
+    private readonly OwnMoveDestinations stopDestinations = new();
+
+    private readonly ForeignPathNotice foreignNotice = new();
+
     // 每挖一根建一個；被中止的舊動作鏈之後才寫進來的收尾落在已經丟掉的那一個上。
     private sealed class DigProgress(int carrotsBefore)
     {
@@ -250,7 +255,14 @@ public sealed class CarrotDetour
     private void StartDig(ChainQueue processor, VNavmesh vnav, float distance, long now)
     {
         OwnPathfind.CancelIfOnlyOwn(vnav, OwnMoveDestinations.HasCurrent(TravelIntent.State));
-        vnav.Stop();
+        // 自己的目的地＝最近送出的、還沒作廢的趕路登記，再加上這根胡蘿蔔；別人的路線不停。
+        stopDestinations.CaptureCurrent(TravelIntent.State);
+        stopDestinations.Add(targetPosition);
+        if (OwnPathStop.StopIfOwn(vnav, stopDestinations, out var end) == OwnPathVerdict.Foreign && foreignNotice.Due(now))
+        {
+            Svc.Log.Information($"{Tag} 開挖時 vnavmesh 正在走別人的路線（終點離 BOCCHI 送過的目的地 {stopDestinations.NearestXZ(end!.Value):F1} 米）：不停，交給送出它的插件或你自己");
+        }
+
         var carrots = Items.FortuneCarrot.Count();
         var progress = new DigProgress(carrots);
         dig = progress;

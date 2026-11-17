@@ -46,4 +46,30 @@ public static class OwnPathStop
 
         return verdict;
     }
+
+    /// <summary><see cref="StopIfOwn"/> 對這個判定會不會停。</summary>
+    public static bool Stops(OwnPathVerdict verdict)
+    {
+        return verdict is OwnPathVerdict.Own or OwnPathVerdict.Unknown;
+    }
+}
+
+/// <summary>停止點判成 Foreign 時寫 Information 的節流：每個停止點一個，同一處 <see cref="IntervalMs"/> 內只寫一行。只在框架執行緒用。</summary>
+public sealed class ForeignPathNotice
+{
+    public const long IntervalMs = 10_000;
+
+    private long nextAt;
+
+    /// <summary>這次要不要寫；要寫就同時把下一次往後推。第一次一定回 true。</summary>
+    public bool Due(long now)
+    {
+        if (now < nextAt)
+        {
+            return false;
+        }
+
+        nextAt = now + IntervalMs;
+        return true;
+    }
 }

@@ -62,6 +62,16 @@ public abstract class Hunter
     // 換目的地時舊的 SimpleMove 沒取消掉（vnavmesh 還有別筆尋路）：它算完開走就停下、改送新的目的地。
     private bool staleMovePending;
 
+    // 最後一次 RequestMove 送給 vnavmesh 的目的地（停止點認自己的路線用）；null＝還沒送過。
+    private Vector3? lastSentDestination;
+
+    // 只在框架執行緒用；每次停止前重新抓，不跨呼叫保存內容。
+    private readonly OwnMoveDestinations stopDestinations = new();
+
+    private readonly ForeignPathNotice newTargetNotice = new();
+
+    private readonly ForeignPathNotice lifestreamNotice = new();
+
     // 步驟處理器擲例外時每 150 毫秒重試：同一步、同一種例外只寫一次帶堆疊的 Error，之後寫 Debug（換一趟巡迴重算）。
     private int stepErrorIndex = -1;
 
@@ -422,6 +432,7 @@ public abstract class Hunter
         watchedStep = -1;
         startedStep = -1;
         moveGuard.Reset();
+        lastSentDestination = null;
         ResetYield();
         combatWait.Reset();
         planGate.Reset();
@@ -455,6 +466,7 @@ public abstract class Hunter
         watchedStep = -1;
         startedStep = -1;
         moveGuard.Reset();
+        lastSentDestination = null;
         ResetYield();
         combatWait.Reset();
         planGate.Reset();
@@ -510,6 +522,7 @@ public abstract class Hunter
         watchedStep = -1;
         startedStep = -1;
         moveGuard.Reset();
+        lastSentDestination = null;
         ResetYield();
         combatWait.Reset();
         planGate.Reset();
@@ -549,7 +562,7 @@ public abstract class Hunter
                 ["step"] = (stepIndex + 1).ToString(),
                 ["seconds"] = (StepStallLimitMs / 1000).ToString(),
             });
-            plugin.Automation.Stop(Kind, reason, true, true);
+            plugin.Automation.StopKeepingProgress(Kind, reason, true);
             return;
         }
 
@@ -579,7 +592,7 @@ public abstract class Hunter
             // 不重建規劃器重讀：同一個檔每一拍都會再失敗一次。
             pathfinder = null;
             Svc.Log.Information($"[BOCCHI][尋路] 「{AutomationControl.GetName(Kind)}」讀不到尋路成本表（原因見上一行 Error），停止巡迴");
-            plugin.Automation.Stop(Kind, I18N.T("automation.reason.data_load_failed"), true, true);
+            plugin.Automation.StopKeepingProgress(Kind, I18N.T("automation.reason.data_load_failed"), true);
             return;
         }
 
@@ -830,23 +843,37 @@ public abstract class Hunter
     private void StopNavigationForNewTarget()
     {
         staleMovePending = OwnPathfind.CancelIfOnlyOwn(vnav, OwnMoveDestinations.HasCurrent(TravelIntent.State)) is OwnPathfindCancel.OthersQueued or OwnPathfindCancel.Unreadable;
-        vnav.Stop();
+        StopOwnPath("換目的地", newTargetNotice);
         moveGuard.Reset();
     }
 
     // Lifestream 帶角色走時看到 vnavmesh 在走就中止全部任務。讓位時絕不取消算路（全域的，會連 Lifestream 在算的一起取消）：
-    // 只停已經在走的路；BOCCHI 還在算的路算完開走時，讓位期間每拍再停（ObserveManualMovement）。回傳有沒有停下東西。
+    // 只停已經在走的 BOCCHI 自己的路；BOCCHI 還在算的路算完開走時，讓位期間每拍再停（ObserveManualMovement）。回傳有沒有停下東西。
     private bool StopNavigationForLifestream()
     {
-        var stopped = false;
-        if (vnav.IsRunning())
-        {
-            vnav.Stop();
-            stopped = true;
-        }
-
+        var stopped = OwnPathStop.Stops(StopOwnPath("為 Lifestream 讓位", lifestreamNotice));
         moveGuard.Reset();
         return stopped;
+    }
+
+    // 只停 BOCCHI 自己的路線：自己的目的地＝最近送出的、還沒作廢的趕路登記，再加上最後一次送出的目的地（換步之後目前這一步已經不是在走的那條）。
+    // Own／Unknown 停；別人的路線不停，同一處 ForeignPathNotice.IntervalMs 內寫一行 Information。回傳判定。
+    private OwnPathVerdict StopOwnPath(string when, ForeignPathNotice notice)
+    {
+        stopDestinations.CaptureCurrent(TravelIntent.State);
+        if (lastSentDestination is { } sent)
+        {
+            stopDestinations.Add(sent);
+        }
+
+        var verdict = OwnPathStop.StopIfOwn(vnav, stopDestinations, out var end);
+        if (verdict == OwnPathVerdict.Foreign && notice.Due(Environment.TickCount64))
+        {
+            Svc.Log.Information($"[BOCCHI][尋路] 「{AutomationControl.GetName(Kind)}」{when}時 vnavmesh 正在走別人的路線（終點離 BOCCHI 送過的目的地 {stopDestinations.NearestXZ(end!.Value):F1} 米）："
+                                + "不停，交給送出它的插件或你自己");
+        }
+
+        return verdict;
     }
 
     // 每幀在送出規劃之前呼叫：true＝這一拍先不規劃（詠唱或讀圖還沒結束，起點會變）。
@@ -1088,9 +1115,8 @@ public abstract class Hunter
         // 按鍵每拍都讀：短按可能落在兩次取樣之間。不經建構子建出的物件第一次用時才建。
         handsOn ??= new HandsOnProbe();
         var input = handsOn.ReadInput(now);
-        if (yieldGate.Manual.External && vnav.IsRunning())
+        if (yieldGate.Manual.External && OwnPathStop.Stops(StopOwnPath("為 Lifestream 讓位中", lifestreamNotice)))
         {
-            vnav.Stop();
             Svc.Log.Debug($"[BOCCHI][巡迴讓位] 「{AutomationControl.GetName(Kind)}」為 Lifestream 讓位中 vnavmesh 開始走（BOCCHI 先前送的路算完了）：停下");
         }
 
@@ -1502,6 +1528,7 @@ public abstract class Hunter
                 OwnMoveDestinations.Note(destination);
             }
 
+            lastSentDestination = destination;
             vnav.PathfindAndMoveTo(destination, false);
             return true;
         }
@@ -1524,7 +1551,7 @@ public abstract class Hunter
             ["step"] = (stepIndex + 1).ToString(),
             ["seconds"] = seconds.ToString(),
         });
-        plugin.Automation.Stop(Kind, reason, true, true);
+        plugin.Automation.StopKeepingProgress(Kind, reason, true);
         return false;
     }
 

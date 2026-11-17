@@ -30,6 +30,8 @@ namespace BOCCHI.Automation;
 // 輔助職業技能清單跟著非法模式／自動打怪的執行狀態每幀同步：不論從哪條路徑停下，下一幀就交還 WrathCombo 的租約。
 // 寶箱／幸運胡蘿蔔巡迴的進度：暫停、全部停止（含 IPC 急停）、自動停止都保留成「暫停」，但一律不會自己續跑；單項停止、從頭開始、放棄才丟掉；換區與登出讓保留的進度失效。暫停中不算在跑，不佔移動自動化的互斥。
 // 停止、全部停止、暫停、非法模式讓 EurekaHelper 尋寶中止了 BOCCHI 自己詠唱中的「返回」時，詠唱一起取消（只取消返回，不碰別的詠唱）。
+// vnavmesh 路線：使用者要的停止（急停、全部停止、單項停止、暫停、換一場；換區／登出／倒地走全部停止）刻意全域停（StopNavigationByUser）；
+// 自動化自己的停止（非法模式換目標、巡迴自己停下、插件卸載）只停終點是 BOCCHI 送過的目的地的路線（StopOwnNavigation）。
 public sealed class AutomationControl : IDisposable
 {
     private const string MainQueue = Plugin.MainChainQueue;
@@ -280,11 +282,16 @@ public sealed class AutomationControl : IDisposable
         Start(kind, source, announce);
     }
 
-    /// <summary>停掉一項；沒在跑時只做收尾不報告。回傳它原本是否在跑。</summary>
-    /// <param name="keepProgress">巡迴的進度保留成暫停（自動停止用）；false＝連保留的進度一起丟掉（使用者明確停止這一項）。</param>
-    public bool Stop(AutomationKind kind, string reason, bool announce, bool keepProgress = false)
+    /// <summary>使用者停掉一項（主視窗、指令、標題列、設定頁開關、停止組合）：連巡迴保留的進度一起丟掉，導航照舊全域停。沒在跑時只做收尾不報告。回傳它原本是否在跑。</summary>
+    public bool Stop(AutomationKind kind, string reason, bool announce)
     {
-        return StopOne(kind, reason, announce, IsRunning(kind) || runningLastFrame[(int)kind], keepProgress);
+        return StopOneByUser(kind, reason, announce, IsRunning(kind) || runningLastFrame[(int)kind]);
+    }
+
+    /// <summary>巡迴自己停下（卡住、讀不到成本表、送不出移動）：進度保留成暫停，vnavmesh 只停 BOCCHI 自己的路線。只給寶箱／幸運胡蘿蔔巡迴用。回傳它原本是否在跑。</summary>
+    public bool StopKeepingProgress(AutomationKind kind, string reason, bool announce)
+    {
+        return StopOneKeepingProgress(kind, reason, announce, IsRunning(kind) || runningLastFrame[(int)kind]);
     }
 
     /// <summary>寶箱／幸運胡蘿蔔巡迴；其他項目是 null。</summary>
@@ -313,7 +320,7 @@ public sealed class AutomationControl : IDisposable
             var returnCast = ReturnChain.OwnCastInFlight;
             ResetState(kind, true, new StopContext(ActivityEnd.ManualStop, HuntEnd.Paused, source, false));
             runningLastFrame[(int)kind] = false;
-            var navigation = AbortForMovementKind(kind);
+            var navigation = AbortForMovementKindByUser(kind);
             CancelAbortedReturnCast(returnCast, $"停止（{source}）");
             Svc.Log.Information($"[BOCCHI][巡迴進度] 暫停「{GetName(kind)}」（{source}）：已跑 {hunter.ProgressText} 點，保留進度；導航：{navigation}");
             if (announce)
@@ -502,7 +509,7 @@ public sealed class AutomationControl : IDisposable
             ChainManager.AbortAll();
             teleporter?.CancelReturnPrompt();
 
-            var navigation = wasRunning.Count > 0 || hadChains ? StopNavigation() : "沒有要停的";
+            var navigation = wasRunning.Count > 0 || hadChains ? StopNavigationByUser() : "沒有要停的";
             CancelAbortedReturnCast(returnCast, $"停止（{reason}）");
 
             var names = wasRunning.Count > 0 ? string.Join("、", wasRunning.Select(GetName)) : "（沒有正在跑的自動化）";
@@ -538,19 +545,19 @@ public sealed class AutomationControl : IDisposable
     }
 
     /// <summary>
-    /// 非法模式自己換目標時用：中止正在跑的動作鏈（含 ##watcher 佇列）並停下導航，與停止非法模式時收的範圍相同（只差不中止 Lifestream），
-    /// 但不改任何自動化的執行狀態。只在 framework 執行緒呼叫；回傳給 log 用的導航處理結果。
+    /// 非法模式自己換目標時用：中止正在跑的動作鏈（含 ##watcher 佇列），vnavmesh 只停 BOCCHI 自己的路線（別的插件或你自己送的不停），不中止 Lifestream；
+    /// 不改任何自動化的執行狀態。只在 framework 執行緒呼叫；回傳給 log 用的導航處理結果。
     /// </summary>
     public string AbortIllegalModeTravel()
     {
-        return AbortForMovementKind(AutomationKind.IllegalMode, false);
+        return AbortForMovementKindOwn(AutomationKind.IllegalMode, false);
     }
 
-    /// <summary>換一場時用：收的範圍與停止非法模式相同（含 BOCCHI 自己詠唱中的「返回」），但不改任何自動化的執行狀態。只在 framework 執行緒呼叫。</summary>
+    /// <summary>換一場（使用者按的）：收的範圍與停止非法模式相同（含 BOCCHI 自己詠唱中的「返回」），但不改任何自動化的執行狀態。只在 framework 執行緒呼叫。</summary>
     public string AbortIllegalModeTravelForSkip()
     {
         var returnCast = ReturnChain.OwnCastInFlight;
-        var navigation = AbortForMovementKind(AutomationKind.IllegalMode);
+        var navigation = AbortForMovementKindByUser(AutomationKind.IllegalMode);
         CancelAbortedReturnCast(returnCast, "換一場");
         return navigation;
     }
@@ -884,37 +891,48 @@ public sealed class AutomationControl : IDisposable
         }
         else
         {
-            var verdict = JudgeCurrentPath(guardDestinations, out var end);
-            if (verdict is OwnPathVerdict.Own or OwnPathVerdict.Unknown)
-            {
-                parts.Add(TryInvoke("Path.Stop（BOCCHI 自己的路線）", () => vnav!.Stop()));
-            }
-            else
-            {
-                parts.Add(verdict == OwnPathVerdict.Idle ? "vnavmesh 沒在走" : $"vnavmesh 正在走別人的路線（終點 {FormatPoint(end)}），不停");
-            }
-
+            parts.Add(StopOwnPath());
             navigationGuardUntil = Environment.TickCount64 + NavigationGuardMs;
             navigationGuardFired = false;
             guardForPotHunt = true;
         }
 
-        if (lifestream != null && lifestream.IsReady())
+        AbortLifestreamIfBusy(parts);
+        return string.Join("、", parts);
+    }
+
+    // 呼叫前 guardDestinations 已經 CaptureCurrent：vnavmesh 正在走的路線終點是其中之一才停（讀不到終點照舊停）。回傳給 log 用的一句話。
+    private string StopOwnPath()
+    {
+        var verdict = JudgeCurrentPath(guardDestinations, out var end);
+        if (verdict is OwnPathVerdict.Own or OwnPathVerdict.Unknown)
         {
-            try
-            {
-                if (lifestream.IsBusy())
-                {
-                    parts.Add(TryInvoke("Lifestream.Abort", () => lifestream.Abort()));
-                }
-            }
-            catch (Exception ex)
-            {
-                parts.Add($"Lifestream.IsBusy 失敗（{ex.GetType().Name}）");
-            }
+            return TryInvoke("Path.Stop（BOCCHI 自己的路線）", () => vnav!.Stop());
         }
 
-        return string.Join("、", parts);
+        return verdict == OwnPathVerdict.Idle
+            ? "vnavmesh 沒在走"
+            : $"vnavmesh 正在走別人的路線（終點 {FormatPoint(end)}，離 BOCCHI 送過的目的地 {FormatDistance(guardDestinations.NearestXZ(end!.Value))} 米）：不停，交給送出它的插件或你自己";
+    }
+
+    private void AbortLifestreamIfBusy(List<string> parts)
+    {
+        if (lifestream == null || !lifestream.IsReady())
+        {
+            return;
+        }
+
+        try
+        {
+            if (lifestream.IsBusy())
+            {
+                parts.Add(TryInvoke("Lifestream.Abort", () => lifestream.Abort()));
+            }
+        }
+        catch (Exception ex)
+        {
+            parts.Add($"Lifestream.IsBusy 失敗（{ex.GetType().Name}）");
+        }
     }
 
     /// <summary>vnavmesh 現在走的路線是不是 <paramref name="own"/> 裡的目的地；<paramref name="end"/>＝路線終點（讀不到是 null）。</summary>
@@ -952,14 +970,15 @@ public sealed class AutomationControl : IDisposable
             return;
         }
 
-        // 卸載時動作鏈由 Ocelot 自己收；這裡只負責不讓 vnavmesh 帶著角色繼續走到上一個目的地。
+        // 卸載時動作鏈由 Ocelot 自己收；這裡只負責不讓 vnavmesh 帶著角色繼續走到 BOCCHI 上一個目的地。
+        // 卸載不是使用者對導航的操作：別的插件（例：讓位中的 EurekaHelper）正在走的路線不停。
         var context = new StopContext(ActivityEnd.Unloaded, HuntEnd.Unloaded, "插件卸載", false);
         foreach (var kind in AutomationKindExtensions.All)
         {
             ResetState(kind, true, context, !Svc.Framework.IsFrameworkUnloading);
         }
 
-        Svc.Log.Information($"[BOCCHI][自動化] 插件卸載時仍有自動化在跑，已停止；導航：{StopNavigation()}");
+        Svc.Log.Information($"[BOCCHI][自動化] 插件卸載時仍有自動化在跑，已停止；導航：{StopOwnNavigation(true)}");
     }
 
     private bool CanStartIgnoringRunning(AutomationKind kind, out string whyNot)
@@ -1072,7 +1091,8 @@ public sealed class AutomationControl : IDisposable
         return Unavailable(out whyNot);
     }
 
-    private bool StopOne(AutomationKind kind, string reason, bool announce, bool wasRunning, bool keepProgress)
+    // 使用者停掉一項：導航照舊全域停（含別的插件或你自己送的路線）。
+    private bool StopOneByUser(AutomationKind kind, string reason, bool announce, bool wasRunning)
     {
         if (stopping)
         {
@@ -1082,65 +1102,106 @@ public sealed class AutomationControl : IDisposable
         stopping = true;
         try
         {
-            if (!keepProgress && GetHunter(kind) is { Progress.State: not HuntProgressState.None } hunter)
-            {
-                LogAbandon(kind, hunter, reason);
-            }
-
-            // 單獨停止非法模式的都是使用者（見下方）：狀態重設之前記下選定的那一場。
-            if (kind == AutomationKind.IllegalMode && wasRunning)
-            {
-                automator?.automator.NoteManualStop();
-            }
-
-            var returnCast = ReturnChain.OwnCastInFlight;
-            ResetState(kind, keepProgress, new StopContext(ActivityEnd.ManualStop, keepProgress ? HuntEnd.AutoStopped : HuntEnd.Stopped, reason, false));
-            runningLastFrame[(int)kind] = false;
-            if (kind == AutomationKind.IllegalMode)
-            {
-                illegalSeenEnabled = false;
-            }
-
-            if (!wasRunning)
+            if (!ResetOne(kind, reason, announce, wasRunning, false, out var returnCast))
             {
                 return false;
-            }
-
-            // 單獨停止非法模式的都是使用者（主視窗、指令、標題列、設定頁開關）；自動停止一律走 StopAll。
-            if (kind == AutomationKind.IllegalMode)
-            {
-                teleporter?.teleporter.NoteIllegalModeStoppedByUser();
-            }
-
-            if (keepProgress)
-            {
-                LogKept(kind, reason, announce);
             }
 
             var navigation = kind switch
             {
                 AutomationKind.ReturnAfterEvents => AbortForReturn(),
                 AutomationKind.PhantomJobLeveling => "不涉及移動",
-                _ => AbortForMovementKind(kind),
+                _ => AbortForMovementKindByUser(kind),
             };
-            CancelAbortedReturnCast(returnCast, $"停止（{reason}）");
-            Svc.Log.Information($"[BOCCHI][自動化] 停止「{GetName(kind)}」（{reason}）；導航：{navigation}");
-
-            // 非法模式一向在開關時於聊天視窗說一聲，照舊。
-            if (kind == AutomationKind.IllegalMode)
-            {
-                Svc.Chat.Print(I18N.T("modules.automator.messages.off"));
-            }
-            else if (announce)
-            {
-                Svc.Chat.Print(I18N.T("automation.messages.stopped", new Dictionary<string, string> { ["names"] = GetName(kind), ["reason"] = reason }));
-            }
-
+            ReportStopped(kind, reason, announce, returnCast, navigation);
             return true;
         }
         finally
         {
             stopping = false;
+        }
+    }
+
+    // 巡迴自己停下：進度保留成暫停，vnavmesh 只停 BOCCHI 自己的路線。
+    private bool StopOneKeepingProgress(AutomationKind kind, string reason, bool announce, bool wasRunning)
+    {
+        if (stopping)
+        {
+            return false;
+        }
+
+        stopping = true;
+        try
+        {
+            if (!ResetOne(kind, reason, announce, wasRunning, true, out var returnCast))
+            {
+                return false;
+            }
+
+            var navigation = kind == AutomationKind.PhantomJobLeveling ? "不涉及移動" : AbortForMovementKindOwn(kind, true);
+            ReportStopped(kind, reason, announce, returnCast, navigation);
+            return true;
+        }
+        finally
+        {
+            stopping = false;
+        }
+    }
+
+    // 停一項的狀態部分（導航由呼叫端依來源收）。回 false＝原本就沒在跑：只做收尾，不收導航也不報告。
+    private bool ResetOne(AutomationKind kind, string reason, bool announce, bool wasRunning, bool keepProgress, out bool returnCast)
+    {
+        if (!keepProgress && GetHunter(kind) is { Progress.State: not HuntProgressState.None } hunter)
+        {
+            LogAbandon(kind, hunter, reason);
+        }
+
+        // 單獨停止非法模式的都是使用者（見下方）：狀態重設之前記下選定的那一場。
+        if (kind == AutomationKind.IllegalMode && wasRunning)
+        {
+            automator?.automator.NoteManualStop();
+        }
+
+        returnCast = ReturnChain.OwnCastInFlight;
+        ResetState(kind, keepProgress, new StopContext(ActivityEnd.ManualStop, keepProgress ? HuntEnd.AutoStopped : HuntEnd.Stopped, reason, false));
+        runningLastFrame[(int)kind] = false;
+        if (kind == AutomationKind.IllegalMode)
+        {
+            illegalSeenEnabled = false;
+        }
+
+        if (!wasRunning)
+        {
+            return false;
+        }
+
+        // 單獨停止非法模式的都是使用者（主視窗、指令、標題列、設定頁開關）；自動停止一律走 StopAll。
+        if (kind == AutomationKind.IllegalMode)
+        {
+            teleporter?.teleporter.NoteIllegalModeStoppedByUser();
+        }
+
+        if (keepProgress)
+        {
+            LogKept(kind, reason, announce);
+        }
+
+        return true;
+    }
+
+    private void ReportStopped(AutomationKind kind, string reason, bool announce, bool returnCast, string navigation)
+    {
+        CancelAbortedReturnCast(returnCast, $"停止（{reason}）");
+        Svc.Log.Information($"[BOCCHI][自動化] 停止「{GetName(kind)}」（{reason}）；導航：{navigation}");
+
+        // 非法模式一向在開關時於聊天視窗說一聲，照舊。
+        if (kind == AutomationKind.IllegalMode)
+        {
+            Svc.Chat.Print(I18N.T("modules.automator.messages.off"));
+        }
+        else if (announce)
+        {
+            Svc.Chat.Print(I18N.T("automation.messages.stopped", new Dictionary<string, string> { ["names"] = GetName(kind), ["reason"] = reason }));
         }
     }
 
@@ -1170,10 +1231,24 @@ public sealed class AutomationControl : IDisposable
         }
     }
 
-    // abortLifestream＝false：非法模式自己換目標，Lifestream 忙的話是使用者的（在地圖上點了目的地），不中止它。
-    private string AbortForMovementKind(AutomationKind kind, bool abortLifestream = true)
+    // 使用者停止／暫停／換一場：導航照舊全域停，忙碌中的 Lifestream 一起中止。
+    private string AbortForMovementKindByUser(AutomationKind kind)
     {
-        var own = kind switch
+        AbortQueuesForKind(kind);
+        return StopNavigationByUser();
+    }
+
+    // 自動化自己換目標或停下：vnavmesh 只停 BOCCHI 自己的路線。
+    // abortLifestream＝false：非法模式自己換目標，Lifestream 忙的話是使用者的（在地圖上點了目的地），不中止它。
+    private string AbortForMovementKindOwn(AutomationKind kind, bool abortLifestream)
+    {
+        AbortQueuesForKind(kind);
+        return StopOwnNavigation(abortLifestream);
+    }
+
+    private void AbortQueuesForKind(AutomationKind kind)
+    {
+        var queue = kind switch
         {
             AutomationKind.MobFarmer => Farmer.QueueName,
             AutomationKind.TreasureHunt => treasure?.Hunter?.StepQueueName,
@@ -1181,9 +1256,8 @@ public sealed class AutomationControl : IDisposable
             _ => null,
         };
 
-        AbortQueues(id => id == MainQueue || id == own || id.EndsWith(WatcherSuffix, StringComparison.Ordinal));
+        AbortQueues(id => id == MainQueue || id == queue || id.EndsWith(WatcherSuffix, StringComparison.Ordinal));
         teleporter?.CancelReturnPrompt();
-        return StopNavigation(abortLifestream);
     }
 
     // 打完自動返回：只在主佇列正在跑它送出的返回時才中止，不動使用者自己按的傳送。
@@ -1196,7 +1270,7 @@ public sealed class AutomationControl : IDisposable
         }
 
         AbortQueues(id => id == MainQueue || id == nameof(ReturnChain) + WatcherSuffix);
-        return StopNavigation();
+        return StopNavigationByUser();
     }
 
     private static void AbortQueues(Func<string, bool> match)
@@ -1256,10 +1330,43 @@ public sealed class AutomationControl : IDisposable
         return ChainManager.Queues.Values.Any(queue => queue.IsRunning || queue.QueueCount > 0);
     }
 
-    // vnavmesh 先取消還在背景計算的尋路（算完才會開走），再清掉已經在走的路徑；Lifestream 只在忙碌時叫它中止。
-    private string StopNavigation(bool abortLifestream = true)
+    // 使用者要的停止（全部停止含急停、暫停、單項停止、換一場；換區／登出／倒地經全部停止）：
+    // 刻意全域清掉 vnavmesh 正在走的路徑（不論是誰送的）；Lifestream 只在忙碌時叫它中止。
+    private string StopNavigationByUser()
     {
-        // 停下導航就作廢趕路登記：之後算完的迴避路徑不可以再讓角色動起來。作廢前先記下守衛要認的目的地。
+        var parts = new List<string>();
+        if (BeginNavigationStop(parts))
+        {
+            parts.Add(TryInvoke("Path.Stop", () => vnav!.Stop()));
+            ArmNavigationGuard();
+        }
+
+        AbortLifestreamIfBusy(parts);
+        return string.Join("、", parts);
+    }
+
+    // 自動化自己停下（非法模式換目標、巡迴自己停止、插件卸載）：vnavmesh 只停 BOCCHI 自己的路線，別人的不停（寫進回傳的那一句）。
+    private string StopOwnNavigation(bool abortLifestream)
+    {
+        var parts = new List<string>();
+        if (BeginNavigationStop(parts))
+        {
+            parts.Add(StopOwnPath());
+            ArmNavigationGuard();
+        }
+
+        if (abortLifestream)
+        {
+            AbortLifestreamIfBusy(parts);
+        }
+
+        return string.Join("、", parts);
+    }
+
+    // 兩種停止共用的前半：作廢趕路登記（之後算完的迴避路徑不可以再讓角色動起來；作廢前先記下守衛要認的目的地），
+    // 取消算路只在 vnavmesh 裡只有 BOCCHI 自己那筆時才叫（全域的）。回 false＝vnavmesh 未載入。
+    private bool BeginNavigationStop(List<string> parts)
+    {
         var vnavReady = vnav != null && vnav.IsReady();
         if (vnavReady)
         {
@@ -1268,46 +1375,29 @@ public sealed class AutomationControl : IDisposable
 
         OwnMoveDestinations.Recent.Clear();
         TravelIntent.Invalidate();
-        var parts = new List<string>();
-
         if (!vnavReady)
         {
             parts.Add("vnavmesh 未載入");
+            return false;
         }
-        else
+
+        try
         {
-            // 取消算路是全域的：只在 vnavmesh 裡只有 BOCCHI 自己那筆時才叫（停止後的導航守衛會再停算完開走的自己的路）。
-            try
-            {
-                parts.Add(OwnPathfind.Describe(OwnPathfind.CancelIfOnlyOwn(vnav!, guardDestinations.Count > 0)));
-            }
-            catch (Exception ex)
-            {
-                parts.Add($"Nav.PathfindCancelAll 失敗（{ex.GetType().Name}）");
-            }
-
-            parts.Add(TryInvoke("Path.Stop", () => vnav!.Stop()));
-            navigationGuardUntil = Environment.TickCount64 + NavigationGuardMs;
-            navigationGuardFired = false;
-            guardForPotHunt = false;
+            parts.Add(OwnPathfind.Describe(OwnPathfind.CancelIfOnlyOwn(vnav!, guardDestinations.Count > 0)));
         }
-
-        if (abortLifestream && lifestream != null && lifestream.IsReady())
+        catch (Exception ex)
         {
-            try
-            {
-                if (lifestream.IsBusy())
-                {
-                    parts.Add(TryInvoke("Lifestream.Abort", () => lifestream.Abort()));
-                }
-            }
-            catch (Exception ex)
-            {
-                parts.Add($"Lifestream.IsBusy 失敗（{ex.GetType().Name}）");
-            }
+            parts.Add($"Nav.PathfindCancelAll 失敗（{ex.GetType().Name}）");
         }
 
-        return string.Join("、", parts);
+        return true;
+    }
+
+    private void ArmNavigationGuard()
+    {
+        navigationGuardUntil = Environment.TickCount64 + NavigationGuardMs;
+        navigationGuardFired = false;
+        guardForPotHunt = false;
     }
 
     private static string TryInvoke(string name, Action action)
@@ -1626,7 +1716,7 @@ public sealed class AutomationControl : IDisposable
 
         if (!enabled)
         {
-            StopOne(AutomationKind.IllegalMode, source, false, true, false);
+            StopOneByUser(AutomationKind.IllegalMode, source, false, true);
             return;
         }
 
