@@ -108,7 +108,7 @@ public class FateActivity(EventData data, Lifestream lifestream, VNavmesh vnav, 
                     {
                         Actions.TryUnmount();
 
-                        vnav.Stop();
+                        StopOwnTravel("[BOCCHI][非法模式]");
 
                         return true;
                     }

@@ -111,11 +111,7 @@ public class CriticalEncounter : Activity
 
             if (!finalDestination && IsInZone())
             {
-                if (vnav.IsRunning())
-                {
-                    vnav.Stop();
-                }
-
+                StopOwnTravel("[BOCCHI][非法模式]");
                 return true;
             }
 

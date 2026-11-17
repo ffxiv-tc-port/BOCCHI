@@ -609,6 +609,23 @@ public abstract class Activity
         return vnav.IsRunning() || vnav.IsSimpleMoveInProgress();
     }
 
+    // 只在框架執行緒用；每次停止前重新抓，不跨呼叫保存內容。
+    private readonly OwnMoveDestinations travelDestinations = new();
+
+    /// <summary>
+    /// 趕路到達時只停 BOCCHI 自己的路線：自己的目的地＝最近送出的、還沒作廢的趕路登記，再加上這個活動的目的地
+    /// （趕路登記被作廢時也認得出走向活動的路）。Own／Unknown 停；別人的路線不停並寫一行 Information。
+    /// </summary>
+    protected void StopOwnTravel(string tag)
+    {
+        travelDestinations.CaptureCurrent(TravelIntent.State);
+        travelDestinations.Add(GetPosition());
+        if (OwnPathStop.StopIfOwn(vnav, travelDestinations, out var end) == OwnPathVerdict.Foreign)
+        {
+            Svc.Log.Information($"{tag} 到達「{GetName()}」時 vnavmesh 正在走別人的路線（終點離 BOCCHI 送過的目的地 {travelDestinations.NearestXZ(end!.Value):F1} 米）：不停，交給送出它的插件或你自己");
+        }
+    }
+
     private bool combatPauseReported;
 
     /// <summary>
