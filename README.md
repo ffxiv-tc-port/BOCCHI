@@ -60,9 +60,15 @@
 - 戰鬥 AI 預設改成 BossMod Reborn，非法模式不再關掉你自己開著的 AI。
 - 多處降低記憶體用量。
 
+## 安裝
+
+`/xlsettings` 開「Dalamud 設定」→「試驗性功能」→「第三方插件倉庫」，加入 `https://raw.githubusercontent.com/ffxiv-tc-port/DalamudPluginsTC/main/repo.json` 並啟用、儲存，再到「插件管理員」（`/xlplugins`）安裝；同一個插件只裝這裡的版本，不要同時裝上游版。
+
 ## 需要搭配的插件
 
 - 必要（自動化與傳送）：vnavmesh、Lifestream
 - 選用：BossMod Reborn 或 Boss Mod（戰鬥 AI）、WrathCombo（技能循環）、EurekaHelper（魔法甕財寶）、Mappy、YesAlready、TataruPraise
 
 原作者：[OhKannaDuh](https://github.com/OhKannaDuh)
+
+授權：AGPL-3.0（見 LICENSE.md）
